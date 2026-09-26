@@ -1,0 +1,34 @@
+{
+  "name": "chronos-steel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node node_modules/next/dist/bin/next dev",
+    "build": "node node_modules/next/dist/bin/next build",
+    "start": "node node_modules/next/dist/bin/next start",
+    "lint": "node node_modules/eslint/bin/eslint.js .",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "audit:geometry": "node scripts/audit-runner.cjs",
+    "audit:encoding": "node scripts/check-encoding.cjs .",
+    "audit:css": "node scripts/verify-utilities.cjs",
+    "audit:home": "node scripts/audit-home.cjs",
+    "audit:hero": "node scripts/audit-hero.cjs",
+    "audit": "npm run audit:encoding && npm run typecheck && npm run lint && npm run audit:geometry && npm run audit:css && npm run audit:home && npm run audit:hero"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

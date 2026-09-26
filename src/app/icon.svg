@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    Chronos & Steel favicon: the "C&S" monogram.
+
+    Navy ground, off-white mark, no emblem. Set in a system grotesque rather
+    than a webfont because nothing loads in a favicon context — at 16px the
+    difference between Helvetica and Inter is not visible, and a webfont here
+    would render as a fallback or not at all.
+  -->
+  <rect width="64" height="64" fill="#0C1220" />
+  <text
+    x="32"
+    y="33"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="#F5F4F0"
+    font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+    font-size="22"
+    font-weight="700"
+    letter-spacing="-0.6"
+  >C&amp;S</text>
+</svg>

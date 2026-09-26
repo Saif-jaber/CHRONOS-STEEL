@@ -1,0 +1,495 @@
+@import "tailwindcss";
+
+/* The audit tooling is not a content source. Tailwind scans raw text for
+ * utility-shaped tokens, so a script that asserts "rounded-full must never be
+ * emitted" would, by containing that literal string, cause it to be emitted.
+ * Excluding the directory removes the whole class of self-referential problem
+ * rather than patching one instance of it. */
+@source not "../../scripts";
+@source not "../../next.config.ts";
+@source not "../../eslint.config.mjs";
+
+/* Chronos & Steel, minimalist, editorial, quiet luxury.
+ *
+ * Desaturated and tonal throughout: paper, near-black, navy-black, muted slate,
+ * brushed silver. No saturated colour anywhere, including in state changes.
+ * Structure is carried by 1px hairlines and whitespace, never by borders heavier
+ * than a hairline and never by shadow.
+ *
+ * Type: Playfair Display (high-contrast serif) for storytelling headlines only.
+ * Inter (geometric grotesque) for every piece of functional and navigational
+ * text. JetBrains Mono survives in exactly one role, the measurement column of a
+ * specification table, where case diameters and calibre codes have to line up
+ * digit-for-digit. It is a register, not a third font.
+ *
+ * Motion: fade and slide on scroll, slow, one easing curve. No parallax, no
+ * marquee, no hover-scale, no cursor follower.
+ */
+
+@theme {
+  /* ── Paper ── warm off-white, the base surface ── */
+  --color-paper: #f5f4f0;
+  --color-paper-2: #efede8;
+  --color-paper-3: #e7e4dd;
+
+  /* ── Ink: near-black on light, off-white on dark ── */
+  --color-ink: #1a1a1a;
+  --color-ink-2: #3d3d3a;
+  --color-muted: #6e6e6a;
+  --color-faint: #9a9a95;
+
+  /* ── Dark sections: deep navy-black. Never pure black. ── */
+  --color-navy: #0c1220;
+  --color-navy-2: #141b2b;
+  --color-navy-3: #1c2436;
+  --color-navy-rule: #232b3d;
+  --color-navy-muted: #8b93a3;
+
+  /* ── Primary accent: muted slate blue ── */
+  --color-slate: #3d4a5c;
+  --color-slate-2: #4a5568;
+  --color-slate-wash: #e8eaee;
+
+  /* ── Metal neutral: brushed silver-grey ── */
+  --color-silver: #b8bcc2;
+  --color-silver-2: #d2d5d9;
+
+  /* ── Hairlines ── */
+  --color-rule: #e2e0da;
+  --color-rule-2: #d3d0c8;
+
+  /* ── Beige: the highlight family ──
+   *
+   * Three tones, because one beige cannot do two jobs. A selection background
+   * has to be light enough to carry dark text; a focus ring has to clear 3:1
+   * against the surface it sits on, and it has to clear it on paper *and* on
+   * navy, which are at opposite ends of the value range.
+   *
+   * beige-3 is the one that works on both grounds: 3.80:1 on paper and 4.47:1 on
+   * navy, so the same ring and the same hover rule are legible in every band
+   * without an `.on-navy` override. Beige is a desaturated warm neutral, so it
+   * stays inside the tonal system rather than introducing a second palette.
+   */
+  --color-beige: #c8b89a; /* mid, for large washes */
+  --color-beige-2: #ddd0b6; /* selection background, 10.7:1 with beige-ink */
+  --color-beige-3: #8a7a5c; /* focus rings and hover rules, the interactive one */
+  --color-beige-ink: #241f16; /* text set on a beige ground, never remapped */
+
+  /* ── Functional: desaturated, and never the only signal ── */
+  --color-focus: var(--color-beige-3);
+  --color-error: #6b4a48;
+  --color-success: #4a5c50;
+
+  /* ── Type ── */
+  --font-display: var(--font-playfair), "Iowan Old Style", Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-measure:
+    var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+
+  /* Body sits at 13–15px, per the type spec. */
+  --text-3xs: 0.6875rem;
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.3125rem;
+  --text-xl: 1.625rem;
+  --text-2xl: 2.125rem;
+  --text-3xl: 2.75rem;
+  --text-4xl: 3.5rem;
+  /* Hero: restrained display scale that remains legible on phones. */
+  --text-hero: clamp(2.875rem, 8.5vw, 6.75rem);
+  /* Storytelling headline: the "Time, Made Personal" register. */
+  --text-display: clamp(2.75rem, 5.5vw, 4.75rem);
+
+  /* ── Tracking: +0.05em for nav, labels and eyebrows ── */
+  --tracking-label: 0.05em;
+  --tracking-nav: 0.12em;
+  --tracking-display: -0.02em;
+
+  /* ── Spacing ── */
+  --spacing-3xs: 0.25rem;
+  --spacing-2xs: 0.5rem;
+  --spacing-xs: 0.75rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --spacing-xl: 4rem;
+  --spacing-2xl: 6rem;
+  --spacing-3xl: 9rem;
+
+  /* Section padding: 80–120px vertical. */
+  --section-pad: clamp(5rem, 9vw, 7.5rem);
+
+  /* ── Motion: one curve, three slow durations ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 200ms;
+  --dur-base: 420ms;
+  --dur-slow: 700ms;
+
+  /* ── Z ── */
+  --z-index-raised: 10;
+  --z-index-sticky: 200;
+  --z-index-nav: 300;
+  --z-index-overlay: 400;
+  --z-index-menu: 500;
+
+  /* ── Chrome: one element may sit at top:0 ── */
+  /* In the spacing namespace so it also yields `h-nav` and `top-nav` for the
+     fixed header and the panel that hangs beneath it. */
+  --spacing-nav: 3.5rem;
+
+  /* No radius tokens. No elevation tokens. Corners are square by design. */
+}
+
+/* Custom durations live here rather than in @theme: transition-duration has no
+   theme namespace, so a bare `--dur-*` would generate no utility and every
+   `duration-*` call site would silently do nothing. */
+@layer utilities {
+  .dur-fast {
+    transition-duration: var(--dur-fast);
+  }
+  .dur-base {
+    transition-duration: var(--dur-base);
+  }
+  .dur-slow {
+    transition-duration: var(--dur-slow);
+  }
+}
+
+/* The dark band re-points the *ink* family, so a section on navy can keep using
+   text-ink / text-muted / border-rule and get light values without a second
+   palette. Applied per-section, not globally.
+
+   Two tokens are deliberately NOT re-pointed, and getting this wrong is
+   invisible until the page is on screen:
+
+   --color-paper   Must stay off-white. `text-paper` is how you write light text
+                   on navy, so remapping it to --color-navy made every headline,
+                   arrow CTA and footer heading navy-on-navy. Surfaces inside a
+                   navy band are named explicitly (bg-navy, bg-navy-2).
+
+   --color-silver  Must stay #b8bcc2. Remapped to #6d7480 it landed at roughly
+                   3.9:1 on the navy ground, under the 4.5:1 floor for 13px
+                   eyebrow text.
+
+   `scripts/audit-home.cjs` asserts neither is redefined here. */
+@layer components {
+  .on-navy {
+    --color-rule: var(--color-navy-rule);
+    --color-rule-2: var(--color-navy-3);
+    --color-ink: #f5f4f0;
+    --color-ink-2: #d8d6d0;
+    --color-muted: var(--color-navy-muted);
+    --color-faint: #6b7383;
+    --color-slate: #7d8899;
+    --color-slate-2: #8b95a5;
+    color: var(--color-ink);
+    background-color: var(--color-navy);
+  }
+}
+
+@layer base {
+  /* `clip`, never `hidden`, hidden makes a scroll container and kills
+     position: sticky on every descendant. */
+  html {
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scrollbar-color: rgba(184, 188, 194, 0.8) rgba(12, 18, 32, 0.9);
+    scrollbar-width: thin;
+  }
+
+  body {
+    overflow-x: clip;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    letter-spacing: var(--tracking-label);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(12, 18, 32, 0.9);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d2d5d9 0%, #b8bcc2 100%);
+    border: 2px solid rgba(12, 18, 32, 0.9);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #e5e7ea 0%, #c9ced4 100%);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: rgba(12, 18, 32, 0.9);
+  }
+
+  /* Serif is for storytelling headlines only. It has no functional role.
+
+     Weight 400, not 500. Playfair is a display face: at 64–120px its regular
+     weight already carries, and the medium cuts a hole in it that reads
+     assertive rather than composed. "Confident, quiet luxury" is a 400 at
+     120px, not a 500. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.02;
+    text-wrap: balance;
+    min-width: 0;
+  }
+
+  h1 {
+    font-size: var(--text-display);
+    line-height: 0.98;
+  }
+  h2 {
+    font-size: var(--text-2xl);
+    line-height: 1.06;
+  }
+  h3 {
+    font-size: var(--text-xl);
+    line-height: 1.12;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    line-height: 1.3;
+  }
+
+  /* Prose measure: 45–75ch. */
+  .prose-measure {
+    max-width: 62ch;
+  }
+
+  /* Tabular figures everywhere numbers are compared in a column. */
+  .measure,
+  [class*="font-measure"] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Eyebrow / label: sans, small, tracked, muted. Never the serif. */
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-nav);
+    text-transform: uppercase;
+    line-height: 1.3;
+    color: var(--color-muted);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  input,
+  select,
+  textarea {
+    outline: 2px solid transparent;
+    outline-offset: 1px;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+  }
+
+  /* Cursor text selection. This is the highlight the cursor actually paints,
+     so it is the one place the beige reads at full strength.
+
+     The text colour is a fixed warm dark, not `var(--color-ink)`: on a navy band
+     `--color-ink` is remapped to off-white, which would put paper text on a
+     beige highlight and drop the contrast to roughly 1.4:1. Selection must stay
+     readable on every ground in the document, so this token is deliberately not
+     remapped by `.on-navy`. */
+  ::selection {
+    background-color: var(--color-beige-2);
+    color: var(--color-beige-ink);
+  }
+
+  /* Expands a 24px glyph's hit area to the 44px touch-target floor without
+     changing its visual size. */
+  .hit::before {
+    content: "";
+    position: absolute;
+    inset: -10px;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 100rem;
+    padding-inline: clamp(1.25rem, 5vw, 5rem);
+  }
+  .container-narrow {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 68rem;
+    padding-inline: clamp(1.25rem, 5vw, 5rem);
+  }
+
+  /* Section rhythm. One hairline between sections, never two. */
+  .section {
+    padding-block: var(--section-pad);
+  }
+  .rule-t {
+    border-block-start: 1px solid var(--color-rule);
+  }
+  .rule-b {
+    border-block-end: 1px solid var(--color-rule);
+  }
+
+  /* The arrow CTA. A plain text link with a small arrow, underlined on hover.
+     This is the site's primary interaction pattern, not a filled button. */
+  .cta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-nav);
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-ink);
+    background-image: linear-gradient(var(--color-ink), var(--color-ink));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition:
+      background-size var(--dur-base) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+    padding-block-end: 2px;
+  }
+  .cta:hover,
+  .cta:focus-visible {
+    /* Beige on hover, the accent that marks an interactive element. The rule
+       stays the same weight and the same position, only the colour changes, so
+       the affordance appears without the layout moving. */
+    background-image: linear-gradient(
+      var(--color-beige-3),
+      var(--color-beige-3)
+    );
+    background-size: 100% 1px;
+  }
+  .cta-arrow {
+    display: inline-block;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .cta:hover .cta-arrow,
+  .cta:focus-visible .cta-arrow {
+    transform: translateX(3px);
+  }
+
+  /* QuietLink's underline. Same accent as the arrow CTA, so a hover highlight
+     means one thing across the whole site. Colour moves to beige-3 while the
+     scale transform is left to the component. */
+  .quiet-link::after {
+    background-color: var(--color-ink);
+  }
+  .quiet-link:hover::after,
+  .quiet-link:focus-visible::after {
+    background-color: var(--color-beige-3);
+  }
+
+  /* Buttons and nav labels never wrap at 320–1920px. */
+  .btn,
+  .nav-link {
+    white-space: nowrap;
+  }
+  .btn {
+    align-items: center;
+    line-height: 1;
+  }
+
+  /* Disclosure on grid-template-rows, never height, height cannot animate
+     to an intrinsic size. */
+  .disclosure {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-out);
+  }
+  .disclosure > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .disclosure[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+
+  /* Scroll reveal. Set by an IntersectionObserver so it fires on entry, not on
+     mount; without JS the element is simply visible. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity var(--dur-slow) var(--ease-out),
+      transform var(--dur-slow) var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+  .reveal[data-shown="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Oversized ghost word used as a background watermark. Decorative, so it is
+     aria-hidden at the call site and kept out of the accessibility tree. */
+  .ghost-word {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 12vw, 9rem);
+    font-weight: 500;
+    color: var(--color-ink);
+    opacity: 0.14;
+    line-height: 0.78;
+    letter-spacing: 0.02em;
+    user-select: none;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+}
+
+/* Reduced motion: spatial motion collapses to a plain crossfade. The scroll
+   reveal becomes instant rather than absent, so content is never hidden. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .cta-arrow,
+  .cta:hover .cta-arrow {
+    transform: none;
+  }
+}
