@@ -55,31 +55,35 @@ for (const [label, needle] of LAYERS) {
 }
 
 /* Every storefront image is a named local slot with descriptive alt text.
- * Assets are supplied later under public/images, so this checks the manifest
- * destinations rather than requiring the files to exist during development.
+ * Assets are supplied later, so this checks the manifest destinations rather
+ * than requiring the files to exist during development.
  *
  * The exploded anatomy plate is deliberately absent. It is out of PHOTOS'
  * required slots because the anatomy section is now carried entirely by its six
  * numbered specifications, an illustration of the parts beside a written list of
- * the parts was saying the same thing twice, and the file is still on disk and
- * still in the manifest if it is ever wanted back.
+ * the parts was saying the same thing twice. The path is still named in the
+ * allowlist below, which is not a contradiction: `public/fig-1-anatomy.png` has
+ * been deleted, and keeping the arm means restoring the file needs no edit here.
  *
- * The six anatomy part shots are the reverse case. They are listed here even
- * though no file exists at any of those paths yet, because the alt text is the
- * specification for what has to be supplied: each one names the part, the angle,
+ * The two Nocturne story images are real files that arrived and replaced the
+ * original wrist and atelier slots, which pointed into a `public/images/editorial`
+ * directory that was never created, so both frames had been rendering empty. The
+ * anatomy part shots are the reverse case: they are listed here even though no
+ * file exists at any of those paths yet, because the alt text is the
+ * specification for what has to be supplied, each one naming the part, the angle,
  * the finish and the dimension, so the shot that satisfies it is unambiguous.
  * This guard is what stops that text quietly rotting, or a path being changed
  * without the alt text following it. */
 const IMAGE_SLOTS = [
   [
-    "wrist story photo",
-    "/images/editorial/nocturne-on-wrist.jpg",
-    "Nocturne Moonphase watch worn on a wrist",
+    "Nocturne story image",
+    "/landing-watches/moonphase-watch.png",
+    "The Nocturne Moonphase watch, case and dial filling the frame",
   ],
   [
-    "atelier story photo",
-    "/images/editorial/watchmaker-at-bench.jpg",
-    "Watchmaker's hands assembling the CS-114",
+    "Nocturne story image in blue",
+    "/landing-watches/moonphase-blue.png",
+    "The Nocturne in blue, the moon disc showing on the dial",
   ],
   [
     "part 01, sapphire crystal",
@@ -89,27 +93,27 @@ const IMAGE_SLOTS = [
   [
     "part 02, hands",
     "/Six-parts/part2.png",
-    "Pair of faceted steel watch hands for the Meridian 38 laid flat",
+    "Technical diagram of the faceted steel watch hands for the Meridian 38",
   ],
   [
     "part 03, dial",
     "/Six-parts/part3.png",
-    "Silver sunburst dial of the Meridian 38 photographed flat",
+    "Technical diagram of the silver sunburst dial of the Meridian 38",
   ],
   [
     "part 04, movement",
     "/Six-parts/part4.png",
-    "Calibre CS-114 automatic movement of the Meridian 38 photographed from the back",
+    "Technical diagram of the Calibre CS-114 automatic movement of the Meridian 38",
   ],
   [
     "part 05, case",
     "/Six-parts/part5.png",
-    "Polished 316L steel case of the Meridian 38 photographed in profile",
+    "Technical diagram of the polished 316L steel case of the Meridian 38",
   ],
   [
     "part 06, strap",
     "/Six-parts/part6.png",
-    "Black calfskin strap for the Meridian 38 laid in a shallow curve",
+    "Technical diagram of the black calfskin strap for the Meridian 38",
   ],
 ];
 for (const [label, src, alt] of IMAGE_SLOTS) {
@@ -136,15 +140,18 @@ ok(
 );
 
 /* Assets are intentionally added after the code. Verify local manifest paths
- * without requiring those files to exist yet. The whitelist has to name every
+ * without requiring every file to exist yet. The whitelist has to name every
  * folder a manifest entry may point into, so `/Six-parts/` is here for the
- * anatomy part shots; without it this check fails on a path that is correct. */
+ * anatomy part shots and `/landing-watches/` for the two Nocturne story images.
+ * Without either one this check fails on a path that is correct, which is the
+ * cheaper failure than the reverse. */
 const srcs = [...html.matchAll(/<img[^>]+src="(\/[^"]+)"/g)].map((m) => m[1]);
 ok(
   srcs.every(
     (src) =>
       src.startsWith("/images/") ||
       src.startsWith("/Six-parts/") ||
+      src.startsWith("/landing-watches/") ||
       src === "/fig-1-anatomy.png",
   ),
   "all image sources use documented public paths",

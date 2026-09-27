@@ -110,7 +110,7 @@ export function IconWarranty(props: IconProps) {
   );
 }
 
-/* â”€â”€ Navigation glyphs. Same 1px weight, 20px box. â”€â”€ */
+/* Navigation glyphs. Same 1px weight, 20px box. */
 
 export function IconMenu({ className, onDark }: IconProps) {
   return (

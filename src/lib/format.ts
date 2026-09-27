@@ -106,6 +106,35 @@ export function pluralise(count: number, singular: string, plural?: string): str
   return count === 1 ? singular : (plural ?? `${singular}s`);
 }
 
+/**
+ * Small counts as words, for prose rather than spec sheets.
+ *
+ * "13 references" in a heading reads like a data table; "thirteen references"
+ * reads like a sentence. This exists because the collection copy had the count
+ * hardcoded as "Twelve references" while the catalog held thirteen products, and
+ * the same stale twelve was repeated across the hero, the collection heading, the
+ * "Showing six of twelve" line and the 404 page. Four places, one wrong number.
+ *
+ * Only the teens are covered, because that is the range the catalog sits in. A
+ * count outside the table falls through to digits rather than inventing a word,
+ * so an unexpected catalog size produces "14 references" and not a wrong word.
+ */
+const COUNT_WORDS: Record<number, string> = {
+  11: "eleven",
+  12: "twelve",
+  13: "thirteen",
+  14: "fourteen",
+  15: "fifteen",
+  16: "sixteen",
+  17: "seventeen",
+  18: "eighteen",
+  19: "nineteen",
+};
+
+export function countWord(count: number): string {
+  return COUNT_WORDS[count] ?? String(count);
+}
+
 export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }

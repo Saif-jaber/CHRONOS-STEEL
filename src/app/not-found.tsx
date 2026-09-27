@@ -53,7 +53,7 @@ export default function NotFound() {
               Return to the front page
             </Cta>
             <Cta href="/collection" onDark>
-              Browse all twelve
+              Browse all {countWord(PRODUCTS.length)}
             </Cta>
           </div>
 

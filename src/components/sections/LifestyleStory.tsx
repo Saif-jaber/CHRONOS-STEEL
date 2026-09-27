@@ -16,7 +16,10 @@ import { Reveal } from "@/components/ui/Reveal";
  * ends higher, and a second image that tucks under the text. Nothing is centred
  * and nothing is mirrored.
  *
- * Both photographs are local image slots listed in `src/lib/media.ts`.
+ * Both images are local slots listed in `src/lib/media.ts`, and both render with
+ * `fit: contain` because they are transparent-ground cut-outs rather than
+ * photographs filling their frame. See the note on each slot in the manifest for
+ * why cropping them to the slot ratio was rejected.
  */
 export function LifestyleStory() {
   const product =
@@ -43,9 +46,10 @@ export function LifestyleStory() {
           {/* Tall image column. */}
           <Reveal className="lg:col-span-5">
             <Photo
-              src={photoUrl(PHOTOS.storyWrist)}
-              alt="Nocturne Moonphase watch worn on a wrist in low light, with the dial catching a single source."
-              ratio={PHOTOS.storyWrist.ratio}
+              src={photoUrl(PHOTOS.storyMoonphase)}
+              alt="The Nocturne Moonphase watch, case and dial filling the frame against the navy ground."
+              ratio={PHOTOS.storyMoonphase.ratio}
+              fit="contain"
               sizes="(min-width: 1024px) 40vw, 100vw"
               className="bg-navy-2"
             />
@@ -85,9 +89,10 @@ export function LifestyleStory() {
             {/* Second image, tucked under the text and running to the edge. */}
             <Reveal delay={1} className="mt-xl lg:-mb-16">
               <Photo
-                src={photoUrl(PHOTOS.storyAtelier)}
-                alt="Watchmaker's hands assembling the CS-114 mechanical movement at a workbench."
-                ratio={PHOTOS.storyAtelier.ratio}
+                src={photoUrl(PHOTOS.storyMoonphaseBlue)}
+                alt="The Nocturne in blue, the moon disc showing on the dial."
+                ratio={PHOTOS.storyMoonphaseBlue.ratio}
+                fit="contain"
                 sizes="(min-width: 1024px) 45vw, 100vw"
                 className="bg-navy-2"
               />

@@ -36,8 +36,18 @@ export function Cta({
       {...rest}
     >
       <span>{children}</span>
+      {/* The arrow was the one place in the source that had been through a bad
+          round trip. It was stored as the six bytes c3 a2 e2 80 a0 e2 80 99,
+          which is U+2192 encoded as UTF-8, read as Latin-1, then re-encoded, so
+          it decoded to three separate characters, U+00E2, U+2020 and U+2019, and
+          rendered on the page as garbage in every CTA. Named by code point here
+          on purpose: writing those three characters literally would reintroduce
+          exactly the thing this comment is about.
+
+          `&rarr;` is an entity rather than a literal character so no editor or
+          transfer can mangle it the same way twice. */}
       <span aria-hidden="true" className="cta-arrow">
-        â†’
+        &rarr;
       </span>
     </Link>
   );

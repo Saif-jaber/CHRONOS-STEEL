@@ -1,4 +1,5 @@
 import { PRODUCTS } from "@/lib/catalog/products";
+import { countWord } from "@/lib/format";
 import { ButtonLink, Cta } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "./ProductCard";
@@ -12,9 +13,16 @@ import { ProductCard } from "./ProductCard";
  * phone every card simply stacks at full width, which is the only honest
  * arrangement at 360px anyway.
  *
- * Six of the twelve references are shown. The full set is one arrow away, and
- * showing all twelve here would undo the pacing the page has built up to this
- * point.
+ * Six of the references are shown. The full set is one arrow away, and showing
+ * all of them here would undo the pacing the page has built up to this point.
+ *
+ * The counts in the copy are read off `PRODUCTS` and `FEATURED` rather than typed
+ * in. They were hardcoded as "Twelve references", "Showing six of twelve" and
+ * "All twelve references" while the catalog held thirteen products, so the page
+ * was quietly wrong in three places at once and nothing complained. The same
+ * stale twelve was repeated in the hero and the 404 page. A number that appears in
+ * prose is a number that will drift, so it is now computed at the one place the
+ * list is defined and cannot disagree with it.
  */
 
 /** Hand-placed spans. Deliberately unequal, and unequal in an order that reads
@@ -42,13 +50,17 @@ export function CollectionSection() {
     (p): p is NonNullable<typeof p> => Boolean(p),
   );
 
+  const total = PRODUCTS.length;
+  const shown = featured.length;
+  const totalWord = countWord(total);
+
   return (
     <section id="collection" className="section bg-paper">
       <div className="container">
         <Reveal className="flex flex-wrap items-end justify-between gap-md">
           <div className="max-w-[40rem]">
             <p className="eyebrow">The collection</p>
-            <h2 className="mt-sm text-2xl">Twelve references</h2>
+            <h2 className="mt-sm text-2xl">{countWord(total)} references</h2>
             <p className="prose-measure mt-md text-md leading-relaxed text-muted">
               Sized honestly, priced plainly. Every one is built to order and
               warranted for five years.
@@ -56,10 +68,10 @@ export function CollectionSection() {
             {/* Count stated rather than implied, so the reader knows the grid is
                 a selection and not the whole catalogue. */}
             <p className="measure mt-sm text-xs text-faint">
-              Showing six of twelve
+              Showing {countWord(shown)} of {totalWord}
             </p>
           </div>
-          <Cta href="/collection">All twelve references</Cta>
+          <Cta href="/collection">All {totalWord} references</Cta>
         </Reveal>
 
         <div className="mt-xl grid gap-y-xl sm:grid-cols-2 sm:gap-x-md lg:grid-cols-12">

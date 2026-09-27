@@ -15,7 +15,11 @@ const html = fs.readFileSync(file, "utf8");
 const SECTIONS = [
   ["Hero", "Time, Made"],
   ["Feature strip", "House standards"],
-  ["Anatomy", "ANATOMY"],
+  /* Was anchored on the literal "ANATOMY", the display word behind this heading.
+   * That word has been removed, so the section is anchored on its own prose
+   * instead, which is unique to it. Re-anchor here rather than reintroducing a
+   * decorative string purely to give the check something to hold on to. */
+  ["Anatomy", "A mechanical watch is a stack of tolerances"],
   ["Anatomy heading", "Six parts, and nothing hidden"],
   ["Lifestyle story", "Built for the hours nobody sees"],
   ["Collection", "Twelve references"],

@@ -75,7 +75,6 @@ const REQUIRED = [
   ".prose-measure",
   ".disclosure",
   ".reveal",
-  ".ghost-word",
   ".on-navy",
 ];
 
@@ -94,7 +93,14 @@ const missing = REQUIRED.filter((sel) => !css.includes(sel));
  * is a real dependency and a missing utility would be a genuine regression.
  *
  * A class cannot be asserted as a variable here, because unlike `--text-display`
- * nothing references `--text-2xs` and so it is not emitted to `:root` either. */
+ * nothing references `--text-2xs` and so it is not emitted to `:root` either.
+ *
+ * `.ghost-word` was on this list and is not any more. It was the watermark set
+ * behind the anatomy heading, and it has been removed along with the rule in
+ * globals.css. A hand-written component class with no call site emits nothing,
+ * so leaving the assertion would have failed the audit rather than protected
+ * anything, and leaving the rule would have left ~100 lines of commented CSS
+ * describing a treatment that no longer renders. */
 
 /* Custom properties are checked separately from classes. `--text-display` is
  * consumed by the `h1` base rule rather than by a `text-display` utility, so
