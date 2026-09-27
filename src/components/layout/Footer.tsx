@@ -43,6 +43,14 @@ const COLUMNS = [
     ],
   },
   {
+    heading: "Account",
+    links: [
+      { label: "Sign in", href: "/login" },
+      { label: "Create an account", href: "/signup" },
+      { label: "Service history", href: "/account/service" },
+    ],
+  },
+  {
     heading: "House",
     links: [
       { label: "Our standard", href: "/#craft" },
@@ -119,8 +127,9 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Link columns. */}
-        <div className="grid gap-lg py-xl sm:grid-cols-2 lg:grid-cols-4">
+        {/* Link columns. Five now that Account is one of them: three houses,
+            the account routes, and the standing promises. */}
+        <div className="grid gap-lg py-xl sm:grid-cols-2 lg:grid-cols-5">
           {COLUMNS.map((column) => (
             <nav key={column.heading} aria-label={column.heading}>
               <h3 className="eyebrow text-silver">{column.heading}</h3>

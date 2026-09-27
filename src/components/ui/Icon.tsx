@@ -153,3 +153,45 @@ export function IconArrowRight({ className, onDark }: IconProps) {
     </Frame>
   );
 }
+
+/* Form glyphs. Same 1px weight, because a password toggle that reads heavier
+   than the rule it sits on looks like a different control. */
+
+export function IconEye({ className, onDark }: IconProps) {
+  return (
+    <Frame {...{ className, onDark }}>
+      <path d="M2.5 12S6 5.75 12 5.75 21.5 12 21.5 12 18 18.25 12 18.25 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="2.75" />
+    </Frame>
+  );
+}
+
+export function IconEyeOff({ className, onDark }: IconProps) {
+  return (
+    <Frame {...{ className, onDark }}>
+      <path d="M9.6 6.1A8.8 8.8 0 0 1 12 5.75C18 5.75 21.5 12 21.5 12a17.4 17.4 0 0 1-2.9 3.7" />
+      <path d="M6.2 7.9A16.8 16.8 0 0 0 2.5 12S6 18.25 12 18.25a8.9 8.9 0 0 0 3.7-.8" />
+      <path d="M4.2 4.2l15.6 15.6" />
+    </Frame>
+  );
+}
+
+/** The tick that marks a chosen role and an accepted term. Presence is the
+    signal, so it survives greyscale and colour-blindness. */
+export function IconCheck({ className, onDark }: IconProps) {
+  return (
+    <Frame {...{ className, onDark }}>
+      <path d="M4.5 12.75l4.75 4.75L19.5 7" />
+    </Frame>
+  );
+}
+
+/** Account: a person, reduced to a head and the line of the shoulders. */
+export function IconAccount({ className, onDark }: IconProps) {
+  return (
+    <Frame {...{ className, onDark }}>
+      <circle cx="12" cy="8.25" r="3.75" />
+      <path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" />
+    </Frame>
+  );
+}

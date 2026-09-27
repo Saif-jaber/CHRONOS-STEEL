@@ -185,6 +185,10 @@
     --color-faint: #6b7383;
     --color-slate: #7d8899;
     --color-slate-2: #8b95a5;
+    /* An autofilled field inside a navy band has to be repainted navy, not
+       paper, or the browser's white box is exactly as visible as it was before
+       the autofill rules existed. */
+    --field-surface: var(--color-navy);
     color: var(--color-ink);
     background-color: var(--color-navy);
   }
@@ -315,6 +319,48 @@
   textarea:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 1px;
+  }
+
+  /* The surface a field is painted on, so the autofill fix below can repaint
+     itself to match. Overridden inside `.on-navy`; see the components layer. */
+  :root {
+    --field-surface: var(--color-paper);
+  }
+
+  /* Browser autofill.
+
+     Chrome and Safari repaint an autofilled field with their own background and
+     text colour and will not be talked out of it with `background-color`. On a
+     hairline field that meant the account forms came back from a password
+     manager as a solid white box sitting on the navy band, which is the single
+     ugliest thing a browser can do to this design.
+
+     There is no supported way to restyle it. The accepted approach is an inset
+     box-shadow large enough to cover the element, painting the page surface
+     over the browser's fill, plus `-webkit-text-fill-color` to put the text
+     colour back, since autofill overrides `color` as well. The surface comes
+     from a variable so one rule serves the light and the dark band, and
+     `-moz-autofill` is handled separately because Firefox honours a plain
+     transparent background and ignores the shadow trick.
+
+     The long transition is there because Chrome re-checks autofill on restore
+     and repaints after load; a transition that outlasts the check is the only
+     way to stop the flash. It is set on this pseudo-state alone, so it does not
+     leak onto the other transitions in the document. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--color-ink);
+    caret-color: var(--color-ink);
+    -webkit-box-shadow: 0 0 0 1000px var(--field-surface) inset;
+    transition: background-color 100000s ease-in-out 0s;
+  }
+  input:-moz-autofill,
+  input:-moz-autofill:hover,
+  input:-moz-autofill:focus {
+    background-color: transparent;
+    color: var(--color-ink);
   }
 
   /* Cursor text selection. This is the highlight the cursor actually paints,
@@ -457,10 +503,66 @@
   }
 
   /* Oversized ghost word used as a background watermark. Decorative, so it is
-     aria-hidden at the call site and kept out of the accessibility tree. */
+     aria-hidden at the call site and kept out of the accessibility tree.
+
+     It sits behind the anatomy section's heading, and that is what makes this
+     size honest. Sized against the old 1916x821 illustration, the word had to be
+     enormous, because the artwork filled only 58% of that asset's own box and
+     the word was being centred on transparent padding; the result overflowed the
+     container on both sides and left the emptiness it was meant to fill. Set
+     against a heading it can be sized to the measure.
+
+     12.5vw sets about 180px of type at a 1440px viewport, which is 886px of ink
+     against a heading block of 736px and a container of 1136px, so the word runs
+     a little past the text on each side and stops well short of the container
+     edge. The old 18vw was 259px and 1278px of ink. "Smaller" here is also
+     "correct": the word is a watermark for a heading, not a plate that has to be
+     covered.
+
+     Every step is a uniform scale. A non-uniform one, stretching the word
+     taller without widening it, was considered and rejected: these are Didone
+     capitals, so scaling Y while scaling X down doubles the weight of the
+     horizontal serifs and thins the vertical stems, inverting the thick / thin
+     contrast that is the entire character of the face.
+
+     The two ends of the range keep the word clear of the viewport at every
+     width. At 375px it sets 231px of ink against a 343px container, and the
+     12.5rem cap keeps it well inside the 100rem container on a 1920px display.
+
+     The mask eases the word off to the right. A watermark that stops dead at
+     both ends reads as a clipped heading that someone failed to delete, because
+     the hard vertical edge at each side is exactly the shape a mistake makes.
+     Softening the far end means the word is never visibly cut off.
+
+     It fades one way rather than both, and that is the point of it. A symmetric
+     fade is the safe version and reads as a symmetrical ornament; letting the
+     left end stay solid and the right end soften gives the word a direction, so
+     it reads as set behind the heading and running off past the paragraph rather
+     than sitting on the page as an object in its own right.
+
+     It is a fade and not a dissolve, which is a distinction worth the numbers.
+     The first version of this ran the tail to zero alpha, and that is a
+     different effect: the Y disappeared, the word lost a seventh of itself, and
+     at 14% opacity what remained at the right read as a printing fault rather
+     than a treatment. So the last stop holds 0.45 instead of 0. The Y is now
+     still a Y, just quieter, and the gradient never reaches a hard edge anywhere
+     on the word. The range the mask actually covers is 0.82 to 1, about a fifth
+     of full strength, and most of that is spent in the last quarter of the word
+     where the eye is not reading anyway.
+
+     The leading stop is 0.82 rather than transparent for the same reason it is
+     not 1: a transparent first stop shaves the left stem of the A, and a shaved
+     stem reads as a rendering fault. So the A keeps almost all of its weight and
+     nothing anywhere is cut.
+
+     The mask multiplies alpha rather than replacing it, so the solid part keeps
+     the full 0.14 and only the tail thins. The stop positions are percentages of
+     the element's own box, and the element is `max-content`, so the gradient
+     tracks the text at every size rather than tracking the viewport and drifting
+     out of step with the word. */
   .ghost-word {
     font-family: var(--font-display);
-    font-size: clamp(3.5rem, 12vw, 9rem);
+    font-size: clamp(2.5rem, 12.5vw, 12.5rem);
     font-weight: 500;
     color: var(--color-ink);
     opacity: 0.14;
@@ -469,6 +571,31 @@
     user-select: none;
     pointer-events: none;
     white-space: nowrap;
+
+    /* The fade. `-webkit-mask-image` is still needed for Safari under 15.4 and
+       for any older WebKit engine, and costs one line to keep. Both declarations
+       are the same value; the unprefixed one wins where both apply.
+       `mask-size` is left at its default of auto so the gradient covers the
+       whole box, and `mask-mode` stays `match-source`, so the gradient's own
+       alpha does the work.
+
+       The two numbers worth touching are the last stop, 0.45, which sets how
+       quiet the Y gets, and the 72%, which sets how much of the word is left at
+       full strength before it starts to ease. Nothing here reaches zero. */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      rgb(0 0 0 / 0.82) 0%,
+      #000 10%,
+      #000 72%,
+      rgb(0 0 0 / 0.45) 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      rgb(0 0 0 / 0.82) 0%,
+      #000 10%,
+      #000 72%,
+      rgb(0 0 0 / 0.45) 100%
+    );
   }
 }
 

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
-import { Cta, IconButton } from "@/components/ui/Button";
-import { IconBag, IconClose, IconMenu, IconSearch } from "@/components/ui/Icon";
+import { Cta, IconButton, IconLink } from "@/components/ui/Button";
+import { IconAccount, IconBag, IconClose, IconMenu, IconSearch } from "@/components/ui/Icon";
 
 /**
  * Masthead.
@@ -17,8 +17,8 @@ import { IconBag, IconClose, IconMenu, IconSearch } from "@/components/ui/Icon";
  * The lockup is centred because the brief asks for it, and it happens to be the
  * right call anyway, a centred mark with balanced controls on either side reads
  * as a masthead rather than a toolbar. The controls are optically balanced too:
- * the left rail is a single 24px glyph, the right rail two, so the right glyph
- * is nudged in to keep the composition centred.
+ * the left rail is a single 24px glyph and the right rail carries three, so the
+ * right group is held a little off the edge to keep the composition centred.
  */
 
 const MENU = [
@@ -45,6 +45,7 @@ const MENU = [
       { label: "Our Standard", href: "/#craft" },
       { label: "Journal", href: "/#journal" },
       { label: "Contact", href: "/#contact" },
+      { label: "Sign in", href: "/login" },
     ],
   },
 ] as const;
@@ -131,8 +132,13 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Right rail: search and bag. */}
+          {/* Right rail: account, search and bag. Three glyphs, so the centre
+              mark is nudged back a little to keep the composition balanced
+              against a left rail that is still a single glyph. */}
           <div className="flex items-center justify-end gap-md">
+            <IconLink href="/login" label="Account" onDark>
+              <IconAccount onDark />
+            </IconLink>
             <IconButton label="Search" onDark>
               <IconSearch onDark />
             </IconButton>

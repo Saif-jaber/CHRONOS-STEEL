@@ -81,29 +81,70 @@ export function QuietLink({
  * Square corners, 1px navy border (so the fill edge stays crisp against paper),
  * 44px tall for touch. Disabled carries a non-colour signal: the border goes
  * dashed, which survives greyscale and colour-blindness.
+ *
+ * `onDark` inverts the fill rather than adding a second variant, so the control
+ * is still the only solid thing in the viewport. It exists because the account
+ * forms live on a navy band, where a navy fill would be invisible.
  */
 export function Button({
   children,
   className,
   variant = "navy",
+  onDark = false,
   ...rest
-}: { variant?: "navy" | "outline" } & ButtonHTMLAttributes<HTMLButtonElement>) {
+}: {
+  variant?: "navy" | "outline";
+  onDark?: boolean;
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button
-      className={cx(
-        "inline-flex h-11 items-center justify-center gap-xs border px-6",
-        "font-body text-xs font-medium uppercase tracking-nav whitespace-nowrap",
-        "transition-colors duration-base ease-out select-none",
-        "disabled:cursor-not-allowed disabled:border-dashed disabled:opacity-45",
-        variant === "navy"
-          ? "border-navy bg-navy text-paper hover:bg-navy-2"
-          : "border-rule-2 bg-transparent text-ink hover:border-navy hover:text-navy",
-        className,
-      )}
-      {...rest}
-    >
+    <button className={cx(buttonClass(variant, onDark), className)} {...rest}>
       {children}
     </button>
+  );
+}
+
+/**
+ * The same control as a link, for anything that navigates.
+ *
+ * A `<button>` with a click handler that calls `router.push` looks identical and
+ * is worse in three ways a keyboard user will notice: middle-click and
+ * open-in-new-tab do nothing, the status bar shows no destination, and the
+ * element is not announced as a link. So the two are separate components that
+ * share one class function, rather than one component guessing at intent.
+ */
+export function ButtonLink({
+  href,
+  children,
+  className,
+  variant = "navy",
+  onDark = false,
+  ...rest
+}: {
+  href: string;
+  variant?: "navy" | "outline";
+  onDark?: boolean;
+} & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href">) {
+  return (
+    <Link href={href} className={cx(buttonClass(variant, onDark), className)} {...rest}>
+      {children}
+    </Link>
+  );
+}
+
+/** Shared between the button and its link twin, so the two cannot drift. */
+function buttonClass(variant: "navy" | "outline", onDark: boolean): string {
+  return cx(
+    "inline-flex h-11 items-center justify-center gap-xs border px-6",
+    "font-body text-xs font-medium uppercase tracking-nav whitespace-nowrap",
+    "transition-colors duration-base ease-out select-none",
+    "disabled:cursor-not-allowed disabled:border-dashed disabled:opacity-45",
+    variant === "outline"
+      ? onDark
+        ? "border-silver text-paper hover:border-paper"
+        : "border-rule-2 bg-transparent text-ink hover:border-navy hover:text-navy"
+      : onDark
+        ? "border-paper bg-paper text-navy hover:bg-silver-2 hover:border-silver-2"
+        : "border-navy bg-navy text-paper hover:bg-navy-2",
   );
 }
 
@@ -141,5 +182,42 @@ export function IconButton({
     >
       {children}
     </button>
+  );
+}
+
+/**
+ * The same square glyph control, as a link. Account and bag are destinations, so
+ * they want an anchor: middle-click, open-in-new-tab and the status bar all work
+ * without a click handler reimplementing them.
+ */
+export function IconLink({
+  href,
+  label,
+  children,
+  className,
+  onDark = false,
+  ...rest
+}: {
+  href: string;
+  label: string;
+  children: ReactNode;
+  className?: string;
+  onDark?: boolean;
+} & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href">) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className={cx(
+        "hit relative inline-flex size-6 shrink-0 items-center justify-center",
+        "transition-opacity duration-base ease-out hover:opacity-60",
+        onDark ? "text-paper" : "text-ink",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </Link>
   );
 }

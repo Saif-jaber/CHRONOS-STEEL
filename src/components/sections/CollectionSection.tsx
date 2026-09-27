@@ -1,5 +1,5 @@
 import { PRODUCTS } from "@/lib/catalog/products";
-import { Cta } from "@/components/ui/Button";
+import { ButtonLink, Cta } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "./ProductCard";
 
@@ -73,6 +73,43 @@ export function CollectionSection() {
             </Reveal>
           ))}
         </div>
+
+        {/* Account. The one place on the front page that offers both routes at
+            once, and it sits below the grid rather than above it: a reader who
+            has just looked at six references is being offered the next step,
+            not the first one.
+
+            Both controls are outlined, and that is a hard constraint rather than
+            a preference. The house rule is one filled control in the entire
+            design, it belongs to Add to Bag on a product page, and
+            `scripts/audit-home.cjs` asserts the home page contains none. A
+            filled Create an account here would have been the second. So the
+            hierarchy is carried by border weight instead of by fill, which is
+            the same trick the rest of the site uses to mark a thing without
+            enclosing it. */}
+        <Reveal className="rule-t mt-xl flex flex-wrap items-end justify-between gap-md pt-md">
+          <div className="max-w-[38rem]">
+            <h3 className="text-lg">An account, if you want one</h3>
+            <p className="prose-measure mt-2xs text-sm leading-relaxed text-muted">
+              Saved references, service history and warranty records are held
+              against the account rather than the browser. Sellers list a
+              reference and run a storefront from the same place.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2xs">
+            <ButtonLink href="/login" variant="outline">
+              Sign in
+            </ButtonLink>
+            <ButtonLink
+              href="/signup"
+              variant="outline"
+              className="border-ink text-ink"
+            >
+              Create an account
+            </ButtonLink>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -189,6 +189,33 @@ export interface VariantSelection {
   strapId: string;
 }
 
+/* ── Accounts ─────────────────────────────────────────────────────────────
+ * A string union rather than an enum, so it serialises straight into a Prisma
+ * enum and into a `role` form value with no mapping layer in between.
+ *
+ * Two roles, not a permissions table. A customer buys from a storefront; a
+ * seller *is* a storefront. Everything finer than that is a question of what a
+ * seller may do, which belongs in your authorisation layer rather than in the
+ * shape of the account itself. */
+
+export type UserRole = "customer" | "seller";
+
+export interface Account {
+  id: string;
+  email: string;
+  /** The name the person chose. Never derived from the email. */
+  name: string;
+  role: UserRole;
+  /** ISO 8601. */
+  createdAt: string;
+  /** null until the address is confirmed. Unverified accounts can browse, not buy. */
+  emailVerifiedAt: string | null;
+  /** Sellers only: the storefront slug in the URL. null for a customer. */
+  storeSlug: string | null;
+  /** Sellers only: the public name of the storefront. */
+  storeName: string | null;
+}
+
 /* ── Faceted filtering ─────────────────────────────────────────────────── */
 
 export interface FacetValue<T extends string = string> {

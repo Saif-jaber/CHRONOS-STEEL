@@ -95,9 +95,24 @@ for (const [name, needle] of FORBIDDEN) {
 /* The brief allows exactly one filled control, and it is Add to Bag on a product
  * page. The home page must therefore contain none. Asserting the navy Button's
  * literal class signature is the precise check; counting "bg-navy" would also
- * match the footer and the hero band. */
+ * match the footer and the hero band.
+ *
+ * This asserts against the document, not the stylesheet, and that distinction is
+ * the whole check. Tailwind emits one rule per utility — `.border-navy{…}`,
+ * `.bg-navy{…}`, `.text-paper{…}` — so the contiguous string
+ * "border-navy bg-navy text-paper" is a class *attribute* and can never appear
+ * in a CSS file at all. Reading the bundle therefore returned false
+ * unconditionally: the guard reported "absent" whether or not home actually
+ * rendered a solid control, and it would have kept passing if someone had put a
+ * navy Button on the home page.
+ *
+ * The outline variant is the near-miss that makes the signature worth asserting
+ * rather than dropping to a count. Home does render outline controls, and their
+ * tail is `border-rule-2 bg-transparent text-ink hover:border-navy hover:text-navy`
+ * — it contains "border-navy" and "text-navy" but never adjacent to "bg-navy",
+ * so it stays out of this guard while the filled control is caught. */
 console.log("\nsolid controls:");
-const solidOnHome = css.includes("border-navy bg-navy text-paper");
+const solidOnHome = html.includes("border-navy bg-navy text-paper");
 console.log(`  ${solidOnHome ? "PRESENT" : "absent "}  navy Button signature on home`);
 if (solidOnHome) failed += 1;
 

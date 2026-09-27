@@ -47,7 +47,6 @@ const REQUIRED = [
   ".font-body",
   ".font-measure",
   ".text-3xs",
-  ".text-2xs",
   ".text-xs",
   ".text-2xl",
   ".text-hero",
@@ -81,6 +80,21 @@ const REQUIRED = [
 ];
 
 const missing = REQUIRED.filter((sel) => !css.includes(sel));
+
+/* `--text-2xs` (0.75rem) is deliberately absent from the class list above and was
+ * the one entry this check used to fail on. The step is still declared in the
+ * scale at globals.css; it simply has no consumer yet, and Tailwind v4 removes an
+ * unreferenced theme value, not just the utility generated from it. Verified
+ * against a real build: `.text-3xs` appears both as a `:root` variable and as a
+ * class because Logo.tsx uses it, while `--text-2xs` is absent from the output
+ * entirely. Asserting it would demand the toolchain emit a step the design does
+ * not use, which would mean writing a call site to satisfy a test.
+ *
+ * If 2xs ever gets used, add `.text-2xs` back to REQUIRED at that point: then it
+ * is a real dependency and a missing utility would be a genuine regression.
+ *
+ * A class cannot be asserted as a variable here, because unlike `--text-display`
+ * nothing references `--text-2xs` and so it is not emitted to `:root` either. */
 
 /* Custom properties are checked separately from classes. `--text-display` is
  * consumed by the `h1` base rule rather than by a `text-display` utility, so
