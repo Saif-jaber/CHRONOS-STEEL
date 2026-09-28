@@ -105,7 +105,7 @@ export function Footer() {
               <label htmlFor="journal-email" className="eyebrow block text-silver">
                 Email address
               </label>
-              <div className="mt-2xs flex items-center gap-xs border-b border-navy-rule pb-2 transition-colors duration-base ease-out focus-within:border-paper">
+              <div className="mt-2xs flex items-center gap-xs border-b border-navy-rule pb-2 transition-colors dur-base ease-out focus-within:border-paper">
                 <input
                   id="journal-email"
                   name="email"
@@ -117,7 +117,7 @@ export function Footer() {
                 />
                 <button
                   type="submit"
-                  className="hit relative inline-flex size-6 shrink-0 items-center justify-center text-paper transition-opacity duration-base ease-out hover:opacity-60"
+                  className="hit relative inline-flex size-6 shrink-0 items-center justify-center text-paper transition-opacity dur-base ease-out hover:opacity-60"
                 >
                   <span className="sr-only">Join the journal</span>
                   <IconArrowRight onDark />
@@ -138,7 +138,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="inline-block text-sm text-paper-2 transition-opacity duration-base ease-out hover:opacity-60"
+                      className="inline-block text-sm text-paper-2 transition-opacity dur-base ease-out hover:opacity-60"
                     >
                       {link.label}
                     </Link>
@@ -177,7 +177,7 @@ export function Footer() {
               <li key={link.label}>
                 <Link
                   href={link.href}
-                  className="text-xs text-navy-muted transition-opacity duration-base ease-out hover:opacity-70"
+                  className="text-xs text-navy-muted transition-opacity dur-base ease-out hover:opacity-70"
                 >
                   {link.label}
                 </Link>

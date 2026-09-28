@@ -45,12 +45,12 @@ import { cx } from "@/lib/format";
 function rowClass(invalid: boolean, onDark: boolean): string {
   return cx(
     "relative flex items-center gap-xs border-b pb-2",
-    "transition-colors duration-base ease-out",
+    "transition-colors dur-base ease-out",
     /* The second rule. `content-['']` is required or the pseudo-element never
        renders. It sits 1px below the border, so the pair reads as one 2px line
        rather than as two lines a pixel apart. */
     "after:absolute after:inset-x-0 after:-bottom-px after:h-px after:content-['']",
-    "after:origin-left after:scale-x-0 after:transition-transform after:duration-base after:ease-out",
+    "after:origin-left after:scale-x-0 after:transition-transform after:dur-base after:ease-out",
     "focus-within:after:scale-x-100",
     /* Only the resting rule differs by ground. The focus colour is shared. */
     invalid
@@ -206,7 +206,7 @@ export function PasswordField({
           aria-pressed={shown}
           className={cx(
             "hit relative inline-flex size-6 shrink-0 items-center justify-center",
-            "transition-opacity duration-base ease-out hover:opacity-60",
+            "transition-opacity dur-base ease-out hover:opacity-60",
             onDark ? "text-navy-muted" : "text-faint",
           )}
         >
@@ -281,7 +281,7 @@ export function Checkbox({
           <span
             aria-hidden="true"
             className={cx(
-              "flex size-4 items-center justify-center border transition-colors duration-base ease-out",
+              "flex size-4 items-center justify-center border transition-colors dur-base ease-out",
               "peer-focus-visible:outline-2 peer-focus-visible:outline-focus peer-focus-visible:outline-offset-2",
               error
                 ? "border-error"

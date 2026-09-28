@@ -183,14 +183,14 @@ export function SignupForm() {
         I accept the{" "}
         <Link
           href="/terms"
-          className="text-paper underline decoration-navy-rule underline-offset-4 transition-colors duration-base ease-out hover:decoration-silver"
+          className="text-paper underline decoration-navy-rule underline-offset-4 transition-colors dur-base ease-out hover:decoration-silver"
         >
           terms of sale
         </Link>{" "}
         and the{" "}
         <Link
           href="/privacy"
-          className="text-paper underline decoration-navy-rule underline-offset-4 transition-colors duration-base ease-out hover:decoration-silver"
+          className="text-paper underline decoration-navy-rule underline-offset-4 transition-colors dur-base ease-out hover:decoration-silver"
         >
           privacy notice
         </Link>
@@ -205,7 +205,7 @@ export function SignupForm() {
         Already registered?{" "}
         <Link
           href="/login"
-          className="text-silver underline decoration-navy-rule underline-offset-4 transition-colors duration-base ease-out hover:decoration-silver"
+          className="text-silver underline decoration-navy-rule underline-offset-4 transition-colors dur-base ease-out hover:decoration-silver"
         >
           Sign in
         </Link>

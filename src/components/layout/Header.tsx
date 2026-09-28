@@ -98,7 +98,7 @@ export function Header() {
         data-open={open ? "true" : "false"}
         className={[
           "fixed inset-x-0 top-0 z-nav",
-          "transition-colors duration-base ease-out",
+          "transition-colors dur-base ease-out",
           "text-paper",
           scrolled || open ? "bg-navy" : "bg-transparent",
           scrolled
@@ -170,7 +170,7 @@ export function Header() {
                         <Link
                           href={link.href}
                           onClick={close}
-                          className="font-display text-lg leading-tight text-ink transition-opacity duration-base ease-out hover:opacity-60"
+                          className="font-display text-lg leading-tight text-ink transition-opacity dur-base ease-out hover:opacity-60"
                         >
                           {link.label}
                         </Link>

@@ -81,7 +81,7 @@ export function RoleChoice({
                 htmlFor={optionId}
                 className={cx(
                   "flex h-full cursor-pointer flex-col gap-2xs border p-xs",
-                  "transition-colors duration-base ease-out",
+                  "transition-colors dur-base ease-out",
                   "peer-focus-visible:outline-2 peer-focus-visible:outline-focus peer-focus-visible:outline-offset-2",
                   selected
                     ? "border-beige-3 bg-beige-2 text-beige-ink"
@@ -98,7 +98,7 @@ export function RoleChoice({
                     aria-hidden="true"
                     className={cx(
                       "flex size-4 shrink-0 items-center justify-center border",
-                      "transition-colors duration-base ease-out",
+                      "transition-colors dur-base ease-out",
                       selected
                         ? "border-beige-ink bg-beige-ink"
                         : "border-current opacity-40",

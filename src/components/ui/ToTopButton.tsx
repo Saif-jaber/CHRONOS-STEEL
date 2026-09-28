@@ -28,7 +28,7 @@ export function ToTopButton() {
       onClick={() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }}
-      className="fixed bottom-6 right-6 z-50 inline-flex h-11 w-11 items-center justify-center border border-navy-rule bg-navy/80 text-paper backdrop-blur-sm transition-all duration-base ease-out hover:-translate-y-0.5 hover:border-beige-3 hover:text-beige-2"
+      className="fixed bottom-6 right-6 z-50 inline-flex h-11 w-11 items-center justify-center border border-navy-rule bg-navy/80 text-paper backdrop-blur-sm transition-all dur-base ease-out hover:-translate-y-0.5 hover:border-beige-3 hover:text-beige-2"
     >
       <span aria-hidden="true" className="text-lg leading-none">
         ↑

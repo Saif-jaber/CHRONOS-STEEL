@@ -70,7 +70,7 @@ export function ProductCard({
             a transform on hover would contradict the layout the grid is built
             from while also being the loudest tell of a template. */}
         <div className="mt-sm flex items-baseline justify-between gap-sm">
-          <h3 className="text-md leading-tight text-ink transition-opacity duration-base ease-out group-hover:opacity-70">
+          <h3 className="text-md leading-tight text-ink transition-opacity dur-base ease-out group-hover:opacity-70">
             {product.model}
           </h3>
           <p className="measure shrink-0 text-sm text-ink-2">
@@ -86,10 +86,10 @@ export function ProductCard({
             reflows on hover. */}
         <span
           aria-hidden="true"
-          className="mt-2xs inline-flex items-center gap-2xs text-xs uppercase tracking-nav text-ink opacity-0 transition-opacity duration-base ease-out group-hover:opacity-70"
+          className="mt-2xs inline-flex items-center gap-2xs text-xs uppercase tracking-nav text-ink opacity-0 transition-opacity dur-base ease-out group-hover:opacity-70"
         >
           View reference{" "}
-          <span className="transition-transform duration-base ease-out group-hover:translate-x-0.5">
+          <span className="transition-transform dur-base ease-out group-hover:translate-x-0.5">
             →
           </span>
         </span>

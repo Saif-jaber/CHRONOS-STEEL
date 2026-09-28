@@ -106,7 +106,7 @@ export function LoginForm() {
       <div className="flex flex-wrap items-center justify-between gap-2xs">
         <QuietLink
           href="/forgot-password"
-          className="text-xs text-silver transition-colors duration-base ease-out hover:text-paper"
+          className="text-xs text-silver transition-colors dur-base ease-out hover:text-paper"
         >
           Forgotten your password?
         </QuietLink>
@@ -114,7 +114,7 @@ export function LoginForm() {
           No account?{" "}
           <Link
             href="/signup"
-            className="text-silver underline decoration-navy-rule underline-offset-4 transition-colors duration-base ease-out hover:decoration-silver"
+            className="text-silver underline decoration-navy-rule underline-offset-4 transition-colors dur-base ease-out hover:decoration-silver"
           >
             Create one
           </Link>

@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cx } from "@/lib/format";
 
@@ -70,9 +70,9 @@ export function QuietLink({
     <Link
       href={href}
       className={cx(
-        "quiet-link relative inline-block transition-colors duration-base ease-out",
+        "quiet-link relative inline-block transition-colors dur-base ease-out",
         "after:absolute after:inset-x-0 after:-bottom-px after:h-px",
-        "after:origin-left after:scale-x-0 after:transition-transform after:duration-base after:ease-out",
+        "after:origin-left after:scale-x-0 after:transition-transform after:dur-base after:ease-out",
         "hover:after:scale-x-100",
         className,
       )}
@@ -146,7 +146,7 @@ function buttonClass(variant: "navy" | "outline", onDark: boolean): string {
   return cx(
     "inline-flex h-11 items-center justify-center gap-xs border px-6",
     "font-body text-xs font-medium uppercase tracking-nav whitespace-nowrap",
-    "transition-colors duration-base ease-out select-none",
+    "transition-colors dur-base ease-out select-none",
     "disabled:cursor-not-allowed disabled:border-dashed disabled:opacity-45",
     variant === "outline"
       ? onDark
@@ -184,7 +184,7 @@ export function IconButton({
       title={label}
       className={cx(
         "hit relative inline-flex size-6 shrink-0 items-center justify-center",
-        "transition-opacity duration-base ease-out hover:opacity-60",
+        "transition-opacity dur-base ease-out hover:opacity-60",
         onDark ? "text-paper" : "text-ink",
         className,
       )}
@@ -221,7 +221,7 @@ export function IconLink({
       title={label}
       className={cx(
         "hit relative inline-flex size-6 shrink-0 items-center justify-center",
-        "transition-opacity duration-base ease-out hover:opacity-60",
+        "transition-opacity dur-base ease-out hover:opacity-60",
         onDark ? "text-paper" : "text-ink",
         className,
       )}
