@@ -7,6 +7,18 @@ import type { Currency } from "./types";
  * boutique away.
  */
 
+/**
+ * The currency the storefront is presented in.
+ *
+ * Every product in the catalogue carries `currency: "USD"`, which is the record
+ * of where the reference was priced, not what the page shows: the masthead has
+ * always linked to "Under £3,000" and the product cards have always formatted in
+ * sterling. Naming it once here is what stops the shop page's price rail, its
+ * removable chips and the cards from disagreeing with each other. Swap the
+ * storefront currency and it is this line, not four call sites, that changes.
+ */
+export const STOREFRONT_CURRENCY: Currency = "GBP";
+
 const CURRENCY_LOCALE: Record<Currency, string> = {
   USD: "en-US",
   EUR: "de-DE",

@@ -245,6 +245,8 @@ export type SortKey =
 /** Serialised filter state, the shape that lives in the URL. */
 export interface FilterState {
   q: string;
+  /** Brand lines, matched against `Product.collection` as a whole string. */
+  collection: string[];
   movement: MovementType[];
   material: CaseMaterial[];
   strap: StrapType[];

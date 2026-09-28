@@ -29,6 +29,7 @@ import { humanise } from "./format";
  */
 
 export type FacetId =
+  | "collection"
   | "movement"
   | "material"
   | "strap"
@@ -40,6 +41,7 @@ export type FacetId =
 
 export const EMPTY_FILTERS: FilterState = {
   q: "",
+  collection: [],
   movement: [],
   material: [],
   strap: [],
@@ -99,6 +101,7 @@ export const COMPLICATION_VALUES: Complication[] = [
 
 /** Facets that are multi-select lists, and the accessor that fills their counts. */
 const CHIP_FACETS = {
+  collection: (p: Product) => [p.collection],
   movement: (p: Product) => [p.movement.type],
   material: (p: Product) => [p.caseSpec.material],
   strap: (p: Product) => p.straps.map((s) => s.type),
@@ -112,9 +115,17 @@ export function isChipFacet(id: FacetId): id is ChipFacetId {
   return id in CHIP_FACETS;
 }
 
-/** Selected values for a chip facet, or an empty array for the rest. */
-function selectedValues(state: FilterState, id: FacetId): string[] {
+/**
+ * Selected values for a chip facet, or an empty array for the rest.
+ *
+ * Exported because the rail has to mark a value as chosen and the chip row has
+ * to know which values are already in the URL, and neither of them should be
+ * re-implementing this switch to find out.
+ */
+export function selectedValues(state: FilterState, id: FacetId): string[] {
   switch (id) {
+    case "collection":
+      return state.collection;
     case "movement":
       return state.movement;
     case "material":
@@ -215,6 +226,9 @@ export function productMatches(
 ): boolean {
   if (!matchesText(product, state.q)) return false;
 
+  if (skip !== "collection" && !chipFacetMatches(product, "collection", state.collection)) {
+    return false;
+  }
   if (skip !== "movement" && !chipFacetMatches(product, "movement", state.movement)) return false;
   if (skip !== "material" && !chipFacetMatches(product, "material", state.material)) return false;
   if (skip !== "strap" && !chipFacetMatches(product, "strap", state.strap)) return false;
@@ -323,17 +337,23 @@ export function countForValue(
  * the query string falls back to the default rather than throwing. */
 
 /**
- * Splits a comma list and drops tokens that are not in `allowed`.
- * When `allowed` is omitted (dial ids are catalogue-derived, so there is no
- * static list) the token is only shape-checked as a slug; an unknown id then
- * simply matches no product, which keeps the parse total.
+ * Splits a comma list and drops tokens that do not match `shape`.
+ * When `allowed` is omitted (dial ids and collection names are
+ * catalogue-derived, so there is no static list) the token is only shape-checked;
+ * an unknown id then simply matches no product, which keeps the parse total.
  */
-function parseList<T extends string>(raw: string | null, allowed?: readonly T[]): T[] {
+function parseList<T extends string>(
+  raw: string | null,
+  allowed?: readonly T[],
+  /* The comma split means a token can never contain a comma, which is why the
+     collection pattern below can safely allow spaces and still round-trip. */
+  shape: RegExp = /^[a-z0-9-]+$/,
+): T[] {
   if (!raw) return [];
   const parts = raw
     .split(",")
     .map((part) => part.trim())
-    .filter((part) => /^[a-z0-9-]+$/.test(part));
+    .filter((part) => shape.test(part));
   if (!allowed) return parts as T[];
   const set = new Set(allowed as readonly string[]);
   return parts.filter((part): part is T => set.has(part));
@@ -345,10 +365,23 @@ function parseNumber(raw: string | null): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-/** Accepts "min-max", "min-" or "-max". Returns nulls for an open or invalid bound. */
+/**
+ * Accepts "min-max", "min-" or "-max". Returns nulls for an open or invalid bound.
+ *
+ * Anything with more than two parts is rejected outright rather than partially
+ * read. "-5-999" is the case that matters: split on the hyphen it looks like an
+ * open minimum of -5 with a maximum of 999, and taken at face value it becomes
+ * "everything up to 9.99", which is a wrong answer rather than a missing one. A
+ * query string is user input, and this function's contract is that garbage
+ * falls back to the default, so a shape it does not recognise yields no bounds
+ * at all. Measurements and prices are never negative, so nothing legitimate is
+ * lost by refusing.
+ */
 function parseRange(raw: string | null): [number | null, number | null] {
   if (!raw) return [null, null];
-  const [rawMin, rawMax] = raw.split("-");
+  const parts = raw.split("-");
+  if (parts.length > 2) return [null, null];
+  const [rawMin, rawMax] = parts;
   let min = parseNumber(rawMin ?? null);
   let max = parseNumber(rawMax ?? null);
   if (min !== null && max !== null && min > max) [min, max] = [max, min];
@@ -364,6 +397,11 @@ export function parseFilters(params: URLSearchParams): FilterState {
 
   return {
     q: params.get("q")?.slice(0, 80) ?? "",
+    /* Collection names are brand words, not slugs: "Meridian" has a capital and
+     * "Grand Sport" would have a space, so the shape allows both. They are also
+     * catalogue-derived, so there is no allow-list and an unknown name simply
+     * matches nothing. */
+    collection: parseList(params.get("collection"), undefined, /^[a-z0-9][a-z0-9 -]{0,40}$/i),
     movement: parseList(params.get("movement"), MOVEMENT_VALUES),
     material: parseList(params.get("case"), MATERIAL_VALUES),
     strap: parseList(params.get("strap"), STRAP_VALUES),
@@ -388,6 +426,7 @@ export function parseFilters(params: URLSearchParams): FilterState {
 export function filtersToQuery(state: FilterState): string {
   const params = new URLSearchParams();
   if (state.q) params.set("q", state.q);
+  if (state.collection.length) params.set("collection", state.collection.join(","));
   if (state.movement.length) params.set("movement", state.movement.join(","));
   if (state.material.length) params.set("case", state.material.join(","));
   if (state.strap.length) params.set("strap", state.strap.join(","));
@@ -410,6 +449,7 @@ export function isDefaultFilters(state: FilterState): boolean {
 
 export function activeFilterCount(state: FilterState): number {
   return (
+    state.collection.length +
     state.movement.length +
     state.material.length +
     state.strap.length +
@@ -433,6 +473,8 @@ export function toggleFacetValue(
     : [...current, value];
 
   switch (id) {
+    case "collection":
+      return { ...state, collection: next };
     case "movement":
       return { ...state, movement: next as MovementType[] };
     case "material":
@@ -459,6 +501,15 @@ export function activeChips(state: FilterState, bounds: CatalogBounds): ActiveCh
 
   if (state.q) {
     chips.push({ id: "q", facet: "q", value: state.q, label: `“${state.q}”`, detail: "Search" });
+  }
+  for (const value of state.collection) {
+    chips.push({
+      id: `collection:${value}`,
+      facet: "collection",
+      value,
+      label: value,
+      detail: "Collection",
+    });
   }
   for (const value of state.movement) {
     chips.push({

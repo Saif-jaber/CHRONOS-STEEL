@@ -1,6 +1,7 @@
 import { Logo } from "@/components/brand/Logo";
 import { Cta } from "@/components/ui/Button";
 import { PRODUCTS } from "@/lib/catalog/products";
+import { countWord } from "@/lib/format";
 
 /**
  * 404.

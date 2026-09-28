@@ -154,6 +154,16 @@ export function IconArrowRight({ className, onDark }: IconProps) {
   );
 }
 
+/** Disclosure chevron, for the sort menu and the filter panel. It rotates on
+ *  [open] and does nothing else, which is the only motion a disclosure gets. */
+export function IconChevron({ className, onDark }: IconProps) {
+  return (
+    <Frame {...{ className, onDark }}>
+      <path d="M6.5 9.5l5.5 5.5 5.5-5.5" />
+    </Frame>
+  );
+}
+
 /* Form glyphs. Same 1px weight, because a password toggle that reads heavier
    than the rule it sits on looks like a different control. */
 
