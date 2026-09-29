@@ -8,16 +8,14 @@ import { FilterLink } from "./FilterLink";
  *
  * A native `<details>` holding links, not a `<select>` and not a custom menu.
  *
- * A select has to be a client component to do anything, and this page is built
- * out of links on purpose: the rail, the chips and the search are all URLs, and
- * a control that needs the router to keep them working would be the one control
- * on the page that behaves differently. `details` needs nothing, is announced as
- * a disclosure by the browser, and the panel closes itself because the page
- * re-renders on navigation.
+ * A select has to be a client component to do anything, and this page is built out of
+ * links on purpose: the rail, the chips and the search are all URLs, and a control
+ * that needs the router to keep them working would be the one control on the page
+ * that behaves differently. `details` needs nothing, is announced as a disclosure by
+ * the browser, and the panel closes itself because the page re-renders on navigation.
  *
- * It opens in flow rather than as a floating panel, so it pushes the grid down
- * for a moment instead of covering it. That is a small, honest cost and it
- * avoids the popover-positioning work this design has no other use for.
+ * It opens in flow rather than as a floating panel, so it pushes the grid down for a
+ * moment instead of covering it.
  */
 export function SortControl({
   state,

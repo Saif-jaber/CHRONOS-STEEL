@@ -14,18 +14,16 @@ import { humanise } from "./format";
  *
  * Two rules govern everything below:
  *
- *   1. OR within a facet, AND across facets. Selecting "automatic" and
- *      "manual" widens the movement facet; adding a case material narrows the
- *      result. This is the only model shoppers already understand.
+ *   1. OR within a facet, AND across facets. Selecting "automatic" and "manual"
+ *      widens the movement facet; adding a case material narrows the result.
  *
- *   2. Counts are computed against *every other facet's* current selection, not
- *      the current one. A count that ignores the facet it belongs to will happily
- *      tell you 40 dive watches exist while you are looking at 3, the number has
- *      to answer "how many will I get if I click this?", not "how many exist?".
+ *   2. Counts are computed against *every other facet's* current selection, so a
+ *      count answers "how many will I get if I click this?" rather than "how many
+ *      exist?", which is the only question a shopper is asking.
  *
- * Everything here is a pure function of (products, state). That is deliberate:
- * the same functions run on the server for the first paint and again on the
- * client when the URL changes, and the two can never disagree.
+ * Everything here is a pure function of (products, state), so the same code runs
+ * on the server for the first paint and again on the client when the URL changes,
+ * and the two cannot disagree.
  */
 
 export type FacetId =
@@ -118,9 +116,9 @@ export function isChipFacet(id: FacetId): id is ChipFacetId {
 /**
  * Selected values for a chip facet, or an empty array for the rest.
  *
- * Exported because the rail has to mark a value as chosen and the chip row has
- * to know which values are already in the URL, and neither of them should be
- * re-implementing this switch to find out.
+ * Exported because the rail has to mark a value as chosen and the chip row has to
+ * know which values are already in the URL, and neither should re-implement this
+ * switch to find out.
  */
 export function selectedValues(state: FilterState, id: FacetId): string[] {
   switch (id) {
@@ -338,9 +336,10 @@ export function countForValue(
 
 /**
  * Splits a comma list and drops tokens that do not match `shape`.
- * When `allowed` is omitted (dial ids and collection names are
- * catalogue-derived, so there is no static list) the token is only shape-checked;
- * an unknown id then simply matches no product, which keeps the parse total.
+ *
+ * When `allowed` is omitted (dial ids and collection names are catalogue-derived,
+ * so there is no static list) the token is only shape-checked; an unknown id then
+ * matches no product, which keeps the parse total.
  */
 function parseList<T extends string>(
   raw: string | null,
@@ -369,13 +368,11 @@ function parseNumber(raw: string | null): number | null {
  * Accepts "min-max", "min-" or "-max". Returns nulls for an open or invalid bound.
  *
  * Anything with more than two parts is rejected outright rather than partially
- * read. "-5-999" is the case that matters: split on the hyphen it looks like an
- * open minimum of -5 with a maximum of 999, and taken at face value it becomes
- * "everything up to 9.99", which is a wrong answer rather than a missing one. A
- * query string is user input, and this function's contract is that garbage
- * falls back to the default, so a shape it does not recognise yields no bounds
- * at all. Measurements and prices are never negative, so nothing legitimate is
- * lost by refusing.
+ * read. "-5-999" is the case that matters: read at face value it becomes "every
+ * price up to 9.99", which is a wrong answer rather than a missing one. A query
+ * string is user input and this function's contract is that garbage falls back to
+ * the default, so an unrecognised shape yields no bounds at all. Measurements and
+ * prices are never negative, so nothing legitimate is lost by refusing.
  */
 function parseRange(raw: string | null): [number | null, number | null] {
   if (!raw) return [null, null];
@@ -398,15 +395,11 @@ export function parseFilters(params: URLSearchParams): FilterState {
   return {
     q: params.get("q")?.slice(0, 80) ?? "",
     /* Collection names are brand words, not slugs: "Meridian" has a capital and
-     * "Grand Sport" would have a space, so the shape allows both. They are also
-     * catalogue-derived, so there is no allow-list and an unknown name simply
-     * matches nothing. */
+     * "Grand Sport" would have a space, so the shape allows both. */
     collection: parseList(params.get("collection"), undefined, /^[a-z0-9][a-z0-9 -]{0,40}$/i),
     movement: parseList(params.get("movement"), MOVEMENT_VALUES),
     material: parseList(params.get("case"), MATERIAL_VALUES),
     strap: parseList(params.get("strap"), STRAP_VALUES),
-    // Dial ids are catalogue-specific, so there is no static allow-list; they
-    // are accepted as verbatim slugs and an unknown one matches no product.
     dial: parseList(params.get("dial")).filter((id) => /^dial-[a-z0-9-]{1,24}$/.test(id)),
     complication: parseList(params.get("comp"), COMPLICATION_VALUES),
     diameterMin,
@@ -496,60 +489,36 @@ export interface ActiveChip {
   detail: string;
 }
 
+/** How each chip facet labels its chips, so `activeChips` stays a single pass. */
+const CHIP_LABELS: Record<ChipFacetId, { facet: FacetId; detail: string; label: (value: string) => string }> = {
+  collection: { facet: "collection", detail: "Collection", label: (value) => value },
+  movement: { facet: "movement", detail: "Movement", label: humanise },
+  material: { facet: "material", detail: "Case", label: humanise },
+  strap: { facet: "strap", detail: "Strap", label: humanise },
+  dial: { facet: "dial", detail: "Dial", label: (value) => value.replace("dial-", "") },
+  complication: { facet: "complication", detail: "Function", label: humanise },
+};
+
 export function activeChips(state: FilterState, bounds: CatalogBounds): ActiveChip[] {
   const chips: ActiveChip[] = [];
 
   if (state.q) {
     chips.push({ id: "q", facet: "q", value: state.q, label: `“${state.q}”`, detail: "Search" });
   }
-  for (const value of state.collection) {
-    chips.push({
-      id: `collection:${value}`,
-      facet: "collection",
-      value,
-      label: value,
-      detail: "Collection",
-    });
+
+  for (const id of Object.keys(CHIP_LABELS) as ChipFacetId[]) {
+    const spec = CHIP_LABELS[id];
+    for (const value of selectedValues(state, id)) {
+      chips.push({
+        id: `${spec.facet}:${value}`,
+        facet: spec.facet,
+        value,
+        label: spec.label(value),
+        detail: spec.detail,
+      });
+    }
   }
-  for (const value of state.movement) {
-    chips.push({
-      id: `movement:${value}`,
-      facet: "movement",
-      value,
-      label: humanise(value),
-      detail: "Movement",
-    });
-  }
-  for (const value of state.material) {
-    chips.push({
-      id: `material:${value}`,
-      facet: "material",
-      value,
-      label: humanise(value),
-      detail: "Case",
-    });
-  }
-  for (const value of state.strap) {
-    chips.push({
-      id: `strap:${value}`,
-      facet: "strap",
-      value,
-      label: humanise(value),
-      detail: "Strap",
-    });
-  }
-  for (const value of state.dial) {
-    chips.push({ id: `dial:${value}`, facet: "dial", value, label: value.replace("dial-", ""), detail: "Dial" });
-  }
-  for (const value of state.complication) {
-    chips.push({
-      id: `complication:${value}`,
-      facet: "complication",
-      value,
-      label: humanise(value),
-      detail: "Function",
-    });
-  }
+
   if (state.diameterMin !== null || state.diameterMax !== null) {
     const lo = state.diameterMin ?? bounds.diameterMin;
     const hi = state.diameterMax ?? bounds.diameterMax;

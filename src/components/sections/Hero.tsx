@@ -5,26 +5,24 @@ import { Cta } from "@/components/ui/Button";
 /**
  * Hero.
  *
- * Full-bleed, one viewport tall, and the masthead floats over it in paper-white
- * until you scroll. The headline sits bottom-left at the display scale, which is
- * the magazine cover position and the only one that survives a phone.
+ * Full-bleed, one viewport tall, with the masthead floating over it until you scroll.
+ * The headline sits bottom-left at the display scale, which is the magazine cover
+ * position and the only one that survives a phone.
  *
- * The ground is smooth gradients only. An earlier pass added SVG turbulence for
- * grain and it was wrong: feTurbulence averages to mid-grey, so it lifts the
- * blacks, film grain across a large frame, but milky white fog across a
- * compact one. Smooth radial washes hold their value cleanly at any size.
+ * The ground is smooth gradients only. An earlier pass added SVG turbulence for grain
+ * and it was wrong: feTurbulence averages to mid-grey, so it lifts the blacks, which
+ * reads as film grain across a large frame and as milky white fog across a compact
+ * one. Smooth radial washes hold their value cleanly at any size.
  *
  * The full-bleed video background is a local asset under `public/vids/`.
  */
 export function Hero() {
-  // The Meridian is the reference the house was sized around, so it takes the
-  // hero. The lookup is guarded because a missing product should not take the
-  // page down with it.
-  const product =
-    PRODUCTS.find((p) => p.slug === "meridian-38") ?? PRODUCTS[0]!;
+  // The Meridian is the reference the house was sized around, so it takes the hero.
+  // The lookup is guarded because a missing product should not take the page down.
+  const product = PRODUCTS.find((p) => p.slug === "meridian-38") ?? PRODUCTS[0]!;
 
-  /* The three numbers the house actually leads with. Drawn from the product
-     rather than written by hand, so the hero cannot drift from the catalogue. */
+  /* The three numbers the house leads with, drawn from the product rather than
+     written by hand, so the hero cannot drift from the catalogue. */
   const specs = [
     { label: "Case", value: `${product.caseSpec.diameterMm.toFixed(1)} mm` },
     { label: "Calibre", value: product.movement.caliber },
@@ -53,9 +51,9 @@ export function Hero() {
         </video>
       </div>
 
-      {/* Ground. Two smooth washes: a key light high and right, a cool fill low
-          and left. The video remains the primary visual, while these overlays keep
-          the headline readable without flattening the motion. */}
+      {/* Ground. Two smooth washes: a key light high and right, a cool fill low and
+          left. The video stays the primary visual; these overlays only keep the
+          headline readable without flattening the motion. */}
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <div
           className="absolute inset-0"
@@ -82,9 +80,8 @@ export function Hero() {
             {product.yearIntroduced}
           </p>
 
-          {/* `text-shadow` is not decoration: it is
-              insurance against the gradient wash behind the glyphs, and at this
-              radius it is invisible as an effect. */}
+          {/* The `text-shadow` is insurance against the gradient wash behind the
+              glyphs, not decoration; at this radius it is invisible as an effect. */}
           <h1 className="mt-2xs text-hero text-paper [text-shadow:0_1px_24px_rgba(6,10,18,0.5)]">
             Time, Made&nbsp;Personal
           </h1>
@@ -98,14 +95,11 @@ export function Hero() {
             <Cta href="/collection" onDark className="text-base">
               Explore the collection
             </Cta>
-            <Cta href={`/watches/${product.slug}`} onDark className="text-base">
-              The Meridian 38
-            </Cta>
           </div>
 
-          {/* Spec row. The proposition of the house is that it sells by the
-              millimetre, so the three governing numbers sit directly under the
-              headline, set in mono against hairline rules. */}
+          {/* Spec row. The proposition is that the house sells by the millimetre, so
+              the three governing numbers sit directly under the headline, set in mono
+              against hairline rules. */}
           <dl className="mt-lg flex flex-wrap gap-x-md gap-y-xs border-t border-navy-rule pt-sm">
             {specs.map((spec) => (
               <div key={spec.label} className="min-w-[7rem]">

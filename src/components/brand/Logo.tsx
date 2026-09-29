@@ -10,7 +10,7 @@
  *
  * Two lockups, because the brief asks for both: `stacked` for the masthead and
  * the footer, `inline` for tight spaces. Both are the same two words at the same
- * two sizes, ” the mark is the typography, so it has to survive being set small.
+ * two sizes — the mark is the typography, so it has to survive being set small.
  */
 
 export function Logo({

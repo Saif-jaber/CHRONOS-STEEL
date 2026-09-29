@@ -19,15 +19,12 @@ import type { UserRole } from "@/lib/types";
 /**
  * Create an account.
  *
- * The role is asked first, before the details, because it decides what the rest
- * of the form is. A seller is shown a storefront name; a customer is not asked
- * for one at all. Leading with the email address and burying the choice at the
- * bottom would mean someone fills in six fields and then discovers a seventh
- * was required all along.
+ * The role is asked first because it decides what the rest of the form is: a seller is
+ * shown a storefront name, a customer is not asked for one at all. Burying the choice at
+ * the end would mean filling in six fields and then discovering a seventh was required.
  *
- * The password rule is stated under the field as prose rather than enforced with
- * a strength bar. A bar is a judgement, and it is a wrong one often enough, from
- * a watch site that will ask this person to trust it with a saved address.
+ * The password rule is stated under the field as prose rather than enforced with a
+ * strength bar, which is a judgement and a wrong one often enough.
  */
 
 const EMPTY: SignupValues = {

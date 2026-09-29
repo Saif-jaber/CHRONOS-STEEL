@@ -7,19 +7,19 @@ import { Reveal } from "@/components/ui/Reveal";
 /**
  * Lifestyle story.
  *
- * The one dark band between paper sections, and the reason the page reads as
- * paced rather than as a stack. The navy here is the same navy as the hero and
- * the footer, so the page has two dark moments and one light middle.
+ * The one dark band between paper sections, and the reason the page reads as paced
+ * rather than as a stack. The navy is the same navy as the hero and the footer, so
+ * the page has two dark moments and one light middle.
  *
- * Composition is deliberately asymmetric and deliberately unbalanced: a tall
- * image column on the left, a text column on the right that starts lower and
- * ends higher, and a second image that tucks under the text. Nothing is centred
- * and nothing is mirrored.
+ * Composition is deliberately asymmetric and deliberately unbalanced: a tall image
+ * column on the left, a text column on the right that starts lower and ends higher,
+ * and a second image tucked under the text. Nothing is centred and nothing is
+ * mirrored.
  *
  * Both images are local slots listed in `src/lib/media.ts`, and both render with
  * `fit: contain` because they are transparent-ground cut-outs rather than
- * photographs filling their frame. See the note on each slot in the manifest for
- * why cropping them to the slot ratio was rejected.
+ * photographs filling their frame. See the note on each slot for why cropping them
+ * to the slot ratio was rejected.
  */
 export function LifestyleStory() {
   const product =
@@ -30,8 +30,8 @@ export function LifestyleStory() {
       id="craft"
       className="on-navy section relative overflow-hidden bg-navy"
     >
-      {/* A single smooth wash, no noise. Enough to stop the band reading as a
-          flat block; anything more competes with the text on top of it. */}
+      {/* A single smooth wash, no noise. Enough to stop the band reading as a flat
+          block; anything more competes with the text on top of it. */}
       <div
         aria-hidden="true"
         className="absolute inset-0"

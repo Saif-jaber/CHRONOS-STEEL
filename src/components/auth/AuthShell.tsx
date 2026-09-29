@@ -4,17 +4,13 @@ import { Cta } from "@/components/ui/Button";
 /**
  * The frame both account pages sit in.
  *
- * A slim centred masthead rather than the sticky one, because the fixed header
- * watches `#main > section` to decide when to shade, and an account form is not
- * a section, and a masthead that has to think about it would be a masthead
- * behaving oddly on exactly the two pages where nothing should be competing for
- * attention. This is the same reduced header the 404 uses.
+ * A slim centred masthead rather than the sticky one: the fixed header shades by watching
+ * `#main > section`, and an account form is not a section, so those pages use the same
+ * reduced header as the 404.
  *
- * The body is a navy band. Not because accounts are dark, but because these two
- * pages are the one place a person arrives with nothing in mind except a form,
- * and a full-bleed band with one column in it is the quietest layout the system
- * has. It also gives the form its contrast: paper hairlines on navy read as
- * drawn lines, where on paper they read as borders around boxes.
+ * The body is a navy band, the quietest layout the system has. It also gives the form its
+ * contrast: paper hairlines on navy read as drawn lines, where on paper they read as
+ * borders around boxes.
  */
 
 export function AuthShell({
@@ -67,13 +63,10 @@ export function AuthShell({
                 {intro}
               </p>
 
-              {/* The way out, directly under the paragraph it follows. It used
-                  to sit at the foot of the page, which on the signup form put it
-                  below the fold, and in the masthead, which made it a control
-                  competing with the mark on the only two pages that should not
-                  have one. Under the intro it is read as part of the same
-                  thought, and it is on screen on both pages at every width,
-                  because the form column is the tall one and this is not. */}
+              {/* The way out sits under the paragraph it follows. In the masthead it
+                  competed with the mark; at the foot of the signup page it fell below
+                  the fold. Under the intro it is part of the same thought and is on
+                  screen on both pages at every width. */}
               <div className="mt-md">
                 <Cta href="/" onDark>
                   Return to the front page

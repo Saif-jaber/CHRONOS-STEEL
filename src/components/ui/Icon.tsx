@@ -1,15 +1,16 @@
-﻿import { cx } from "@/lib/format";
+﻿import type { ReactNode } from "react";
+import { cx } from "@/lib/format";
 
 /**
  * Thin-line icons.
  *
- * 24×24, `stroke-width: 1`, round caps and joins, no fills. The weight matches
- * the 1px hairline the rest of the layout is built from, ” a 1.5px icon next to a
+ * 24x24, `stroke-width: 1`, round caps and joins, no fills. The weight matches the
+ * 1px hairline the rest of the layout is built from, because a 1.5px icon next to a
  * 1px rule looks like a mistake at this scale.
  *
  * These are drawn, not imported. An icon set would arrive with a licence file, a
- * node_modules dependency and a weight axis nobody asked for, in exchange for
- * six glyphs that fit in forty lines.
+ * node_modules dependency and a weight axis nobody asked for, in exchange for a dozen
+ * glyphs that fit in this file.
  */
 
 type IconProps = { className?: string; onDark?: boolean };
@@ -18,7 +19,7 @@ function Frame({
   className,
   onDark,
   children,
-}: IconProps & { children: React.ReactNode }) {
+}: IconProps & { children: ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -29,11 +30,7 @@ function Frame({
       strokeLinejoin="round"
       aria-hidden="true"
       focusable="false"
-      className={cx(
-        "size-6 shrink-0",
-        onDark ? "text-paper" : "text-slate",
-        className,
-      )}
+      className={cx("size-6 shrink-0", onDark ? "text-paper" : "text-slate", className)}
     >
       {children}
     </svg>

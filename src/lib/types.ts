@@ -1,14 +1,13 @@
 /**
  * Domain model for Chronos & Steel.
  *
- * These types are the seam between this frontend and the backend you own. Each
- * one is shaped to map 1:1 onto a Prisma model, when you write `schema.prisma`
- * mirror these field names so the repository adapter in `lib/catalog/repository.ts`
- * is the only file you need to touch.
+ * These types are the seam between this frontend and the backend you own. Mirror
+ * these field names in `schema.prisma` so the repository adapter in
+ * `lib/catalog/repository.ts` is the only file you need to touch.
  *
- * Money is always integer minor units (cents), never a float. `priceInCents`
- * is the amount on a configurator's BASE product; every variant price is derived
- * from it at read time, never stored separately. See `resolveVariantPrice`.
+ * Money is always integer minor units (cents), never a float. `basePriceInCents`
+ * is the configurator's starting price; variant prices are derived from it at read
+ * time, never stored. See `resolveVariantPrice`.
  */
 
 export type Currency = "USD" | "EUR" | "GBP" | "JPY";
@@ -75,7 +74,7 @@ export interface StrapOption {
   colorName: string;
   /** Added to the base price. Can be negative. */
   priceDeltaInCents: number;
-  /** Lug width in mm, must match the case or the variant is not buildable. */
+  /** Must match the case, or the variant is not buildable. */
   widthMm: number;
   stitchColorHex?: string;
 }
@@ -98,7 +97,7 @@ export interface Movement {
   caliber: string;
   manufacturer: string;
   powerReserveHours: number | null;
-  /** Vibrations per hour, 28,800 is the modern "sweeping" standard. */
+  /** 28,800 is the modern "sweeping" standard. */
   frequencyVph: number | null;
   jewels: number | null;
   components: number | null;
@@ -141,7 +140,7 @@ export interface Product {
   collection: string;
   /** One sentence, plain, no adjective stacking. */
   summary: string;
-  /** Long-form editorial, 2–3 paragraphs. */
+  /** Long-form editorial, 2-3 paragraphs. */
   story: string;
   caseSpec: CaseSpec;
   movement: Movement;
@@ -164,10 +163,9 @@ export interface Product {
 }
 
 /* ── Resolved variants ─────────────────────────────────────────────────────
- * A variant is the resolution of one dial × one strap choice. It is computed,
- * not stored, which keeps the Prisma schema to two option tables and stops
- * the two axes drifting out of sync. Stock is per-variant when the backend
- * supplies it, otherwise inherited from the product. */
+ * A variant is one dial x one strap choice, computed rather than stored, which
+ * keeps the schema to two option tables and stops the axes drifting apart. Stock
+ * is per-variant when the backend supplies it, otherwise inherited. */
 
 export interface ResolvedVariant {
   key: string;
@@ -190,13 +188,9 @@ export interface VariantSelection {
 }
 
 /* ── Accounts ─────────────────────────────────────────────────────────────
- * A string union rather than an enum, so it serialises straight into a Prisma
- * enum and into a `role` form value with no mapping layer in between.
- *
- * Two roles, not a permissions table. A customer buys from a storefront; a
- * seller *is* a storefront. Everything finer than that is a question of what a
- * seller may do, which belongs in your authorisation layer rather than in the
- * shape of the account itself. */
+ * Two roles rather than a permissions table: a customer buys from a storefront,
+ * a seller *is* a storefront. Anything finer belongs in the authorisation layer,
+ * not in the shape of the account. */
 
 export type UserRole = "customer" | "seller";
 
@@ -208,9 +202,9 @@ export interface Account {
   role: UserRole;
   /** ISO 8601. */
   createdAt: string;
-  /** null until the address is confirmed. Unverified accounts can browse, not buy. */
+  /** null until confirmed. Unverified accounts can browse, not buy. */
   emailVerifiedAt: string | null;
-  /** Sellers only: the storefront slug in the URL. null for a customer. */
+  /** Sellers only: the storefront slug in the URL. */
   storeSlug: string | null;
   /** Sellers only: the public name of the storefront. */
   storeName: string | null;
@@ -221,14 +215,14 @@ export interface Account {
 export interface FacetValue<T extends string = string> {
   value: T;
   label: string;
-  /** Raw value used for range maths, e.g. the mm figure for a size facet. */
+  /** Raw value for range maths, e.g. the mm figure for a size facet. */
   numeric?: number;
 }
 
 export interface FacetDefinition {
   id: string;
   label: string;
-  /** "chips" = multi-select pills · "range" = dual numeric slider · "swatch" = colour dots */
+  /** "chips" = multi-select pills, "range" = dual slider, "swatch" = colour dots. */
   control: "chips" | "range" | "swatch";
   values: FacetValue[];
   unit?: string;
@@ -255,7 +249,6 @@ export interface FilterState {
   /** Inclusive mm bounds, or null for an open end. */
   diameterMin: number | null;
   diameterMax: number | null;
-  /** Inclusive mm bounds. */
   lugToLugMax: number | null;
   priceMinInCents: number | null;
   priceMaxInCents: number | null;

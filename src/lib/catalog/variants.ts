@@ -11,13 +11,12 @@ import type {
  * Variant resolution.
  *
  * A product declares two independent option axes, dials and straps. Rather than
- * persisting a `Variant` row for all 3 × 4 = 12 pairings (which drifts out of
- * sync the moment a dial is discontinued), variants are *resolved* at read time.
- * Only the deltas and the buildability rules are stored; the price, the SKU and
- * the availability are derived here.
+ * persisting a row per pairing (which drifts the moment a dial is discontinued),
+ * variants are *resolved* at read time: only the deltas and the buildability rules
+ * are stored, and the price, SKU and availability are derived here.
  *
- * When you move stock to its own table, replace `stock` in `resolveStock` with
- * a call into your inventory service. Nothing else in the UI changes.
+ * When you move stock to its own table, replace `resolveStock` with a call into
+ * your inventory service. Nothing else in the UI changes.
  */
 
 /** Stable, URL-safe, and ordered so the SKU reads dial-then-strap. */
@@ -31,7 +30,7 @@ export function selectionKey(selection: VariantSelection): string {
 
 /**
  * The one hard physical constraint: a strap only fits a case of matching lug
- * width. This is what makes a configurator honest, offering a 19 mm strap on
+ * width. This is what makes a configurator honest, since offering a 19 mm strap on
  * a 20 mm case is the kind of detail a collector spots immediately.
  */
 export function isBuildable(product: Product, strap: StrapOption): boolean {
@@ -53,9 +52,9 @@ function buildSku(product: Product, dial: DialOption, strap: StrapOption): strin
 }
 
 /**
- * Per-variant stock, falling back to product-level stock when the backend has
- * not broken stock down by option. `null` means made to order, which is a real
- * answer for a boutique, and renders differently from a zero.
+ * Per-variant stock, falling back to product-level stock when the backend has not
+ * broken stock down by option. `null` means made to order, which is a real answer
+ * for a boutique and renders differently from a zero.
  */
 function resolveStock(product: Product, buildable: boolean): number | null {
   if (!buildable) return 0;
@@ -89,8 +88,10 @@ export function buildVariants(product: Product): ResolvedVariant[] {
   );
 }
 
-/** Look up one pairing. Falls back to the first buildable variant if the exact
- *  pairing is unavailable, so the PDP can never render an unconfigured state. */
+/**
+ * Look up one pairing, falling back to the first buildable variant if the exact
+ * pairing is unavailable, so the PDP can never render an unconfigured state.
+ */
 export function findVariant(
   variants: ResolvedVariant[],
   selection: VariantSelection,
@@ -107,10 +108,10 @@ export function findVariant(
 }
 
 /**
- * Switching one axis while holding the other is the core of the configurator.
- * When the new choice makes the current pairing unbuildable, 21 mm leather on
- * a 20 mm case, this returns the nearest strap on the same case rather than
- * leaving the shopper on a dead end.
+ * Switching one axis while holding the other is the core of the configurator. When
+ * the new choice makes the current pairing unbuildable, 21 mm leather on a 20 mm
+ * case, this returns the nearest strap on the same case rather than leaving the
+ * shopper on a dead end.
  */
 export function reconcileSelection(
   product: Product,
@@ -140,12 +141,11 @@ export function defaultSelection(product: Product): VariantSelection {
 }
 
 /**
- * The variant a product is shown as before anyone has chosen anything, the
- * hero, the collection grid and the product page all open on this, so it has to
- * be one function rather than three hopeful expressions of `variants[0]`.
+ * The variant a product is shown as before anyone has chosen anything. The hero,
+ * the collection grid and the product page all open on this, so it has to be one
+ * function rather than three hopeful expressions of `variants[0]`.
  *
- * Prefers a buildable pairing so the drawn watch is one the house actually
- * makes; falls back to the first variant only if a product somehow has none.
+ * Prefers a buildable pairing, so the drawn watch is one the house actually makes.
  */
 export function defaultVariant(product: Product): ResolvedVariant {
   const variants = buildVariants(product);
@@ -154,8 +154,8 @@ export function defaultVariant(product: Product): ResolvedVariant {
 
 /**
  * Flatten a dial option plus the product's shared dial furniture into the single
- * object the SVG renderer and the spec table both consume. Keeping this
- * resolution in one place is what stops the picture and the spec sheet drifting.
+ * object the renderer and the spec table both consume, which is what stops the
+ * picture and the spec sheet drifting.
  */
 export function resolveDialSpec(product: Product, dial: DialOption): DialSpec {
   return {
@@ -173,6 +173,7 @@ export function resolveDialSpec(product: Product, dial: DialOption): DialSpec {
 export function availableStraps(product: Product): StrapOption[] {
   return product.straps.filter((strap) => isBuildable(product, strap));
 }
+
 export function unavailableStraps(product: Product): StrapOption[] {
   return product.straps.filter((strap) => !isBuildable(product, strap));
 }

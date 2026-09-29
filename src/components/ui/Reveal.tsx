@@ -12,14 +12,14 @@ import { cx } from "@/lib/format";
  *
  * Two deliberate choices:
  *
- * 1. `rootMargin: "0px 0px -12% 0px"`, ” the reveal fires when the element is
- *    genuinely inside the viewport, not when it first clips the bottom edge. A
- *    0px margin makes things pop in while you are still looking elsewhere.
+ * 1. `rootMargin: "0px 0px -12% 0px"`, so the reveal fires when the element is
+ *    genuinely inside the viewport rather than when it first clips the bottom edge.
+ *    A 0px margin makes things pop in while you are still looking elsewhere.
  * 2. Once shown, the observer disconnects. Content never re-animates on the way
  *    back up, which is what makes a slow site feel slow.
  *
- * With JavaScript disabled the element renders visible, because the attribute
- * that hides it is only ever set by this effect.
+ * With JavaScript disabled the element renders visible, because the attribute that
+ * hides it is only ever set by this effect.
  */
 export function Reveal({
   children,

@@ -7,19 +7,15 @@ import type { UserRole } from "@/lib/types";
 /**
  * Customer or seller.
  *
- * This is a radio group and not a select, because the choice changes what the
- * rest of the form asks for: a seller is shown a storefront name, a customer is
- * not. Burying that behind a dropdown would hide the consequence of the choice
- * until after it was made.
+ * A radio group, not a select, because the choice changes what the rest of the form
+ * asks for: a seller is shown a storefront name, a customer is not. Native radios,
+ * visually hidden, with the label as the visible control, keep arrow-key navigation,
+ * the roving tab stop and the announced "selected" state, all of which a grid of buttons
+ * would have to reimplement.
  *
- * Native radios, visually hidden, with the label as the visible control. That
- * keeps arrow-key navigation, the roving tab stop and the announced
- * "selected" state, all of which a grid of buttons would have to reimplement.
- *
- * The selected card takes `bg-beige-2`, the token the theme documents for
- * exactly this, and carries a tick. Border colour alone would not be enough,
- * since the card sits on paper in one place and navy in another and a hairline
- * that merely darkens is a weak signal at that size.
+ * The selected card takes `bg-beige-2`, the token the theme documents for exactly this,
+ * and carries a tick. Border colour alone would not be enough: the card sits on paper in
+ * one place and navy in another, and a hairline that merely darkens is a weak signal.
  */
 
 const ROLES: ReadonlyArray<{

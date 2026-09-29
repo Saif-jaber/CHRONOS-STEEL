@@ -12,17 +12,17 @@ import { hrefFor } from "./FilterRail";
 /**
  * The chip row.
  *
- * One removable chip per active filter, above the grid, each one a link to the
- * URL with that one value taken out. Chips rather than a "reset" button because
- * the common case is undoing one filter out of four, and a single reset throws
- * away the three that were right.
+ * One removable chip per active filter, above the grid, each one a link to the URL
+ * with that one value taken out. Chips rather than a "reset" button because the
+ * common case is undoing one filter out of four, and a single reset throws away the
+ * three that were right.
  *
  * The price chip is the one label this component does not take from the engine.
- * `activeChips` formats price bounds in pounds and stops there, since it does not
- * know which currency the storefront is trading in, so a bare pair of numbers
- * over a grid priced in sterling would be ambiguous. The bounds are re-formatted
- * here through the one formatter the rest of the shop uses. The chip's id and
- * removal still come from the engine, so the two cannot drift on behaviour.
+ * `activeChips` formats price bounds and stops there, since it does not know which
+ * currency the storefront trades in, so a bare pair of numbers over a grid priced in
+ * sterling would be ambiguous. The bounds are re-formatted here through the one
+ * formatter the rest of the shop uses. The chip's id and removal still come from the
+ * engine, so the two cannot drift on behaviour.
  */
 export function ActiveFilters({
   state,
@@ -78,9 +78,9 @@ function labelFor(
   if (chip.facet !== "price") return chip.label;
   const lo = state.priceMinInCents ?? bounds.priceMinInCents;
   const hi = state.priceMaxInCents ?? bounds.priceMaxInCents;
-  /* The en dash is escaped rather than typed. A literal one in the source is
-     stored as three UTF-8 bytes, and one editor or one `git apply` later those
-     bytes can be read as CP1252 and land on the page as three characters. The
-     escape cannot be misread, and the rendered page is identical. */
+  /* The en dash is escaped rather than typed. A literal one in the source is stored as
+     three UTF-8 bytes, and one editor or one `git apply` later those bytes can be read
+     as CP1252 and land on the page as three characters. The escape cannot be misread,
+     and the rendered page is identical. */
   return `${formatPrice(lo, currency)}\u2013${formatPrice(hi, currency)}`;
 }

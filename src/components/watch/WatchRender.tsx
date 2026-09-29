@@ -27,27 +27,23 @@ import {
 /**
  * The watch drawing.
  *
- * Everything visible here is derived from `product.caseSpec`, `product.movement`
- * and the two selected options, ?" there is no per-product artwork, so a dial
- * colour or a bracelet type added in the database appears here with no code
- * change. Sizes are honest: the 36 mm Sector is genuinely drawn smaller than
- * the 44 mm Vantage, on the same scale, which is the one thing a photograph of
- * a flat-lay can never do.
+ * Everything visible is derived from `product.caseSpec`, `product.movement` and the two
+ * selected options; there is no per-product artwork, so a dial colour or bracelet type
+ * added to the database appears here with no code change. Sizes are honest: the 36 mm
+ * Sector is genuinely drawn smaller than the 44 mm Vantage on the same scale, which is
+ * the one thing a photograph of a flat-lay can never do.
  *
- * This is Tier B enrichment, ?" hand-built SVG, ~10 KB, no image request, no
- * layout shift, and it renders identically at a 96 px card thumbnail and a
- * 720 px detail view.
- *
- * When your R2 photography is ready, replace the <svg> with an <Image> and keep
- * the wrapper's aspect ratio; the gallery, the variant cross-fade and the
- * variant manager around it do not change.
+ * Hand-built SVG, ~10 KB, no image request, no layout shift, and it renders identically
+ * at a 96 px card thumbnail and a 720 px detail view. When real photography is ready,
+ * replace the <svg> with an <Image> and keep the wrapper's aspect ratio; the gallery,
+ * the variant cross-fade and the variant manager around it do not change.
  */
 
 export interface WatchRenderProps {
   product: Product;
   dial: DialSpec;
   strap: StrapOption;
-  /** Lume charged, ?" draws the glow, and drops the room lighting. */
+  /** Lume charged; draws the glow and drops the room lighting. */
   night?: boolean;
   /**
    * A short cross-fade key. Bump it when the variant changes and the drawing
@@ -87,8 +83,8 @@ export function WatchRender({
   const strapLook = strapAppearance(strap.type, strap.colorHex, strap.stitchColorHex);
   const widthPx = lugWidthPx(caseSpec.lugWidthMm);
 
-  // The dial sits inside the bezel, so it is smaller than the case by whatever
-  // the bezel eats, ?" and a dive bezel eats a great deal more than a smooth one.
+  // The dial sits inside the bezel, so it is smaller than the case by whatever the
+  // bezel eats; a dive bezel eats a great deal more than a smooth one.
   const bezelInset = {
     smooth: 0.86,
     fluted: 0.88,
@@ -159,7 +155,7 @@ export function WatchRender({
           </radialGradient>
         )}
 
-        {/* Guilloché crosshatch. Two 45° line sets on a rotated grid, ?" a real
+        {/* Guilloché crosshatch. Two 45° line sets on a rotated grid; a real
             engine-turned pattern, and free. */}
         {dial.option.finish === "guilloche" && (
           <pattern

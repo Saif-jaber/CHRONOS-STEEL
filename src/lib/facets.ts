@@ -16,25 +16,21 @@ import { formatMm, formatPrice, humanise } from "./format";
 /**
  * Facet presentation.
  *
- * `lib/filters.ts` decides what matches and how many there are. This file
- * decides what the rail shows: which values exist, what they are called, and in
- * what order. The split is deliberate, because the value lists have to be read
- * off the catalogue rather than written out by hand. A hand-written facet list
- * is a list that goes stale the first time a dial is discontinued, and the rail
- * then offers a dial nobody can buy, with a count, on purpose.
+ * `lib/filters.ts` decides what matches and how many there are. This file decides
+ * what the rail shows: which values exist, what they are called, and in what order.
+ * The split exists because the value lists are read off the catalogue rather than
+ * written by hand. A hand-written list goes stale the first time a dial is
+ * discontinued, and the rail then offers a dial nobody can buy, with a count, on
+ * purpose.
  *
- * On counts: they are the engine's numbers, not this file's, and they are
- * computed against every *other* facet, so a count answers "how many will I get
- * if I click this?" rather than "how many exist?". A value that currently returns
- * zero is still listed and rendered inert. A rail that reshuffles under the
- * cursor is worse than one that admits what is unavailable.
+ * Counts are the engine's numbers, not this file's, and a value that currently
+ * returns zero is still listed and rendered inert: a rail that reshuffles under
+ * the cursor is worse than one that admits what is unavailable.
  *
- * On ranges: their options are derived from the values actually in the
- * catalogue, chunked two at a time, so every option is non-empty by
- * construction and its label is the truth about the case diameters inside it.
- * A dual-handle slider would be a nicer control and would also be a control that
- * needs JavaScript, reports two numbers to the URL, and cannot be linked to a
- * bucket. Whole millimetres are what a collector narrows by anyway.
+ * Range options are derived from the values actually in the catalogue, so every
+ * option is non-empty by construction and its label is the truth about the
+ * watches inside it. Whole millimetres are what a collector narrows by anyway, and
+ * a bucket links where a dual-handle slider would report two numbers to the URL.
  */
 
 /** Abbreviations the label cannot be derived from. Everything else humanises. */
@@ -72,13 +68,13 @@ interface ValueMeta {
 /* ── Chip groups ────────────────────────────────────────────────────────── */
 
 /**
- * Every distinct value a facet can take, in the order it is first met in the
- * catalogue, then sorted into the declared order where the engine has one.
+ * Every distinct value a facet can take, in the declared order where the engine
+ * has one, then in catalogue order.
  *
  * The declared order is there so the rail is not alphabetical by accident:
- * automatic before manual before quartz is a meaningful order, and so is
- * bracelet before NATO. A value the declared list has never heard of still
- * appears, at the end, in catalogue order.
+ * automatic before manual before quartz is a meaningful order, and so is bracelet
+ * before NATO. A value the declared list has never heard of still appears, at the
+ * end.
  */
 function collect(
   products: Product[],
@@ -145,12 +141,12 @@ function chipGroup(
 /**
  * How many products a hypothetical state would return.
  *
- * The `skip` argument that `productMatches` takes is deliberately not used here.
+ * `productMatches` takes a `skip` argument and it is deliberately not used here.
  * A range option's count is asked with the *new* bounds already in the state, so
  * skipping the facet would skip the very thing being counted and every band would
- * report the whole catalogue. Where a band is already selected, the hypothetical
- * state replaces it, which is the correct question: "how many if I move to this
- * band" rather than "how many if I moved to this band from nowhere".
+ * report the whole catalogue. Where a band is already selected the hypothetical
+ * state replaces it, which is the question being asked: "how many if I move to
+ * this band".
  */
 function countWith(products: Product[], hypothetical: FilterState): number {
   return products.filter((product) => productMatches(product, hypothetical)).length;
@@ -189,12 +185,10 @@ function diameterGroup(products: Product[], state: FilterState): FacetGroup {
 /**
  * Lug to lug, as an upper bound.
  *
- * This is the one facet the state can only narrow downwards, so the option set
- * is the whole number of millimetres from the narrowest case in the catalogue
- * upward, and the widest case is reached by clearing the facet rather than by
- * clicking a band. Stated here because it is a limitation of `FilterState`
- * rather than a choice: expressing "48 mm and over" needs a lower bound the
- * state does not have.
+ * This is the one facet the state can only narrow downwards, so the option set runs
+ * from the narrowest case in the catalogue upward and the widest case is reached by
+ * clearing the facet. That is a limitation of `FilterState` rather than a choice:
+ * "48 mm and over" needs a lower bound the state does not have.
  */
 function wearGroup(products: Product[], state: FilterState): FacetGroup {
   const bounds = catalogBounds(products);
@@ -218,12 +212,12 @@ function wearGroup(products: Product[], state: FilterState): FacetGroup {
 }
 
 /**
- * Price, in whole-pound bands.
+ * Price bands.
  *
- * The edges are round numbers, not quantiles: a shopper who wants to know what
- * is under five thousand does not want a sixth of the catalogue. Bands after the
- * first start one cent above the previous band's top, so they do not overlap,
- * and the labels are then exact rather than approximate.
+ * The edges are round numbers, not quantiles: a shopper asking what is under five
+ * thousand does not want a sixth of the catalogue. Bands after the first start one
+ * cent above the previous band's top so they do not overlap, which makes the labels
+ * exact rather than approximate.
  */
 const PRICE_EDGES_IN_CENTS = [500_000, 1_000_000, 2_000_000];
 
@@ -290,14 +284,44 @@ export function facetGroups(
   currency: Currency,
 ): FacetGroup[] {
   return [
-    chipGroup(products, state, "collection", "Collection", collect(products, (p) => [p.collection], [], (value) => value)),
+    chipGroup(
+      products,
+      state,
+      "collection",
+      "Collection",
+      collect(products, (p) => [p.collection], [], (value) => value),
+    ),
     diameterGroup(products, state),
     wearGroup(products, state),
-    chipGroup(products, state, "movement", "Movement", collect(products, (p) => [p.movement.type], MOVEMENT_VALUES)),
-    chipGroup(products, state, "material", "Case", collect(products, (p) => [p.caseSpec.material], MATERIAL_VALUES)),
-    chipGroup(products, state, "strap", "Strap", collect(products, (p) => p.straps.map((s) => s.type), STRAP_VALUES)),
+    chipGroup(
+      products,
+      state,
+      "movement",
+      "Movement",
+      collect(products, (p) => [p.movement.type], MOVEMENT_VALUES),
+    ),
+    chipGroup(
+      products,
+      state,
+      "material",
+      "Case",
+      collect(products, (p) => [p.caseSpec.material], MATERIAL_VALUES),
+    ),
+    chipGroup(
+      products,
+      state,
+      "strap",
+      "Strap",
+      collect(products, (p) => p.straps.map((s) => s.type), STRAP_VALUES),
+    ),
     chipGroup(products, state, "dial", "Dial", dialValues(products)),
-    chipGroup(products, state, "complication", "Function", collect(products, (p) => p.dials.flatMap((d) => [...d.complications]), COMPLICATION_VALUES)),
+    chipGroup(
+      products,
+      state,
+      "complication",
+      "Function",
+      collect(products, (p) => p.dials.flatMap((d) => [...d.complications]), COMPLICATION_VALUES),
+    ),
     priceGroup(products, state, currency),
   ];
 }
@@ -305,10 +329,9 @@ export function facetGroups(
 /**
  * Set or clear a range facet's bounds.
  *
- * `id` is the facet being written, not the one being skipped, so the same call
- * both applies a band and removes it. `FilterState` models diameter and price
- * as a min and a max and lug to lug as a max alone, and this is the one place
- * that knows which is which.
+ * `id` is the facet being written, not the one being skipped, so the same call both
+ * applies a band and removes it. This is the one place that knows `FilterState`
+ * models diameter and price as a min and a max, and lug to lug as a max alone.
  */
 export function setRange(
   state: FilterState,

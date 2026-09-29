@@ -26,32 +26,25 @@ import { Cta } from "@/components/ui/Button";
 /**
  * The collection.
  *
- * This is the shop. It filters, counts, sorts and searches on the server from
- * the URL, which is the trade `lib/catalog/repository.ts` documents: the first
- * paint is already the right answer, a narrowed view can be shared or
- * bookmarked, and every control on the page is a link so none of it depends on
- * the bundle having loaded.
+ * This is the shop. It filters, counts, sorts and searches on the server from the URL,
+ * the trade `lib/catalog/repository.ts` documents: the first paint is already the right
+ * answer, a narrowed view can be shared or bookmarked, and every control is a link, so
+ * none of it depends on the bundle having loaded.
  *
- * The route is therefore dynamic, and that is the point rather than a
- * limitation. Nothing here is cached against a product list that does not exist
- * yet: swap the seeded repository for a Prisma adapter in one file and the
- * facets, the counts, the chips and the grid all keep working, because none of
- * them knows where the products came from.
+ * The route is therefore dynamic. Nothing is cached against a product list that does not
+ * exist yet: swap the seeded repository for a Prisma adapter in one file and the facets,
+ * the counts, the chips and the grid all keep working, because none of them knows where
+ * the products came from.
  *
- * Two components are rendered twice on purpose: the rail, once inside the
- * mobile disclosure and once in the desktop column. `display: none` removes the
- * other copy from the accessibility tree as well as from the screen, so a screen
- * reader announces one rail, not two.
+ * The rail is rendered twice on purpose, once in the mobile disclosure and once in the
+ * desktop column; `display: none` removes the hidden copy from the accessibility tree as
+ * well as the screen, so a screen reader announces one rail, not two.
  *
- * Filtering moves nothing. Every control is a `FilterLink`, which stops the
- * router from scrolling the document, and the results column holds a minimum
- * height so a narrowed list cannot collapse the page out from under the reader.
- * Both halves are needed: without the first the router throws you to the top of
- * the page, and without the second the browser clamps the scroll offset to
- * whatever height is left and lands you at the bottom. There is no scroll
- * restoration code here on purpose. Restoring a position is still a movement,
- * and a reader who taps a filter is asking for a list to change, not for the
- * page to travel.
+ * Filtering moves nothing. Every control is a `FilterLink` that stops the router
+ * scrolling the document, and the results column holds a minimum height so a narrowed
+ * list cannot collapse the page out from under the reader. There is no scroll restoration
+ * on purpose: restoring a position is still a movement, and a reader who taps a filter is
+ * asking for the list to change, not for the page to travel.
  */
 export const metadata: Metadata = {
   title: "The collection",
@@ -164,20 +157,17 @@ export default async function CollectionPage({
 
               {/* The results column, with a floor under it.
 
-                  A shopper who has scrolled to the eighth card taps "steel" and
-                  the list drops to three. The document is then far shorter than
-                  the scroll offset the browser is holding, so it clamps to the
-                  new bottom, which reads as the page throwing them at the
-                  footer. Reserving a screen of height means the column can
-                  shrink a long way before the page gets short enough to clamp,
-                  and in practice a narrowed list is nearly always at or above
-                  it. This is a reservation, not a filler: at three cards there
-                  is quiet space below the last one, and that reads as a short
-                  list rather than as a broken page.
+                  A shopper who has scrolled to the eighth card taps "steel" and the list
+                  drops to three. Without a floor the document becomes far shorter than the
+                  scroll offset the browser is holding, so it clamps to the new bottom and
+                  reads as the page throwing the reader at the footer. Reserving a screen of
+                  height lets the column shrink a long way before the page gets short enough
+                  to clamp; at three cards there is quiet space below the last one, which
+                  reads as a short list rather than a broken page.
 
-                  `svh` rather than `vh` because the phone browser's chrome
-                  shrinks and grows as the reader scrolls, and a `vh` floor tall
-                  enough on paper is a floor that overflows in the real thing. */}
+                  `svh` rather than `vh` because the phone browser's chrome grows and
+                  shrinks as the reader scrolls, and a `vh` floor tall enough on paper is a
+                  floor that overflows in the real thing. */}
               <div className="min-h-[70svh]">
                 <ActiveFilters
                   state={state}

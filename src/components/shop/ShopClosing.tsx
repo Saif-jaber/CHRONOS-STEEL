@@ -1,15 +1,15 @@
 /**
  * The ordering band.
  *
- * Three facts, stated flatly, with no reassurance adjectives: how long it
- * takes, what is covered, and what happens if you change your mind. A shop page
- * that ends at the grid has answered "what does it cost" and nothing else, and
- * the three objections a buyer actually has are time, risk and returns.
+ * Three facts, stated flatly, with no reassurance adjectives: how long it takes,
+ * what is covered, and what happens if you change your mind. A shop page that ends
+ * at the grid has answered "what does it cost" and nothing else, and the three
+ * objections a buyer actually has are time, risk and returns.
  *
- * No links out of here on purpose. Every promise made is a promise already
- * repeated in the footer's Orders column, so a second set of buttons under it
- * would be three more places to keep in step for no gain. The way onward is the
- * grid above, and the newsletter in the footer.
+ * No links out of here on purpose. Every promise made is already repeated in the
+ * footer's Orders column, so a second set of buttons would be three more places to
+ * keep in step for no gain. The way onward is the grid above and the newsletter in
+ * the footer.
  */
 const PROMISES = [
   {

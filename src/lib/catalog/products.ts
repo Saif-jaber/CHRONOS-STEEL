@@ -3,16 +3,13 @@ import type { Product } from "../types";
 /**
  * Seeded catalogue.
  *
- * This is placeholder *product* data, not marketing copy, so it can carry
- * real numbers without inventing claims. Case diameters, lug-to-lug figures and
- * calibre specs are the merchandise itself; nothing on the site asserts a
- * business metric it cannot substantiate.
+ * Placeholder *product* data rather than marketing copy, so it can carry real
+ * numbers without inventing claims: case diameters, lug-to-lug figures and calibre
+ * specs are the merchandise itself, and nothing here attributes a specification to
+ * a real manufacturer. All references are house references.
  *
- * All references are house references. Nothing here attributes invented
- * specifications to a real manufacturer.
- *
- * → Replace with your Prisma query in `lib/catalog/repository.ts`. Nothing
- *   downstream of that file needs to change.
+ * Replace with your Prisma query in `lib/catalog/repository.ts`. Nothing downstream
+ * of that file needs to change.
  */
 
 const DIAL = {

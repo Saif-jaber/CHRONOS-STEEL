@@ -15,14 +15,11 @@ import {
 /**
  * Sign in.
  *
- * Two fields and a submit. The forgot-password line sits under the button
- * rather than beside the email, because a person who has forgotten it is
- * looking at the password box, not the address box.
+ * Two fields and a submit. The forgot-password line sits under the button rather than
+ * beside the email, because a person who has forgotten it is looking at the password box.
  *
- * Errors appear on submit and then clear per field as the field is corrected,
- * rather than validating on every keystroke. Validating while someone is still
- * typing the first half of an email address is how you end up telling someone
- * their address is invalid before they have finished writing it.
+ * Errors appear on submit and clear per field as it is corrected, rather than validating
+ * on every keystroke: a half-typed email address is not an invalid one.
  */
 
 const EMPTY: LoginValues = { email: "", password: "" };
@@ -135,9 +132,9 @@ export function LoginForm() {
 }
 
 /**
- * Sends focus to the first field that failed, so the message under a field is
- * not the only way to find out which field it was. `document.getElementById`
- * because the ids are fixed strings on these two forms, not generated ones.
+ * Sends focus to the first field that failed, so the message under a field is not the
+ * only way to find out which field it was. `getElementById` because the ids on these two
+ * forms are fixed strings, not generated ones.
  */
 function focusFirstError<T extends object>(errors: T, order: readonly (keyof T)[]) {
   const first = order.find((key) => errors[key]);

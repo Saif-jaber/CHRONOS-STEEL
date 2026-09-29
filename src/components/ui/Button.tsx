@@ -6,14 +6,13 @@ import { cx } from "@/lib/format";
  * Actions.
  *
  * The primary interaction on this site is not a button. It is a plain text link
- * with a small arrow that underlines on hover, ” `.cta` in globals.css does the
- * work, including the 1px rule that grows from the left and the arrow that
- * nudges 3px right. Both are underline and translation only: nothing scales,
- * nothing lifts, nothing glows.
+ * with a small arrow that underlines on hover, and `.cta` in globals.css does the
+ * work, including the 1px rule that grows from the left and the arrow that nudges
+ * 3px right. Both are underline and translation only: nothing scales, nothing
+ * lifts, nothing glows.
  *
- * There is exactly one solid control in the entire design, `Add to Bag`, and it
- * exists because a commerce action needs to be unambiguous. It is navy fill,
- * paper text, square corners, no shadow. Everything else is a link.
+ * There is exactly one solid control in the design, `Add to Bag`, because a
+ * commerce action needs to be unambiguous. Everything else is a link.
  */
 
 /** Plain text link with an arrow. The default for navigation and exploration. */
@@ -36,16 +35,10 @@ export function Cta({
       {...rest}
     >
       <span>{children}</span>
-      {/* The arrow was the one place in the source that had been through a bad
-          round trip. It was stored as the six bytes c3 a2 e2 80 a0 e2 80 99,
-          which is U+2192 encoded as UTF-8, read as Latin-1, then re-encoded, so
-          it decoded to three separate characters, U+00E2, U+2020 and U+2019, and
-          rendered on the page as garbage in every CTA. Named by code point here
-          on purpose: writing those three characters literally would reintroduce
-          exactly the thing this comment is about.
-
-          `&rarr;` is an entity rather than a literal character so no editor or
-          transfer can mangle it the same way twice. */}
+      {/* Written as an entity rather than a literal character: this arrow was once
+          stored as UTF-8 read back through Latin-1, which decoded it to three
+          characters and rendered as garbage in every CTA. An entity cannot be
+          mangled the same way twice. */}
       <span aria-hidden="true" className="cta-arrow">
         &rarr;
       </span>
@@ -54,7 +47,7 @@ export function Cta({
 }
 
 /**
- * A text link with no arrow, ” for inline references inside a sentence, where an
+ * A text link with no arrow, for inline references inside a sentence, where an
  * arrow would read as a step in a process that does not exist.
  */
 export function QuietLink({
@@ -84,17 +77,16 @@ export function QuietLink({
 }
 
 /**
- * The one filled control. Reserve it for the primary commerce action on a
- * product page; using it twice in a viewport flattens the hierarchy it exists to
- * create.
+ * The one filled control. Reserve it for the primary commerce action on a product
+ * page; using it twice in a viewport flattens the hierarchy it exists to create.
  *
- * Square corners, 1px navy border (so the fill edge stays crisp against paper),
- * 44px tall for touch. Disabled carries a non-colour signal: the border goes
- * dashed, which survives greyscale and colour-blindness.
+ * Square corners, 1px navy border so the fill edge stays crisp against paper, 44px
+ * tall for touch. Disabled carries a non-colour signal: the border goes dashed,
+ * which survives greyscale and colour blindness.
  *
- * `onDark` inverts the fill rather than adding a second variant, so the control
- * is still the only solid thing in the viewport. It exists because the account
- * forms live on a navy band, where a navy fill would be invisible.
+ * `onDark` inverts the fill rather than adding a second variant, so the control is
+ * still the only solid thing in the viewport. It exists because the account forms
+ * live on a navy band, where a navy fill would be invisible.
  */
 export function Button({
   children,
@@ -161,9 +153,9 @@ function buttonClass(variant: "navy" | "outline", onDark: boolean): string {
 /**
  * Square icon control: hamburger, search, bag, close.
  *
- * No border and no background, ” the glyph is the control. `.hit` stretches the
- * 20, “24px icon out to the 44px touch floor via a pseudo-element, so the tap
- * target is compliant without the icon growing or the layout shifting.
+ * No border and no background, the glyph is the control. `.hit` stretches the 24px
+ * icon out to the 44px touch floor via a pseudo-element, so the tap target is
+ * compliant without the icon growing or the layout shifting.
  */
 export function IconButton({
   label,
@@ -182,16 +174,20 @@ export function IconButton({
       type="button"
       aria-label={label}
       title={label}
-      className={cx(
-        "hit relative inline-flex size-6 shrink-0 items-center justify-center",
-        "transition-opacity dur-base ease-out hover:opacity-60",
-        onDark ? "text-paper" : "text-ink",
-        className,
-      )}
+      className={cx(iconClass(onDark), className)}
       {...rest}
     >
       {children}
     </button>
+  );
+}
+
+/** Shared between the icon button and its link twin, so the two cannot drift. */
+function iconClass(onDark: boolean): string {
+  return cx(
+    "hit relative inline-flex size-6 shrink-0 items-center justify-center",
+    "transition-opacity dur-base ease-out hover:opacity-60",
+    onDark ? "text-paper" : "text-ink",
   );
 }
 
@@ -219,12 +215,7 @@ export function IconLink({
       href={href}
       aria-label={label}
       title={label}
-      className={cx(
-        "hit relative inline-flex size-6 shrink-0 items-center justify-center",
-        "transition-opacity dur-base ease-out hover:opacity-60",
-        onDark ? "text-paper" : "text-ink",
-        className,
-      )}
+      className={cx(iconClass(onDark), className)}
       {...rest}
     >
       {children}

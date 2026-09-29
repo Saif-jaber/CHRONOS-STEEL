@@ -5,20 +5,20 @@ import { useCallback, useEffect, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Cta, IconButton, IconLink } from "@/components/ui/Button";
 import { IconAccount, IconBag, IconClose, IconMenu, IconSearch } from "@/components/ui/Icon";
+import { cx } from "@/lib/format";
 
 /**
  * Masthead.
  *
- * Fixed, full width, and transparent while it sits over the hero. Once the
- * hero has scrolled past, it shades into navy with a single hairline below.
- * Nothing slides, nothing resizes: a navigation bar that moves is a navigation
- * bar you have to re-find.
+ * Fixed, full width, and transparent while it sits over the hero. Once the hero has
+ * scrolled past, it shades into navy with a single hairline below. Nothing slides,
+ * nothing resizes: a navigation bar that moves is a navigation bar you have to
+ * re-find.
  *
- * The lockup is centred because the brief asks for it, and it happens to be the
- * right call anyway, a centred mark with balanced controls on either side reads
- * as a masthead rather than a toolbar. The controls are optically balanced too:
- * the left rail is a single 24px glyph and the right rail carries three, so the
- * right group is held a little off the edge to keep the composition centred.
+ * The lockup is centred, which reads as a masthead rather than a toolbar. The
+ * controls are optically balanced: the left rail is a single 24px glyph and the right
+ * rail carries three, so the right group is held a little off the edge to keep the
+ * composition centred.
  */
 
 const MENU = [
@@ -49,6 +49,10 @@ const MENU = [
     ],
   },
 ] as const;
+
+const cxSkip =
+  "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-menu " +
+  "focus:bg-navy focus:px-4 focus:py-2 focus:text-paper focus:text-xs focus:uppercase focus:tracking-nav";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -96,15 +100,13 @@ export function Header() {
       <header
         data-scrolled={scrolled ? "true" : "false"}
         data-open={open ? "true" : "false"}
-        className={[
-          "fixed inset-x-0 top-0 z-nav",
+        className={cx(
+          "fixed inset-x-0 top-0 z-nav border-b",
           "transition-colors dur-base ease-out",
           "text-paper",
           scrolled || open ? "bg-navy" : "bg-transparent",
-          scrolled
-            ? "border-b border-navy-rule"
-            : "border-b border-transparent",
-        ].join(" ")}
+          scrolled ? "border-navy-rule" : "border-transparent",
+        )}
       >
         <div className="container grid h-nav grid-cols-3 items-center">
           {/* Left rail: menu. */}
@@ -132,9 +134,7 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Right rail: account, search and bag. Three glyphs, so the centre
-              mark is nudged back a little to keep the composition balanced
-              against a left rail that is still a single glyph. */}
+          {/* Right rail: account, search and bag. */}
           <div className="flex items-center justify-end gap-md">
             <IconLink href="/login" label="Account" onDark>
               <IconAccount onDark />
@@ -149,9 +149,8 @@ export function Header() {
         </div>
       </header>
 
-      {/* Panel. Full-bleed paper, three editorial columns, one hairline above
-          the closing row. Not a floating panel and not centred on a card.
-          Conditionally mounted rather than toggled with the `hidden`
+      {/* Panel. Full-bleed paper, three editorial columns, one hairline above the
+          closing row. Conditionally mounted rather than toggled with the `hidden`
           attribute: a `display:flex` utility outranks the attribute's UA
           `display:none`, so the panel would stay on screen. */}
       {open && (
@@ -196,7 +195,3 @@ export function Header() {
     </>
   );
 }
-
-const cxSkip =
-  "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-menu " +
-  "focus:bg-navy focus:px-4 focus:py-2 focus:text-paper focus:text-xs focus:uppercase focus:tracking-nav";

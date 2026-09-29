@@ -7,26 +7,24 @@ import { ProductCard } from "./ProductCard";
 /**
  * The collection.
  *
- * The brief asks for an asymmetric editorial grid and explicitly rules out
- * symmetric card grids, so this is a twelve-column layout with hand-set spans
- * and alternating vertical offsets rather than a repeat of equal cells. On a
- * phone every card simply stacks at full width, which is the only honest
- * arrangement at 360px anyway.
+ * An asymmetric editorial grid rather than a symmetric card grid: a twelve-column
+ * layout with hand-set spans and alternating vertical offsets. On a phone every card
+ * stacks at full width, which is the only honest arrangement at 360px anyway.
  *
- * Six of the references are shown. The full set is one arrow away, and showing
- * all of them here would undo the pacing the page has built up to this point.
+ * Six of the references are shown. The full set is one arrow away, and showing all of
+ * them here would undo the pacing the page has built up to this point.
  *
- * The counts in the copy are read off `PRODUCTS` and `FEATURED` rather than typed
- * in. They were hardcoded as "Twelve references", "Showing six of twelve" and
- * "All twelve references" while the catalog held thirteen products, so the page
- * was quietly wrong in three places at once and nothing complained. The same
- * stale twelve was repeated in the hero and the 404 page. A number that appears in
- * prose is a number that will drift, so it is now computed at the one place the
- * list is defined and cannot disagree with it.
+ * The counts in the copy are read off `PRODUCTS` and `FEATURED` rather than typed in.
+ * They were once hardcoded as "Twelve references", "Showing six of twelve" and "All
+ * twelve references" while the catalogue held thirteen products, so the page was
+ * quietly wrong in three places at once and nothing complained. A number that appears
+ * in prose is a number that will drift.
  */
 
-/** Hand-placed spans. Deliberately unequal, and unequal in an order that reads
- *  as a rhythm rather than as an error. */
+/**
+ * Hand-placed spans. Deliberately unequal, and unequal in an order that reads as a
+ * rhythm rather than as an error.
+ */
 const LAYOUT = [
   "lg:col-span-7",
   "lg:col-span-5 lg:mt-24",
@@ -65,8 +63,8 @@ export function CollectionSection() {
               Sized honestly, priced plainly. Every one is built to order and
               warranted for five years.
             </p>
-            {/* Count stated rather than implied, so the reader knows the grid is
-                a selection and not the whole catalogue. */}
+            {/* Count stated rather than implied, so the reader knows the grid is a
+                selection and not the whole catalogue. */}
             <p className="measure mt-sm text-xs text-faint">
               Showing {countWord(shown)} of {totalWord}
             </p>
@@ -86,19 +84,16 @@ export function CollectionSection() {
           ))}
         </div>
 
-        {/* Account. The one place on the front page that offers both routes at
-            once, and it sits below the grid rather than above it: a reader who
-            has just looked at six references is being offered the next step,
-            not the first one.
+        {/* Account. Both routes at once, below the grid rather than above it: a reader
+            who has just looked at six references is being offered the next step, not the
+            first one.
 
-            Both controls are outlined, and that is a hard constraint rather than
-            a preference. The house rule is one filled control in the entire
-            design, it belongs to Add to Bag on a product page, and
-            `scripts/audit-home.cjs` asserts the home page contains none. A
-            filled Create an account here would have been the second. So the
-            hierarchy is carried by border weight instead of by fill, which is
-            the same trick the rest of the site uses to mark a thing without
-            enclosing it. */}
+            Both controls are outlined, and that is a hard constraint rather than a
+            preference. The house rule is one filled control in the entire design, it
+            belongs to Add to Bag on a product page, and `scripts/audit-home.cjs` asserts
+            the home page contains none. The hierarchy is carried by border weight
+            instead of by fill, which is the same trick the rest of the site uses to mark
+            a thing without enclosing it. */}
         <Reveal className="rule-t mt-xl flex flex-wrap items-end justify-between gap-md pt-md">
           <div className="max-w-[38rem]">
             <h3 className="text-lg">An account, if you want one</h3>

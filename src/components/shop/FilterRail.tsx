@@ -13,27 +13,25 @@ import { FilterLink } from "./FilterLink";
  * The filter rail.
  *
  * Every control is a link. That is the whole design decision, and it is the one
- * `lib/filters.ts` is written around: filtering and counting happen on the
- * server from the URL, so the first paint is already the right answer, the view
- * can be linked and bookmarked, and the rail works with the script blocked.
- * A client-side store of the same state would be a second implementation of the
- * facet engine that could disagree with it.
+ * `lib/filters.ts` is written around: filtering and counting happen on the server
+ * from the URL, so the first paint is already the right answer, the view can be
+ * linked and bookmarked, and the rail works with the script blocked. A client-side
+ * store of the same state would be a second implementation of the facet engine that
+ * could disagree with it.
  *
- * A selected value is marked with a beige tick in a reserved 16px slot, so
- * labels stay on one axis whether or not anything is chosen. The mark is the
- * same one the terms checkbox uses, because it is the only state signal in this
- * design that survives greyscale.
+ * A selected value is marked with a beige tick in a reserved 16px slot, so labels
+ * stay on one axis whether or not anything is chosen. The mark is the same one the
+ * terms checkbox uses, because it is the only state signal in this design that
+ * survives greyscale.
  *
- * Values that currently return nothing are rendered as text, not links. The
- * count next to them is the point: a shopper who has narrowed to GMT and finds
- * "quartz, 0" learns something, where a value that vanished teaches them
- * nothing and moves the rows under the cursor.
+ * Values that currently return nothing are rendered as text, not links. The count
+ * next to them is the point: a shopper who has narrowed to GMT and finds "quartz, 0"
+ * learns something, where a value that vanished teaches them nothing and moves the
+ * rows under the cursor.
  *
- * `idPrefix` exists because the rail is rendered twice on the page, once in the
- * mobile disclosure and once in the desktop column. Only one is visible at a
- * time (`display: none` takes the other out of the accessibility tree as well),
- * but the heading ids still have to be distinct for the `aria-labelledby` to
- * point at the right thing.
+ * `idPrefix` exists because the rail is rendered twice, once in the mobile disclosure
+ * and once in the desktop column. Only one is visible at a time, but the heading ids
+ * still have to be distinct for `aria-labelledby` to point at the right thing.
  */
 export function FilterRail({
   groups,
@@ -51,7 +49,12 @@ export function FilterRail({
       {groups.map((group) => {
         const headingId = `${idPrefix}-${group.id}`;
         return (
-          <div key={group.id} role="group" aria-labelledby={headingId} className="rule-t pt-2xs pb-sm first:border-t-0 first:pt-0">
+          <div
+            key={group.id}
+            role="group"
+            aria-labelledby={headingId}
+            className="rule-t pt-2xs pb-sm first:border-t-0 first:pt-0"
+          >
             <p id={headingId} className="eyebrow">
               {group.label}
             </p>
@@ -88,9 +91,9 @@ function FilterOption({
 }) {
   const inert = option.count === 0 && !option.selected;
 
-  /* Selecting a band replaces it rather than adding to it, and selecting the
-     band that is already selected removes it. That is the one piece of state
-     handling the rail owns; the bounds themselves come from `facets.ts`. */
+  /* Selecting a band replaces it rather than adding to it, and selecting the band that
+     is already selected removes it. That is the one piece of state handling the rail
+     owns; the bounds themselves come from `facets.ts`. */
   const next = option.range
     ? setRange(
         state,
@@ -119,7 +122,10 @@ function FilterOption({
 
   if (inert) {
     return (
-      <span className="flex items-center gap-xs py-2xs text-sm text-faint" aria-disabled="true">
+      <span
+        className="flex items-center gap-xs py-2xs text-sm text-faint"
+        aria-disabled="true"
+      >
         <Mark selected={false} />
         {label}
         <Count value={option.count} />

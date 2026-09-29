@@ -6,15 +6,14 @@ import { countWord } from "@/lib/format";
 /**
  * 404.
  *
- * The navigation deliberately points at routes that do not exist yet, so this
- * page is load-bearing rather than an afterthought, Next serves it for every
- * one of them. Shipping the framework default here would undo the impression the
- * rest of the site works for.
+ * The navigation deliberately points at routes that do not exist yet, so this page is
+ * load-bearing and Next serves it for every one of them. Shipping the framework default
+ * would undo the impression the rest of the site works for.
  *
- * It keeps the masthead and the footer, drops to the same full-bleed navy the
- * hero uses, and offers the three references with the highest case diameter,
- * which is the closest thing this catalogue has to a "popular" set. No apology
- * copy beyond a line, and no search box pretending to work.
+ * It keeps the masthead and the footer, drops to the same full-bleed navy the hero uses,
+ * and offers the three references with the highest case diameter, the closest thing this
+ * catalogue has to a "popular" set. No apology copy beyond a line, and no search box
+ * pretending to work.
  */
 export default function NotFound() {
   const suggestions = [...PRODUCTS]

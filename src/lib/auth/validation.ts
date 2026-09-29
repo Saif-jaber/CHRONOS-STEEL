@@ -3,22 +3,21 @@ import type { UserRole } from "@/lib/types";
 /**
  * Account form rules.
  *
- * There is no form library in this project and adding one for eight fields
- * would be the larger decision, so these are plain functions over plain
- * objects. That shape is the point: `validateSignup` runs in the browser for
- * immediate feedback, and the identical function runs again on the server where
- * it is the only thing between a crafted POST and a user row. Client validation
- * is a courtesy, never the gate.
+ * There is no form library in this project and adding one for eight fields would be
+ * the larger decision, so these are plain functions over plain objects. `validateSignup`
+ * runs in the browser for immediate feedback, and the identical function runs again on
+ * the server where it is the only thing between a crafted POST and a user row. Client
+ * validation is a courtesy, never the gate.
  *
- * Messages are written the way the rest of the site writes. No "Oops", no
- * exclamation mark, no advice the person did not ask for. A field either
- * violates a rule or it does not, and the message says which rule.
+ * Messages are written the way the rest of the site writes: no "Oops", no exclamation
+ * mark, no unasked-for advice. A field either violates a rule or it does not, and the
+ * message says which rule.
  */
 
 /**
- * Twelve characters, not eight. An account here is tied to a saved address, a
- * payment method and a warranty, so it is worth the extra typing, and a length
- * floor is the one password rule that survives a dictionary attack intact.
+ * Twelve characters, not eight. An account here is tied to a saved address, a payment
+ * method and a warranty, so it is worth the extra typing, and a length floor is the one
+ * password rule that survives a dictionary attack intact.
  */
 export const MIN_PASSWORD_LENGTH = 12;
 
@@ -77,9 +76,8 @@ export function validateLogin(values: LoginValues): LoginErrors {
     errors.email = "That address is missing an @ or a domain.";
   }
 
-  /* No length rule here. A short password is not a login error, it is a
-     credential that will simply be rejected by the server, and saying so here
-     would leak the floor to anyone who asks nicely. */
+  /* No length rule here. A short password is not a login error; the server will simply
+     reject the credential, and saying otherwise would leak the floor to anyone who asks. */
   if (!values.password) {
     errors.password = "Enter your password.";
   }
@@ -117,8 +115,8 @@ export function validateSignup(values: SignupValues): SignupErrors {
   }
 
   /* Only a seller has a storefront, so this is the one field whose requirement
-     depends on another answer. Validated here rather than hidden away, because
-     a conditional rule that is not checked is a rule that gets skipped. */
+     depends on another answer. A conditional rule that is not checked is a rule
+     that gets skipped. */
   if (values.role === "seller" && !values.storeName.trim()) {
     errors.storeName = "Enter the name your storefront will use.";
   }
@@ -130,9 +128,8 @@ export function validateSignup(values: SignupValues): SignupErrors {
   return errors;
 }
 
-/** Drops a value the field set no longer needs, so a stale error cannot survive
-    a change of role. Clearing `storeName` for a customer is the point: a
-    half-typed shop name should not ride along into the payload. */
+/** Drops values the field set no longer needs, so a half-typed shop name cannot ride
+    along into the payload when the role changes to customer. */
 export function pruneForRole(
   values: SignupValues,
   role: UserRole | "",
