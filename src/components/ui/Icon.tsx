@@ -109,43 +109,43 @@ export function IconWarranty(props: IconProps) {
 
 /* Navigation glyphs. Same 1px weight, 20px box. */
 
-export function IconMenu({ className, onDark }: IconProps) {
+export function IconMenu(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M3 7h18M3 12h18M3 17h12" />
     </Frame>
   );
 }
 
-export function IconClose({ className, onDark }: IconProps) {
+export function IconClose(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M5 5l14 14M19 5L5 19" />
     </Frame>
   );
 }
 
-export function IconSearch({ className, onDark }: IconProps) {
+export function IconSearch(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <circle cx="10.5" cy="10.5" r="6.5" />
       <path d="M15.5 15.5L21 21" />
     </Frame>
   );
 }
 
-export function IconBag({ className, onDark }: IconProps) {
+export function IconBag(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M5 8h14l-1 12.5H6z" />
       <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
     </Frame>
   );
 }
 
-export function IconArrowRight({ className, onDark }: IconProps) {
+export function IconArrowRight(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M4 12h16M14 6l6 6-6 6" />
     </Frame>
   );
@@ -153,9 +153,9 @@ export function IconArrowRight({ className, onDark }: IconProps) {
 
 /** Disclosure chevron, for the sort menu and the filter panel. It rotates on
  *  [open] and does nothing else, which is the only motion a disclosure gets. */
-export function IconChevron({ className, onDark }: IconProps) {
+export function IconChevron(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M6.5 9.5l5.5 5.5 5.5-5.5" />
     </Frame>
   );
@@ -164,18 +164,18 @@ export function IconChevron({ className, onDark }: IconProps) {
 /* Form glyphs. Same 1px weight, because a password toggle that reads heavier
    than the rule it sits on looks like a different control. */
 
-export function IconEye({ className, onDark }: IconProps) {
+export function IconEye(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M2.5 12S6 5.75 12 5.75 21.5 12 21.5 12 18 18.25 12 18.25 2.5 12 2.5 12Z" />
       <circle cx="12" cy="12" r="2.75" />
     </Frame>
   );
 }
 
-export function IconEyeOff({ className, onDark }: IconProps) {
+export function IconEyeOff(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M9.6 6.1A8.8 8.8 0 0 1 12 5.75C18 5.75 21.5 12 21.5 12a17.4 17.4 0 0 1-2.9 3.7" />
       <path d="M6.2 7.9A16.8 16.8 0 0 0 2.5 12S6 18.25 12 18.25a8.9 8.9 0 0 0 3.7-.8" />
       <path d="M4.2 4.2l15.6 15.6" />
@@ -185,18 +185,18 @@ export function IconEyeOff({ className, onDark }: IconProps) {
 
 /** The tick that marks a chosen role and an accepted term. Presence is the
     signal, so it survives greyscale and colour-blindness. */
-export function IconCheck({ className, onDark }: IconProps) {
+export function IconCheck(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <path d="M4.5 12.75l4.75 4.75L19.5 7" />
     </Frame>
   );
 }
 
 /** Account: a person, reduced to a head and the line of the shoulders. */
-export function IconAccount({ className, onDark }: IconProps) {
+export function IconAccount(props: IconProps) {
   return (
-    <Frame {...{ className, onDark }}>
+    <Frame {...props}>
       <circle cx="12" cy="8.25" r="3.75" />
       <path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" />
     </Frame>

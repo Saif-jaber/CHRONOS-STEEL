@@ -1,7 +1,6 @@
 import type { FilterState } from "@/lib/types";
 import { filtersToQuery } from "@/lib/filters";
 import { IconArrowRight, IconSearch } from "@/components/ui/Icon";
-
 import { cx } from "@/lib/format";
 
 /**

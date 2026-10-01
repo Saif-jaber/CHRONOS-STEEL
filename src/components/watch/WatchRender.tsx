@@ -193,11 +193,7 @@ export function WatchRender({
       </g>
 
       {/* ---- Crown sits behind the case band so the tube tucks under it ---- */}
-      <Crown
-        radius={radius}
-        metal={metal}
-        pushers={hasChrono ? 2 : hasMoon ? 0 : 0}
-      />
+      <Crown radius={radius} metal={metal} pushers={hasChrono ? 2 : 0} />
 
       {/* ---- Lugs, then the case over their roots ---- */}
       <Lugs radius={radius} widthPx={widthPx} lugToLugMm={caseSpec.lugToLugMm} metal={metal} uid={uid} />

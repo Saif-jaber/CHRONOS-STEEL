@@ -291,13 +291,15 @@ export function Lugs({
     const radians = ((deg - 90) * Math.PI) / 180;
     const dx = Math.cos(radians);
     const dy = Math.sin(radians);
-    // Perpendicular to the prong axis, used to taper it.
-    const px = -dy;
-    const py = dx;
+    // Perpendicular to the prong axis, used to taper it. Named `taperX/taperY`
+    // rather than `px/py` because `px` is the coordinate-rounding helper above
+    // and shadowing it here would make the two unrelated things read alike.
+    const taperX = -dy;
+    const taperY = dx;
 
     const at = (radiusAlong: number, offset: number) => ({
-      x: CX + dx * radiusAlong + px * offset,
-      y: CY + dy * radiusAlong + py * offset,
+      x: CX + dx * radiusAlong + taperX * offset,
+      y: CY + dy * radiusAlong + taperY * offset,
     });
 
     const baseA = at(radius * 0.99, -inner);
@@ -976,5 +978,3 @@ export function Crown({
     </g>
   );
 }
-
-export { darken };

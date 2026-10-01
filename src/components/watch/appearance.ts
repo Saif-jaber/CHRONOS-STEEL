@@ -1,4 +1,4 @@
-import type { CaseFinish, CaseMaterial, Complication, IndexStyle, StrapType } from "@/lib/types";
+import type { CaseFinish, CaseMaterial, StrapType } from "@/lib/types";
 
 /**
  * Material appearance tables for the SVG renderer.
@@ -22,8 +22,6 @@ export interface MetalAppearance {
   sheen: string;
   /** Index and hand colour sitting on a dial under this metal. */
   furniture: string;
-  /** true when indices and hands are filled with lume rather than metal. */
-  furnitureIsLume: boolean;
 }
 
 const STEEL: MetalAppearance = {
@@ -32,7 +30,6 @@ const STEEL: MetalAppearance = {
   dark: "#85827B",
   sheen: "#F2F0EA",
   furniture: "#EDEBE5",
-  furnitureIsLume: false,
 };
 
 const GOLD: MetalAppearance = {
@@ -41,7 +38,6 @@ const GOLD: MetalAppearance = {
   dark: "#93743F",
   sheen: "#F4DCAC",
   furniture: "#F0E2C4",
-  furnitureIsLume: false,
 };
 
 const TITANIUM: MetalAppearance = {
@@ -50,7 +46,6 @@ const TITANIUM: MetalAppearance = {
   dark: "#6E6B65",
   sheen: "#D6D3CC",
   furniture: "#E4E1DA",
-  furnitureIsLume: false,
 };
 
 const CERAMIC: MetalAppearance = {
@@ -59,7 +54,6 @@ const CERAMIC: MetalAppearance = {
   dark: "#222426",
   sheen: "#5A5D60",
   furniture: "#D8D5CE",
-  furnitureIsLume: false,
 };
 
 const BRONZE: MetalAppearance = {
@@ -68,7 +62,6 @@ const BRONZE: MetalAppearance = {
   dark: "#6E4F2C",
   sheen: "#D8B27C",
   furniture: "#DCCBA8",
-  furnitureIsLume: false,
 };
 
 export const MATERIAL_APPEARANCE: Record<CaseMaterial, MetalAppearance> = {
@@ -178,69 +171,46 @@ export interface StrapAppearance {
   stitchColor: string;
 }
 
+/**
+ * How each construction is drawn, and how far its shading runs.
+ *
+ * This is a table rather than a switch because every row said the same four
+ * things and the only differences were the amounts, which is exactly the shape a
+ * table reads better than five near-copies of one object literal. The numbers are
+ * unchanged: a bracelet catches more light across its links than a woven band,
+ * and a mesh reads darker at the edge because the weave is open.
+ */
+const STRAP_RECIPE: Record<
+  StrapType,
+  Pick<StrapAppearance, "construction" | "perforations" | "stitch"> & {
+    light: number;
+    dark: number;
+  }
+> = {
+  bracelet: { construction: "links", perforations: false, stitch: false, light: 0.16, dark: 0.2 },
+  mesh: { construction: "mesh", perforations: false, stitch: false, light: 0.2, dark: 0.24 },
+  nato: { construction: "weave", perforations: false, stitch: false, light: 0.12, dark: 0.16 },
+  perforated: { construction: "smooth", perforations: true, stitch: true, light: 0.14, dark: 0.18 },
+  leather: { construction: "smooth", perforations: false, stitch: true, light: 0.13, dark: 0.18 },
+  rubber: { construction: "smooth", perforations: false, stitch: false, light: 0.13, dark: 0.18 },
+};
+
 export function strapAppearance(
   type: StrapType,
   colorHex: string,
   stitchColorHex?: string,
 ): StrapAppearance {
-  const stitch = type === "leather" || type === "perforated";
-  // Default thread is a warm contrast against the hide; a strap can override it.
-  const stitchColor = stitchColorHex ?? "#C9A227";
-
-  switch (type) {
-    case "bracelet":
-      return {
-        base: colorHex,
-        light: lighten(colorHex, 0.16),
-        dark: darken(colorHex, 0.2),
-        construction: "links",
-        perforations: false,
-        stitch: false,
-        stitchColor,
-      };
-    case "mesh":
-      return {
-        base: colorHex,
-        light: lighten(colorHex, 0.2),
-        dark: darken(colorHex, 0.24),
-        construction: "mesh",
-        perforations: false,
-        stitch: false,
-        stitchColor,
-      };
-    case "nato":
-      return {
-        base: colorHex,
-        light: lighten(colorHex, 0.12),
-        dark: darken(colorHex, 0.16),
-        construction: "weave",
-        perforations: false,
-        stitch: false,
-        stitchColor,
-      };
-    case "perforated":
-      return {
-        base: colorHex,
-        light: lighten(colorHex, 0.14),
-        dark: darken(colorHex, 0.18),
-        construction: "smooth",
-        perforations: true,
-        stitch: true,
-        stitchColor,
-      };
-    case "leather":
-    case "rubber":
-    default:
-      return {
-        base: colorHex,
-        light: lighten(colorHex, 0.13),
-        dark: darken(colorHex, 0.18),
-        construction: "smooth",
-        perforations: false,
-        stitch,
-        stitchColor,
-      };
-  }
+  const recipe = STRAP_RECIPE[type];
+  return {
+    base: colorHex,
+    light: lighten(colorHex, recipe.light),
+    dark: darken(colorHex, recipe.dark),
+    construction: recipe.construction,
+    perforations: recipe.perforations,
+    stitch: recipe.stitch,
+    // Default thread is a warm contrast against the hide; a strap can override it.
+    stitchColor: stitchColorHex ?? "#C9A227",
+  };
 }
 
 /* ── Colour maths, kept local so the renderer has no dependencies ─────── */
@@ -277,24 +247,3 @@ export function mix(a: string, b: string, weight: number): string {
 /** The lume compound, and the colour it glows when charged. */
 export const LUME_FILL = "#D8F2D0";
 export const LUME_GLOW = "#8CF5A8";
-
-/* ── Index glyph metrics ──────────────────────────────────────────────── */
-
-export const INDEX_STYLE_LABEL: Record<IndexStyle, string> = {
-  baton: "Applied baton",
-  roman: "Roman numeral",
-  arabic: "Printed Arabic",
-  dauphine: "Faceted dauphine",
-  mixed: "Baton with Arabic quarters",
-  minimal: "Four batons",
-};
-
-export const COMPLICATION_LABEL: Record<Complication, string> = {
-  date: "Date",
-  chronograph: "Chronograph",
-  moonphase: "Moonphase",
-  gmt: "Second time zone",
-  "power-reserve": "Power reserve",
-  "small-seconds": "Small seconds",
-  alarm: "Alarm",
-};

@@ -78,7 +78,7 @@ interface ValueMeta {
  */
 function collect(
   products: Product[],
-  pick: (product: Product) => string[],
+  pick: (product: Product) => readonly string[],
   declared: readonly string[],
   label: (value: string) => string = (value) => LABELS[value] ?? humanise(value),
 ): ValueMeta[] {
@@ -320,7 +320,7 @@ export function facetGroups(
       state,
       "complication",
       "Function",
-      collect(products, (p) => p.dials.flatMap((d) => [...d.complications]), COMPLICATION_VALUES),
+      collect(products, (p) => p.dials.flatMap((d) => d.complications), COMPLICATION_VALUES),
     ),
     priceGroup(products, state, currency),
   ];

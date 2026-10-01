@@ -97,7 +97,13 @@ export const COMPLICATION_VALUES: Complication[] = [
   "alarm",
 ];
 
-/** Facets that are multi-select lists, and the accessor that fills their counts. */
+/**
+ * Facets that are multi-select lists, and the accessor that fills their counts.
+ *
+ * `readonly` on the return type because a dial's complications are already a
+ * readonly array; widening them here just to satisfy a signature would be a copy
+ * of every complication on every product on every count pass.
+ */
 const CHIP_FACETS = {
   collection: (p: Product) => [p.collection],
   movement: (p: Product) => [p.movement.type],
@@ -105,7 +111,7 @@ const CHIP_FACETS = {
   strap: (p: Product) => p.straps.map((s) => s.type),
   dial: (p: Product) => p.dials.map((d) => d.id),
   complication: (p: Product) => p.dials.flatMap((d) => d.complications),
-} satisfies Record<string, (product: Product) => string[]>;
+} satisfies Record<string, (product: Product) => readonly string[]>;
 
 export type ChipFacetId = keyof typeof CHIP_FACETS;
 
@@ -208,7 +214,7 @@ function inRange(value: number, min: number | null, max: number | null): boolean
 
 function chipFacetMatches(product: Product, id: ChipFacetId, selected: string[]): boolean {
   if (selected.length === 0) return true;
-  const available = CHIP_FACETS[id](product);
+  const available: readonly string[] = CHIP_FACETS[id](product);
   // OR within the facet: the product qualifies if it offers *any* selected value.
   return selected.some((value) => available.includes(value));
 }
@@ -319,16 +325,6 @@ export function countFacetValues(
   return counts;
 }
 
-/** How many products a given value would yield right now. */
-export function countForValue(
-  products: Product[],
-  state: FilterState,
-  id: ChipFacetId,
-  value: string,
-): number {
-  return countFacetValues(products, state, id).get(value) ?? 0;
-}
-
 /* ── URL serialisation ────────────────────────────────────────────────────
  * Filters live in the URL, not in component state, so a filtered view can be
  * shared, bookmarked, and server-rendered. The parse is total: any garbage in
@@ -434,10 +430,6 @@ export function filtersToQuery(state: FilterState): string {
   }
   if (state.sort !== "featured") params.set("sort", state.sort);
   return params.toString();
-}
-
-export function isDefaultFilters(state: FilterState): boolean {
-  return filtersToQuery(state) === "";
 }
 
 export function activeFilterCount(state: FilterState): number {

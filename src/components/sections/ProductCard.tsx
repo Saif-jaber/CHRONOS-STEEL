@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { defaultVariant } from "@/lib/catalog/variants";
-import { formatPrice } from "@/lib/format";
+import { STOREFRONT_CURRENCY, formatMm, formatPrice } from "@/lib/format";
 import { productPhoto } from "@/lib/media";
 import { Photo } from "@/components/ui/Photo";
 
@@ -41,7 +41,7 @@ export function ProductCard({
       >
         <Photo
           src={productPhoto(product.slug)}
-          alt={`${product.model}, ${product.caseSpec.diameterMm.toFixed(1)} mm ${product.caseSpec.material.replace(/-/g, " ")} watch`}
+          alt={`${product.model}, ${formatMm(product.caseSpec.diameterMm)} mm ${product.caseSpec.material.replace(/-/g, " ")} watch`}
           ratio={1}
           /* The files are 2:3 portrait cut-outs on a transparent ground, so the 1:1
              frame would crop a third of the width off them under the `cover`
@@ -62,12 +62,12 @@ export function ProductCard({
             {product.model}
           </h3>
           <p className="measure shrink-0 text-sm text-ink-2">
-            {formatPrice(variant.priceInCents, "GBP")}
+            {formatPrice(variant.priceInCents, STOREFRONT_CURRENCY)}
           </p>
         </div>
         <p className="measure mt-2xs text-xs text-muted">
-          {product.reference} · {product.caseSpec.diameterMm.toFixed(1)} mm ·{" "}
-          {product.collection}
+          {product.reference} &middot; {formatMm(product.caseSpec.diameterMm)} mm
+          &middot; {product.collection}
         </p>
 
         {/* Arrow appears in the reserved space of the meta line, so nothing

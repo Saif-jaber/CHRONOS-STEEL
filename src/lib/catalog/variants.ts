@@ -62,9 +62,15 @@ function resolveStock(product: Product, buildable: boolean): number | null {
   return Math.max(0, product.stock - (product.reserved ?? 0));
 }
 
+/**
+ * Weeks before a buildable piece can ship. Zero means it is on the shelf, which
+ * `resolveStock` has already decided; the remaining distinction is a product the
+ * maker quotes for against one whose stock has run out.
+ */
 export function leadTimeWeeksFor(product: Product, buildable: boolean): number | null {
   if (!buildable) return null;
-  if (resolveStock(product, buildable)! > 0) return 0;
+  const stock = resolveStock(product, buildable);
+  if (stock !== null && stock > 0) return 0;
   return product.stock === null ? 10 : 6;
 }
 
@@ -182,8 +188,9 @@ export type StockState = "in-stock" | "low" | "made-to-order" | "unavailable";
 
 export function stockState(variant: ResolvedVariant): StockState {
   if (!variant.available) return "unavailable";
-  if (variant.stock === null) return "made-to-order";
-  if (variant.stock === 0) return "made-to-order";
+  // null (made to order) and 0 (nothing on the shelf) are the same promise to a
+  // shopper, so they share a branch rather than testing the same answer twice.
+  if (variant.stock === null || variant.stock === 0) return "made-to-order";
   if (variant.stock <= 2) return "low";
   return "in-stock";
 }

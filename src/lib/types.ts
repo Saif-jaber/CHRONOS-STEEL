@@ -212,22 +212,6 @@ export interface Account {
 
 /* ── Faceted filtering ─────────────────────────────────────────────────── */
 
-export interface FacetValue<T extends string = string> {
-  value: T;
-  label: string;
-  /** Raw value for range maths, e.g. the mm figure for a size facet. */
-  numeric?: number;
-}
-
-export interface FacetDefinition {
-  id: string;
-  label: string;
-  /** "chips" = multi-select pills, "range" = dual slider, "swatch" = colour dots. */
-  control: "chips" | "range" | "swatch";
-  values: FacetValue[];
-  unit?: string;
-}
-
 export type SortKey =
   | "featured"
   | "price-asc"
