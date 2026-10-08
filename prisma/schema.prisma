@@ -1,0 +1,169 @@
+/* Chronos & Steel — PostgreSQL schema.
+ *
+ * Two families of table. The auth pair (Account, Session) is described in full in
+ * `src/lib/auth/repository.ts` and mirrors `Account` in `src/lib/types.ts`. The
+ * catalogue quartet mirrors `Product` and its option axes the same way, with the
+ * nested value objects (`caseSpec`, `movement`) flattened into columns so every
+ * field the TypeScript types name has exactly one column of the same name and
+ * `toProduct` in the repository adapter is a mechanical mapping.
+ *
+ * Strings rather than native enums for the unions (material, finish, movement
+ * type, and the rest): they are closed sets in TypeScript, but at the database
+ * level adding a bronze case is a data change, not a schema change, and a
+ * `String` column with the union documented in `src/lib/types.ts` keeps a new
+ * finish from needing a migration to insert.
+ */
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/* ── Auth ─────────────────────────────────────────────────────────────────── */
+
+model Account {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  passwordHash    String
+  role            String    @default("customer")
+  createdAt       DateTime  @default(now())
+  emailVerifiedAt DateTime?
+  storeSlug       String?   @unique
+  storeName       String?
+
+  sessions Session[]
+}
+
+model Session {
+  token     String   @id
+  accountId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+/* ── Catalogue ────────────────────────────────────────────────────────────── */
+
+model Product {
+  id             String  @id
+  slug           String  @unique
+  brand          String
+  model          String
+  reference      String
+  yearIntroduced Int
+  collection     String
+  summary        String
+  story          String
+  /* Position in the authored catalogue order. Not part of the TypeScript
+     `Product` type: it exists so the database returns the seed list in the
+     order the site has always shown it. */
+  sortOrder      Int     @default(0)
+
+  /* CaseSpec */
+  diameterMm        Float
+  thicknessMm       Float
+  lugToLugMm        Float
+  lugWidthMm        Float
+  material          String
+  finish            String
+  bezel             String
+  crystal           String
+  waterResistanceM  Int
+
+  /* Movement */
+  type                          String
+  caliber                       String
+  manufacturer                  String
+  powerReserveHours             Int?
+  frequencyVph                  Int?
+  jewels                        Int?
+  components                    Int?
+  chronometerDeviationPercent   Float?
+  winding                       String?
+
+  /* Shared dial furniture */
+  indexStyle String
+  lume       Boolean
+  signature  String
+  sublabel   String?
+
+  basePriceInCents Int
+  currency         String
+  stock            Int?
+  reserved         Int?
+  editionSize      Int?
+  featured         Boolean    @default(false)
+  tags             String[]
+
+  dials     Dial[]
+  straps    Strap[]
+  inventory Inventory[]
+
+  @@index([collection])
+  @@index([featured])
+}
+
+/* Option ids (`dial-silver`, `strap-leather`) are scoped to their product, not
+   global: the same black dial appears on several references, and the configurator
+   looks ids up *within* a product. Hence the composite primary key — a plain `id`
+   would collide on the second product that offers the same dial. */
+model Dial {
+  productId            String
+  id                   String
+  sortOrder            Int     @default(0)
+  name                 String
+  colorName            String
+  colorHex             String
+  finish               String
+  priceDeltaInCents    Int     @default(0)
+  complications        String[]
+  complicationPlacements Json
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([productId, id])
+  @@index([productId])
+}
+
+model Strap {
+  productId         String
+  id                String
+  sortOrder         Int     @default(0)
+  type              String
+  name              String
+  material          String
+  colorHex          String
+  colorName         String
+  priceDeltaInCents Int
+  widthMm           Float
+  stitchColorHex    String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([productId, id])
+  @@index([productId])
+}
+
+/* Per-variant stock, when and if stock moves off the product row. The ids are
+   plain strings rather than foreign keys on purpose: a dial or strap is recreated
+   wholesale when the seed runs, and stock rows must survive that. */
+model Inventory {
+  id        String  @id @default(uuid())
+  productId String
+  dialId    String?
+  strapId   String?
+  quantity  Int     @default(0)
+  reserved  Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated Prisma client (`prisma generate`). Machine-written, regenerated
+    // on every schema change, and linting it would only ever produce noise.
+    "src/generated/**",
     // Standalone Node dev tooling (geometry audit). CommonJS by necessity, and
     // deliberately outside the app's TypeScript module graph.
     "scripts/**",

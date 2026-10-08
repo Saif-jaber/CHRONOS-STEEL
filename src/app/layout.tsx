@@ -86,6 +86,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
+      /* globals.css puts `scroll-behavior: smooth` on html. Next reads this
+         attribute to know that is intentional: during a route transition it
+         temporarily switches scrolling to instant, then restores it. Without
+         the attribute Next warns in development and lets the transition
+         glide, which is how a navigation can travel the whole page instead
+         of starting at the top. */
+      data-scroll-behavior="smooth"
       className={`${playfair.variable} ${inter.variable} ${jetbrains.variable} h-full`}
       suppressHydrationWarning
     >

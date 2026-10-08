@@ -1,4 +1,5 @@
 import "server-only";
+import { PrismaCatalogRepository } from "./prisma-repository";
 import { PRODUCTS } from "./products";
 import type { Product } from "../types";
 
@@ -26,7 +27,10 @@ export interface CatalogRepository {
   listCollections(): Promise<Array<{ name: string; count: number }>>;
 }
 
-class SeedCatalogRepository implements CatalogRepository {
+/** The reference implementation of the interface above, served from the seed
+    array. Exported rather than dead: it is what `prisma/seed.ts` writes to the
+    database, and what a test can use without Postgres. */
+export class SeedCatalogRepository implements CatalogRepository {
   async listProducts(): Promise<Product[]> {
     return PRODUCTS;
   }
@@ -52,16 +56,19 @@ class SeedCatalogRepository implements CatalogRepository {
 }
 
 /**
- * The live export. Swap this line to `new PrismaCatalogRepository(prisma)` and
- * nothing else in `src/` needs to change.
+ * The live export. Reads run against Postgres through `PrismaCatalogRepository`;
+ * the seed repository above remains the source of truth the database is filled
+ * from. Swapping this one line moves the catalogue in either direction.
  */
-export const catalog: CatalogRepository = new SeedCatalogRepository();
+export const catalog: CatalogRepository = new PrismaCatalogRepository();
 
-/* ── Reference implementation for your Prisma adapter ────────────────────
+/* ── The adapter as designed, before it existed ───────────────────────────
  *
- * Drop this into `lib/catalog/prisma-repository.ts` once `schema.prisma` exists.
- * Note the eager includes: facets and variant prices are computed from the
- * complete option set, so a partial load would silently break the counts.
+ * The reference `PrismaCatalogRepository` this file was written against, kept
+ * as the record of the query shapes. The live version is in
+ * `lib/catalog/prisma-repository.ts`. Note the eager includes: facets and
+ * variant prices are computed from the complete option set, so a partial load
+ * would silently break the counts.
  *
  *   import { prisma } from "@/lib/prisma";
  *

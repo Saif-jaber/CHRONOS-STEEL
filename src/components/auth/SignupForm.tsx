@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { RoleChoice } from "@/components/auth/RoleChoice";
 import { Button } from "@/components/ui/Button";
 import { Checkbox, FormNote, PasswordField, TextField } from "@/components/ui/Field";
+import { postAuth } from "@/lib/auth/api";
 import {
   MIN_PASSWORD_LENGTH,
   SIGNUP_FIELDS,
@@ -38,10 +40,12 @@ const EMPTY: SignupValues = {
 };
 
 export function SignupForm() {
+  const router = useRouter();
   const [values, setValues] = useState<SignupValues>(EMPTY);
   const [errors, setErrors] = useState<SignupErrors>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [sending, setSending] = useState(false);
 
   function set<K extends keyof SignupValues>(key: K, value: SignupValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -66,9 +70,9 @@ export function SignupForm() {
     });
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setReady(false);
+    setServerError(null);
 
     const found = validateSignup(values);
     setErrors(found);
@@ -80,26 +84,41 @@ export function SignupForm() {
       return;
     }
 
-    /* ── The seam ──────────────────────────────────────────────────────────
-     * Front end only, so nothing is sent. This is where the request goes:
-     *
-     *   const res = await fetch("/api/auth/register", {
-     *     method: "POST",
-     *     headers: { "Content-Type": "application/json" },
-     *     body: JSON.stringify({
-     *       name: values.name.trim(),
-     *       email: values.email.trim(),
-     *       password: values.password,
-     *       role: values.role,
-     *       storeName: values.role === "seller" ? values.storeName.trim() : null,
-     *     }),
-     *   });
-     *   router.push(values.role === "seller" ? "/seller/onboarding" : "/account");
-     *
-     * Note what is *not* sent: `confirmPassword` and `terms`. The first is a
-     * check on the second, and the second is a record for the server to make.
-     * Run `validateSignup` in the route handler too. */
-    setReady(true);
+    /* What is sent: everything the server needs and nothing it does not.
+       `confirmPassword` is a check on `password`, not a second secret, and
+       `terms` is the server's record to make — the route re-derives both and
+       still runs `validateSignup` over the result. A duplicate address comes
+       back as an error under the email field, merged into `errors` below. */
+    setSending(true);
+    const result = await postAuth(
+      "/api/auth/register",
+      {
+        name: values.name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+        role: values.role,
+        storeName: values.role === "seller" ? values.storeName.trim() : null,
+      },
+      "The account could not be created. Try again.",
+    );
+
+    if (!result.ok) {
+      setSending(false);
+      setServerError(result.failure.error);
+      if (result.failure.errors) {
+        setErrors((e) => ({ ...e, ...result.failure.errors }));
+        const first = SIGNUP_FIELDS.find((key) => result.failure.errors?.[key]);
+        if (first) document.getElementById(String(first))?.focus();
+      }
+      return;
+    }
+
+    /* Straight to the shop: an account is a means, not a destination. When
+       /seller/onboarding exists it takes over this branch for sellers; until
+       then both roles land on the watches for sale rather than on a 404. No
+       `router.refresh()` — see the matching comment in LoginForm: it cancels
+       the scroll-to-top and drops the visitor at the bottom of the page. */
+    router.push("/collection");
   }
 
   const isSeller = values.role === "seller";
@@ -194,8 +213,8 @@ export function SignupForm() {
         .
       </Checkbox>
 
-      <Button type="submit" onDark className="mt-2xs w-full">
-        Create account
+      <Button type="submit" onDark disabled={sending} className="mt-2xs w-full">
+        {sending ? "Creating your account…" : "Create account"}
       </Button>
 
       <p className="text-xs text-navy-muted">
@@ -208,18 +227,13 @@ export function SignupForm() {
         </Link>
       </p>
 
+      {serverError ? <FormNote tone="error">{serverError}</FormNote> : null}
+
       {submitted && hasErrors(errors) ? (
         <FormNote tone="error">
           {Object.keys(errors).length === 1
             ? "One field needs attention."
             : `${Object.keys(errors).length} fields need attention.`}
-        </FormNote>
-      ) : null}
-
-      {ready ? (
-        <FormNote>
-          Details accepted for a {values.role} account. No backend is connected
-          yet.
         </FormNote>
       ) : null}
     </form>

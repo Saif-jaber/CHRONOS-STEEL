@@ -202,3 +202,15 @@ export function IconAccount(props: IconProps) {
     </Frame>
   );
 }
+
+/** Sign out: an arrow leaving through a doorway. The account glyph answers
+    "who is signed in"; this one answers "end it". */
+export function IconSignOut(props: IconProps) {
+  return (
+    <Frame {...props}>
+      <path d="M10 3.5H5.5v17H10" />
+      <path d="M10 12H20" />
+      <path d="M16.5 8.5 20 12l-3.5 3.5" />
+    </Frame>
+  );
+}
