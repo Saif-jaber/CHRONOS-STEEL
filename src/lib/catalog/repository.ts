@@ -25,6 +25,8 @@ export interface CatalogRepository {
   getProductsByIds(ids: string[]): Promise<Product[]>;
   /** Facet counts for the command palette and the nav's browse menu. */
   listCollections(): Promise<Array<{ name: string; count: number }>>;
+  getProductsBySellerId(sellerId: string): Promise<Product[]>;
+  getProductsByStoreSlug(storeSlug: string): Promise<Product[]>;
 }
 
 /** The reference implementation of the interface above, served from the seed
@@ -52,6 +54,14 @@ export class SeedCatalogRepository implements CatalogRepository {
     return [...counts.entries()]
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getProductsBySellerId(sellerId: string): Promise<Product[]> {
+    return PRODUCTS.filter((product) => product.sellerId === sellerId);
+  }
+
+  async getProductsByStoreSlug(storeSlug: string): Promise<Product[]> {
+    return PRODUCTS.filter((product) => product.storeSlug === storeSlug);
   }
 }
 

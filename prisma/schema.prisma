@@ -37,6 +37,7 @@ model Account {
   storeName       String?
 
   sessions Session[]
+  products Product[]
 }
 
 model Session {
@@ -103,12 +104,16 @@ model Product {
   featured         Boolean    @default(false)
   tags             String[]
 
+  sellerId String?
+  seller   Account? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+
   dials     Dial[]
   straps    Strap[]
   inventory Inventory[]
 
   @@index([collection])
   @@index([featured])
+  @@index([sellerId])
 }
 
 /* Option ids (`dial-silver`, `strap-leather`) are scoped to their product, not

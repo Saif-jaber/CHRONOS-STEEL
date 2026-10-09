@@ -43,8 +43,15 @@ export default async function AccountPage() {
     { label: "Email address", value: account.email },
     { label: "Account type", value: ROLE_LABEL[account.role] },
   ];
-  if (account.role === "seller" && account.storeName) {
-    rows.push({ label: "Storefront", value: account.storeName });
+  if (account.role === "seller") {
+    rows.push({
+      label: "Storefront",
+      value: account.storeName
+        ? `${account.storeName}${account.storeSlug ? ` (/sellers/${account.storeSlug})` : ""}`
+        : account.storeSlug
+          ? `/sellers/${account.storeSlug}`
+          : "Not set",
+    });
   }
   rows.push({ label: "Member since", value: joined });
   rows.push({

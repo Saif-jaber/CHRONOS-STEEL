@@ -113,13 +113,13 @@ export function SignupForm() {
       return;
     }
 
-    /* Straight to the shop: an account is a means, not a destination. When
-       /seller/onboarding exists it takes over this branch for sellers; until
-       then both roles land on the watches for sale rather than on a 404. No
-       `router.refresh()` — see the matching comment in LoginForm: it cancels
-       the scroll-to-top and drops the visitor at the bottom of the page. */
-    router.push("/collection");
-  }
+      /* Straight to the shop: an account is a means, not a destination. When
+         /seller/onboarding exists it takes over this branch for sellers; until
+         then both roles land on the watches for sale rather than on a 404. No
+         `router.refresh()` — see the matching comment in LoginForm: it cancels
+         the scroll-to-top and drops the visitor at the bottom of the page. */
+      router.push("/seller");
+    }
 
   const isSeller = values.role === "seller";
 

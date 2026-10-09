@@ -1,0 +1,78 @@
+import { redirect } from "next/navigation";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { ToTopButton } from "@/components/ui/ToTopButton";
+import { catalog } from "@/lib/catalog/repository";
+import { currentAccount } from "@/lib/auth/session";
+import { ShopCard } from "@/components/shop/ShopCard";
+
+export default async function SellerPage() {
+  const account = await currentAccount();
+  if (!account) redirect("/login");
+  if (account.role !== "seller") redirect("/collection");
+
+  let products = [] as Array<Awaited<ReturnType<typeof catalog.listProducts>>[number]>;
+  if (account.id) {
+    products = await catalog.getProductsBySellerId(account.id);
+  }
+
+  const storeName = account.storeName || "Your Storefront";
+  const storeSlug = account.storeSlug;
+
+  return (
+    <>
+      <Header />
+      <main id="main">
+        <section className="on-navy relative isolate overflow-hidden bg-navy">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10"
+            style={{
+              background:
+                "radial-gradient(64% 58% at 78% 12%, #1a2434 0%, #101828 44%, #0c1220 80%)",
+            }}
+          />
+          <div className="container pt-[calc(var(--spacing-nav)+3.5rem)] pb-lg">
+            <p className="eyebrow text-silver">Seller</p>
+            <h1 className="mt-2xs text-display text-paper">{storeName}</h1>
+            <div className="mt-md flex flex-col gap-md lg:flex-row lg:items-end lg:justify-between">
+              <p className="prose-measure text-md leading-relaxed text-silver-2">
+                {products.length === 0
+                  ? "You haven't listed any references yet. When you do, they'll appear here."
+                  : `Listing ${products.length} ${products.length === 1 ? "reference" : "references"}.`}
+              </p>
+              {storeSlug && (
+                <p className="measure shrink-0 text-xs text-navy-muted lg:text-right">
+                  Public URL: /sellers/{storeSlug}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="section bg-paper">
+          <div className="container">
+            {products.length === 0 ? (
+              <div className="rule-t pt-md">
+                <h2 className="text-xl">No listings yet</h2>
+                <p className="prose-measure mt-2xs text-md leading-relaxed text-muted">
+                  When your catalogue grows, your storefront will list them automatically.
+                </p>
+              </div>
+            ) : (
+              <ul className="mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 xl:grid-cols-3">
+                {products.map((product) => (
+                  <li key={product.id}>
+                    <ShopCard product={product} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      </main>
+      <ToTopButton />
+      <Footer />
+    </>
+  );
+}

@@ -39,12 +39,13 @@ import type { CatalogRepository } from "./repository";
 const productInclude = {
   dials: { orderBy: { sortOrder: "asc" as const } },
   straps: { orderBy: { sortOrder: "asc" as const } },
+  seller: { select: { storeSlug: true, storeName: true, id: true } },
 } satisfies object;
 
 /** A product row *as the queries above return it*: scalars plus both option
     axes. The bare model type deliberately has no relations on it, which is why
     every mapping function below takes this, not `Product` from the client. */
-type ProductRow = Prisma.ProductGetPayload<{ include: { dials: true; straps: true } }>;
+type ProductRow = Prisma.ProductGetPayload<{ include: { dials: true; straps: true; seller: { select: { storeSlug: true; storeName: true; id: true } } } }>;
 
 function toDial(row: ProductRow["dials"][number]): DialOption {
   return {
@@ -129,6 +130,9 @@ function toProduct(row: ProductRow): Product {
     editionSize: row.editionSize,
     featured: row.featured,
     tags: row.tags,
+    sellerId: row.sellerId ?? null,
+    storeName: row.seller?.storeName ?? undefined,
+    storeSlug: row.seller?.storeSlug ?? undefined,
   };
 }
 
@@ -166,5 +170,23 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return groups
       .map((group) => ({ name: group.collection, count: group._count._all }))
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getProductsBySellerId(sellerId: string): Promise<Product[]> {
+    const rows = await prisma.product.findMany({
+      where: { sellerId },
+      include: productInclude,
+      orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
+    });
+    return rows.map(toProduct);
+  }
+
+  async getProductsByStoreSlug(storeSlug: string): Promise<Product[]> {
+    const rows = await prisma.product.findMany({
+      where: { seller: { storeSlug } },
+      include: productInclude,
+      orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
+    });
+    return rows.map(toProduct);
   }
 }

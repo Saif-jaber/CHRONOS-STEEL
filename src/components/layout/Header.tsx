@@ -185,9 +185,9 @@ export function Header() {
                 <IconAccount onDark />
               </IconLink>
             )}
-            <IconButton label="Search" onDark>
-              <IconSearch onDark />
-            </IconButton>
+              <IconLink href="/collection" label="Search" onDark>
+                <IconSearch onDark />
+              </IconLink>
             <IconButton label="Bag, 0 items" onDark>
               <IconBag onDark />
             </IconButton>

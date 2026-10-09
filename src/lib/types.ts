@@ -160,6 +160,12 @@ export interface Product {
   editionSize: number | null;
   featured: boolean;
   tags: string[];
+  /** Optional seller account this product belongs to. */
+  sellerId?: string | null;
+  /** Optional store name (denormalised for display convenience). */
+  storeName?: string | null;
+  /** Optional store slug. */
+  storeSlug?: string | null;
 }
 
 /* ── Resolved variants ─────────────────────────────────────────────────────
