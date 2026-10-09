@@ -160,6 +160,9 @@ export interface Product {
   editionSize: number | null;
   featured: boolean;
   tags: string[];
+  /** Seller-uploaded photographs (R2 public URLs), in display order. Empty or
+      absent means the card renders the derived WatchRender drawing instead. */
+  images?: string[];
   /** Optional seller account this product belongs to. */
   sellerId?: string | null;
   /** Optional store name (denormalised for display convenience). */

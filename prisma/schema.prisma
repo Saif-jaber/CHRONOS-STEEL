@@ -104,6 +104,11 @@ model Product {
   featured         Boolean    @default(false)
   tags             String[]
 
+  /* Seller-uploaded photographs, stored in Cloudflare R2 and kept as public
+     URLs in display order. Empty for the seeded catalogue, whose cards render
+     the derived WatchRender drawing instead. */
+  images           String[]  @default([])
+
   sellerId String?
   seller   Account? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
 

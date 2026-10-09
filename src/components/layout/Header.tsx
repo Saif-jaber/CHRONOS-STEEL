@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useSyncExternalStore, useState } from "react";
 import { useSignOut } from "@/components/auth/useSignOut";
+import { HeaderSearch } from "@/components/layout/HeaderSearch";
 import { Logo } from "@/components/brand/Logo";
 import { Cta, IconButton, IconLink } from "@/components/ui/Button";
-import { IconAccount, IconBag, IconClose, IconMenu, IconSearch, IconSignOut } from "@/components/ui/Icon";
+import { IconAccount, IconBag, IconClose, IconMenu, IconSignOut } from "@/components/ui/Icon";
 import { cx } from "@/lib/format";
 import { hasAuthHint } from "@/lib/auth/api";
 
@@ -185,9 +186,7 @@ export function Header() {
                 <IconAccount onDark />
               </IconLink>
             )}
-              <IconLink href="/collection" label="Search" onDark>
-                <IconSearch onDark />
-              </IconLink>
+            <HeaderSearch />
             <IconButton label="Bag, 0 items" onDark>
               <IconBag onDark />
             </IconButton>

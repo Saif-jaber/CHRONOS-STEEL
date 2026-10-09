@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type {
@@ -12,6 +13,7 @@ import type {
   Product,
   StrapOption,
 } from "../types";
+import { slugify, type NewListingInput } from "./listing";
 import type { CatalogRepository } from "./repository";
 
 /**
@@ -130,6 +132,7 @@ function toProduct(row: ProductRow): Product {
     editionSize: row.editionSize,
     featured: row.featured,
     tags: row.tags,
+    images: row.images,
     sellerId: row.sellerId ?? null,
     storeName: row.seller?.storeName ?? undefined,
     storeSlug: row.seller?.storeSlug ?? undefined,
@@ -188,5 +191,113 @@ export class PrismaCatalogRepository implements CatalogRepository {
       orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
     });
     return rows.map(toProduct);
+  }
+
+  async createListing(input: NewListingInput): Promise<Product> {
+    const slug = await this.uniqueSlug(`${input.brand} ${input.model} ${input.reference}`);
+    const order = await prisma.product.aggregate({ _max: { sortOrder: true } });
+    const sortOrder = (order._max.sortOrder ?? 0) + 1;
+
+    const row = await prisma.product.create({
+      data: {
+        id: randomUUID(),
+        slug,
+        brand: input.brand,
+        model: input.model,
+        reference: input.reference,
+        yearIntroduced: input.yearIntroduced,
+        collection: input.collection,
+        summary: input.summary,
+        story: input.story,
+        sortOrder,
+
+        diameterMm: input.caseSpec.diameterMm,
+        thicknessMm: input.caseSpec.thicknessMm,
+        lugToLugMm: input.caseSpec.lugToLugMm,
+        lugWidthMm: input.caseSpec.lugWidthMm,
+        material: input.caseSpec.material,
+        finish: input.caseSpec.finish,
+        bezel: input.caseSpec.bezel,
+        crystal: input.caseSpec.crystal,
+        waterResistanceM: input.caseSpec.waterResistanceM,
+
+        type: input.movement.type,
+        caliber: input.movement.caliber,
+        manufacturer: input.movement.manufacturer,
+        powerReserveHours: input.movement.powerReserveHours,
+        frequencyVph: input.movement.frequencyVph,
+        jewels: input.movement.jewels,
+        components: input.movement.components,
+        chronometerDeviationPercent: input.movement.chronometerDeviationPercent,
+        winding: input.movement.winding,
+
+        indexStyle: input.indexStyle,
+        lume: input.lume,
+        signature: input.signature,
+        sublabel: input.sublabel,
+        basePriceInCents: input.basePriceInCents,
+        currency: input.currency,
+        stock: input.stock,
+        reserved: null,
+        editionSize: input.editionSize,
+        featured: input.featured,
+        tags: input.tags,
+        images: input.images,
+        sellerId: input.sellerId,
+
+        dials: {
+          create: [
+            {
+              id: "dial-1",
+              sortOrder: 0,
+              name: input.dial.name,
+              colorName: input.dial.colorName,
+              colorHex: input.dial.colorHex,
+              finish: input.dial.finish,
+              priceDeltaInCents: input.dial.priceDeltaInCents,
+              complications: [],
+              complicationPlacements: {},
+            },
+          ],
+        },
+        straps: {
+          create: [
+            {
+              id: "strap-1",
+              sortOrder: 0,
+              type: input.strap.type,
+              name: input.strap.name,
+              material: input.strap.material,
+              colorHex: input.strap.colorHex,
+              colorName: input.strap.colorName,
+              priceDeltaInCents: input.strap.priceDeltaInCents,
+              widthMm: input.strap.widthMm,
+              stitchColorHex: input.strap.stitchColorHex ?? null,
+            },
+          ],
+        },
+      },
+      include: productInclude,
+    });
+
+    return toProduct(row);
+  }
+
+  /** Same suffix rule as the account storefront slug, decided against the table. */
+  private async uniqueSlug(source: string): Promise<string> {
+    const base = slugify(source);
+    const taken = new Set(
+      (
+        await prisma.product.findMany({
+          where: { slug: { startsWith: base } },
+          select: { slug: true },
+        })
+      ).map((product) => product.slug),
+    );
+    if (!taken.has(base)) return base;
+    for (let suffix = 2; ; suffix += 1) {
+      const candidate = `${base}-${suffix}`;
+      if (!taken.has(candidate)) return candidate;
+    }
   }
 }

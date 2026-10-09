@@ -39,9 +39,11 @@ const EMPTY: SignupValues = {
   terms: false,
 };
 
-export function SignupForm() {
+export function SignupForm({ fixedRole }: { fixedRole?: UserRole }) {
   const router = useRouter();
-  const [values, setValues] = useState<SignupValues>(EMPTY);
+  const [values, setValues] = useState<SignupValues>(() =>
+    fixedRole ? { ...EMPTY, role: fixedRole } : EMPTY,
+  );
   const [errors, setErrors] = useState<SignupErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -125,13 +127,19 @@ export function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-md">
-      <RoleChoice
-        id="role"
-        value={values.role}
-        onChange={setRole}
-        error={errors.role}
-        onDark
-      />
+      {fixedRole ? (
+        <p className="eyebrow text-silver">
+          {fixedRole === "seller" ? "Seller account" : "Customer account"}
+        </p>
+      ) : (
+        <RoleChoice
+          id="role"
+          value={values.role}
+          onChange={setRole}
+          error={errors.role}
+          onDark
+        />
+      )}
 
       {isSeller ? (
         <TextField

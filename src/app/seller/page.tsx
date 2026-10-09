@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ToTopButton } from "@/components/ui/ToTopButton";
+import { ButtonLink } from "@/components/ui/Button";
 import { catalog } from "@/lib/catalog/repository";
 import { currentAccount } from "@/lib/auth/session";
 import { ShopCard } from "@/components/shop/ShopCard";
@@ -41,11 +42,16 @@ export default async function SellerPage() {
                   ? "You haven't listed any references yet. When you do, they'll appear here."
                   : `Listing ${products.length} ${products.length === 1 ? "reference" : "references"}.`}
               </p>
-              {storeSlug && (
-                <p className="measure shrink-0 text-xs text-navy-muted lg:text-right">
-                  Public URL: /sellers/{storeSlug}
-                </p>
-              )}
+              <div className="flex shrink-0 flex-col gap-sm lg:items-end">
+                <ButtonLink href="/seller/listings/new" variant="outline" onDark>
+                  Add a reference
+                </ButtonLink>
+                {storeSlug && (
+                  <p className="measure text-xs text-navy-muted lg:text-right">
+                    Public URL: /sellers/{storeSlug}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </section>
@@ -56,8 +62,12 @@ export default async function SellerPage() {
               <div className="rule-t pt-md">
                 <h2 className="text-xl">No listings yet</h2>
                 <p className="prose-measure mt-2xs text-md leading-relaxed text-muted">
-                  When your catalogue grows, your storefront will list them automatically.
+                  Describe your first reference and it will appear here and in the
+                  collection straight away.
                 </p>
+                <div className="mt-md">
+                  <ButtonLink href="/seller/listings/new">Add a reference</ButtonLink>
+                </div>
               </div>
             ) : (
               <ul className="mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 xl:grid-cols-3">

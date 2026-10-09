@@ -10,6 +10,7 @@ import {
 import { STOREFRONT_CURRENCY, formatMm, formatPrice } from "@/lib/format";
 import { IconArrowRight } from "@/components/ui/Icon";
 import { WatchRender } from "@/components/watch/WatchRender";
+import { Photo } from "@/components/ui/Photo";
 
 /**
  * A reference, as a card in the shop.
@@ -50,16 +51,30 @@ export function ShopCard({
       >
         {/* The frame is a tonal panel, not a card. The drawing bleeds to its own
             edges above and below, which is how the strap reads as continuing
-            past the crop. */}
+            past the crop.
+
+            A seller's photograph, when there is one, takes the frame: a real
+            picture of the real watch beats a drawing of it every time. The
+            derived drawing is the fallback, not the default, so the collection
+            still reads as complete before any seller has uploaded anything. */}
         <div className="relative bg-paper-2 px-md py-md">
-          <WatchRender
-            product={product}
-            dial={resolveDialSpec(product, variant.dial)}
-            strap={variant.strap}
-            detail="card"
-            transitionKey={variant.key}
-            className="mx-auto w-full max-w-56"
-          />
+          {product.images && product.images.length > 0 ? (
+            <Photo
+              src={product.images[0]}
+              alt={`${product.brand} ${product.model}`}
+              ratio={1}
+              className="mx-auto w-full max-w-56"
+            />
+          ) : (
+            <WatchRender
+              product={product}
+              dial={resolveDialSpec(product, variant.dial)}
+              strap={variant.strap}
+              detail="card"
+              transitionKey={variant.key}
+              className="mx-auto w-full max-w-56"
+            />
+          )}
         </div>
 
         <div className="mt-sm flex items-baseline justify-between gap-sm">

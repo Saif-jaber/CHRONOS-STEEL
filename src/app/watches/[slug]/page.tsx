@@ -1,0 +1,206 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { ToTopButton } from "@/components/ui/ToTopButton";
+import { Photo } from "@/components/ui/Photo";
+import { Cta } from "@/components/ui/Button";
+import { WatchRender } from "@/components/watch/WatchRender";
+import { catalog } from "@/lib/catalog/repository";
+import {
+  STOCK_COPY,
+  defaultVariant,
+  resolveDialSpec,
+  stockState,
+} from "@/lib/catalog/variants";
+import {
+  STOREFRONT_CURRENCY,
+  formatMmWithUnit,
+  formatPrice,
+  formatWaterResistance,
+  humanise,
+} from "@/lib/format";
+
+/**
+ * A reference.
+ *
+ * The page a card points at. Where a seller has uploaded photographs they lead;
+ * the derived drawing stands in when they have not, so every reference — seeded
+ * or listed — resolves to a real page rather than a 404.
+ *
+ * Built on the server from the same repository the collection uses, so the price
+ * and the specifications here are the price and the specifications the grid
+ * showed, not a second reading of them.
+ */
+type Params = { slug: string };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await catalog.getProductBySlug(slug);
+  if (!product) return { title: "Reference not found" };
+  return {
+    title: `${product.brand} ${product.model}`,
+    description: product.summary,
+  };
+}
+
+export default async function WatchPage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params;
+  const product = await catalog.getProductBySlug(slug);
+  if (!product) notFound();
+
+  const variant = defaultVariant(product);
+  const stock = STOCK_COPY[stockState(variant)];
+  const images = product.images ?? [];
+
+  return (
+    <>
+      <Header />
+      <main id="main">
+        <section className="on-navy relative isolate overflow-hidden bg-navy">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10"
+            style={{
+              background:
+                "radial-gradient(64% 58% at 78% 12%, #1a2434 0%, #101828 44%, #0c1220 80%)",
+            }}
+          />
+          <div className="container pt-[calc(var(--spacing-nav)+3.5rem)] pb-lg">
+            <p className="eyebrow text-silver">{product.collection}</p>
+            <h1 className="mt-2xs text-display text-paper">{product.model}</h1>
+            <div className="mt-md flex flex-col gap-md sm:flex-row sm:items-end sm:justify-between">
+              <p className="measure text-xs text-navy-muted">
+                {product.reference} &middot; Introduced {product.yearIntroduced}
+              </p>
+              <p className="measure text-lg text-paper">
+                {formatPrice(variant.priceInCents, STOREFRONT_CURRENCY)}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="section bg-paper">
+          <div className="container grid gap-xl lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <div>
+              {images.length > 0 ? (
+                <div className="grid gap-md sm:grid-cols-2">
+                  {images.map((url, index) => (
+                    <Photo
+                      key={url}
+                      src={url}
+                      alt={`${product.brand} ${product.model}, photograph ${index + 1}`}
+                      ratio={1}
+                      fit="cover"
+                      priority={index === 0}
+                      className={index === 0 ? "sm:col-span-2" : undefined}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-paper-2 px-md py-lg">
+                  <WatchRender
+                    product={product}
+                    dial={resolveDialSpec(product, variant.dial)}
+                    strap={variant.strap}
+                    detail="full"
+                    transitionKey={variant.key}
+                    className="mx-auto w-full max-w-sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            <aside className="flex flex-col gap-lg">
+              <div>
+                <p className="measure text-md leading-relaxed text-ink-2">
+                  {product.summary}
+                </p>
+                <p className="mt-2xs text-xs text-faint">
+                  {stock.label} &middot; {stock.detail}
+                </p>
+              </div>
+
+              <dl className="rule-t flex flex-col gap-2xs pt-sm text-sm">
+                <Spec label="Brand" value={product.brand} />
+                <Spec label="Reference" value={product.reference} />
+                <Spec label="Diameter" value={formatMmWithUnit(product.caseSpec.diameterMm)} />
+                <Spec label="Thickness" value={formatMmWithUnit(product.caseSpec.thicknessMm)} />
+                <Spec
+                  label="Lug to lug"
+                  value={formatMmWithUnit(product.caseSpec.lugToLugMm)}
+                />
+                <Spec label="Lug width" value={formatMmWithUnit(product.caseSpec.lugWidthMm, 0)} />
+                <Spec label="Case" value={humanise(product.caseSpec.material)} />
+                <Spec label="Finish" value={humanise(product.caseSpec.finish)} />
+                <Spec label="Bezel" value={humanise(product.caseSpec.bezel)} />
+                <Spec label="Crystal" value={humanise(product.caseSpec.crystal)} />
+                <Spec
+                  label="Water resistance"
+                  value={formatWaterResistance(product.caseSpec.waterResistanceM)}
+                />
+                <Spec
+                  label="Movement"
+                  value={`${humanise(product.movement.type)}${
+                    product.movement.caliber ? `, ${product.movement.caliber}` : ""
+                  }`}
+                />
+                {product.movement.powerReserveHours !== null ? (
+                  <Spec
+                    label="Power reserve"
+                    value={`${product.movement.powerReserveHours} h`}
+                  />
+                ) : null}
+                <Spec label="Dials" value={String(product.dials.length)} />
+                <Spec
+                  label="Straps"
+                  value={String(product.straps.length)}
+                />
+              </dl>
+
+              <div className="rule-t pt-md">
+                <Cta href="/collection">See the whole collection</Cta>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        {product.story ? (
+          <section className="section rule-t bg-paper">
+            <div className="container max-w-3xl">
+              <p className="eyebrow">The story</p>
+              <div className="mt-md flex flex-col gap-md">
+                {product.story
+                  .split(/\n{2,}/)
+                  .filter((paragraph) => paragraph.trim().length > 0)
+                  .map((paragraph, index) => (
+                    <p
+                      key={index}
+                      className="text-md leading-relaxed text-ink-2"
+                    >
+                      {paragraph.trim()}
+                    </p>
+                  ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+      </main>
+      <ToTopButton />
+      <Footer />
+    </>
+  );
+}
+
+function Spec({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-md border-b border-rule pb-2xs">
+      <dt className="measure text-xs uppercase tracking-nav text-faint">{label}</dt>
+      <dd className="measure text-right text-ink">{value}</dd>
+    </div>
+  );
+}

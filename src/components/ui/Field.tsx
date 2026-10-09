@@ -214,6 +214,194 @@ export function PasswordField({
 }
 
 /**
+ * A number field.
+ *
+ * Kept as a string at the state layer so an empty box stays empty rather than
+ * becoming a zero the seller did not type, which is the one that ships as a
+ * 0 mm case. `inputMode="decimal"` asks a phone for the number pad.
+ */
+export function NumberField({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+  error,
+  onDark = false,
+  min,
+  max,
+  step,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: string;
+  error?: string;
+  onDark?: boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+}) {
+  return (
+    <Field id={id} label={label} hint={hint} error={error}>
+      <div className={rowClass(Boolean(error), onDark)}>
+        <input
+          id={id}
+          name={id}
+          type="number"
+          inputMode="decimal"
+          value={value}
+          min={min}
+          max={max}
+          step={step}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={controlClass(onDark)}
+        />
+      </div>
+    </Field>
+  );
+}
+
+/**
+ * A select. The native control, because a list of case materials or movements is
+ * exactly what a select is for, and a custom menu would reimplement the keyboard
+ * and the mobile picker for no gain.
+ */
+export function SelectField({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+  hint,
+  error,
+  onDark = false,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: ReadonlyArray<{ value: string; label: string }>;
+  hint?: string;
+  error?: string;
+  onDark?: boolean;
+}) {
+  return (
+    <Field id={id} label={label} hint={hint} error={error}>
+      <div className={rowClass(Boolean(error), onDark)}>
+        <select
+          id={id}
+          name={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={cx(controlClass(onDark), "appearance-none")}
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </Field>
+  );
+}
+
+/** A multi-line field for the editorial story. */
+export function TextAreaField({
+  id,
+  label,
+  value,
+  onChange,
+  rows = 4,
+  hint,
+  error,
+  onDark = false,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  rows?: number;
+  hint?: string;
+  error?: string;
+  onDark?: boolean;
+  placeholder?: string;
+}) {
+  return (
+    <Field id={id} label={label} hint={hint} error={error}>
+      <div className={cx(rowClass(Boolean(error), onDark), "items-start")}>
+        <textarea
+          id={id}
+          name={id}
+          rows={rows}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={cx(controlClass(onDark), "resize-y leading-relaxed")}
+        />
+      </div>
+    </Field>
+  );
+}
+
+/**
+ * A colour field: the native swatch beside its hex, so the seller can see and
+ * type the exact tone the drawing uses.
+ */
+export function ColorField({
+  id,
+  label,
+  value,
+  onChange,
+  hint,
+  error,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: string;
+  error?: string;
+}) {
+  return (
+    <Field id={id} label={label} hint={hint} error={error}>
+      <div className={rowClass(Boolean(error), false)}>
+        <input
+          id={`${id}-swatch`}
+          type="color"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={`${label} colour picker`}
+          className="size-6 shrink-0 cursor-pointer border border-rule-2 bg-transparent"
+        />
+        <input
+          id={id}
+          name={id}
+          type="text"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={controlClass(false)}
+        />
+      </div>
+    </Field>
+  );
+}
+
+/**
  * A tick box. Native input, restyled, because a checkbox built from divs is a
  * checkbox a screen reader cannot find.
  *

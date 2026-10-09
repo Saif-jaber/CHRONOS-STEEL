@@ -1,6 +1,8 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { PrismaCatalogRepository } from "./prisma-repository";
 import { PRODUCTS } from "./products";
+import { buildProductFromListing, slugify, type NewListingInput } from "./listing";
 import type { Product } from "../types";
 
 /**
@@ -27,6 +29,8 @@ export interface CatalogRepository {
   listCollections(): Promise<Array<{ name: string; count: number }>>;
   getProductsBySellerId(sellerId: string): Promise<Product[]>;
   getProductsByStoreSlug(storeSlug: string): Promise<Product[]>;
+  /** Persists a seller listing and returns it in catalogue shape. */
+  createListing(input: NewListingInput): Promise<Product>;
 }
 
 /** The reference implementation of the interface above, served from the seed
@@ -62,6 +66,21 @@ export class SeedCatalogRepository implements CatalogRepository {
 
   async getProductsByStoreSlug(storeSlug: string): Promise<Product[]> {
     return PRODUCTS.filter((product) => product.storeSlug === storeSlug);
+  }
+
+  async createListing(input: NewListingInput): Promise<Product> {
+    const taken = new Set(PRODUCTS.map((product) => product.slug));
+    const base = slugify(`${input.brand} ${input.model} ${input.reference}`);
+    let slug = base;
+    for (let suffix = 2; taken.has(slug); suffix += 1) slug = `${base}-${suffix}`;
+
+    const product = buildProductFromListing({
+      id: `seed-${randomUUID()}`,
+      slug,
+      input,
+    });
+    PRODUCTS.push(product);
+    return product;
   }
 }
 

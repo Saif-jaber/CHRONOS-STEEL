@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SignupForm } from "@/components/auth/SignupForm";
@@ -29,6 +30,16 @@ export default async function SignupPage() {
       }
     >
       <SignupForm />
+      <p className="text-xs text-navy-muted">
+        Selling instead?{" "}
+        <Link
+          href="/signup/seller"
+          className="text-silver underline decoration-navy-rule underline-offset-4 transition-colors dur-base ease-out hover:decoration-silver"
+        >
+          Open a storefront
+        </Link>
+        .
+      </p>
     </AuthShell>
   );
 }
