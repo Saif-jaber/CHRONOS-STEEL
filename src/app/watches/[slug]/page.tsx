@@ -109,7 +109,7 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
                     strap={variant.strap}
                     detail="full"
                     transitionKey={variant.key}
-                    className="mx-auto w-full max-w-sm"
+                    className="mx-auto w-full max-w-[24rem]"
                   />
                 </div>
               )}
@@ -171,7 +171,7 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
 
         {product.story ? (
           <section className="section rule-t bg-paper">
-            <div className="container max-w-3xl">
+            <div className="container max-w-[48rem]">
               <p className="eyebrow">The story</p>
               <div className="mt-md flex flex-col gap-md">
                 {product.story

@@ -22,6 +22,7 @@ import {
   TextField,
 } from "@/components/ui/Field";
 import { IconClose } from "@/components/ui/Icon";
+import { Modal } from "@/components/ui/Modal";
 import { cx } from "@/lib/format";
 
 /**
@@ -187,23 +188,86 @@ const EMPTY: FormValues = {
   featured: false,
 };
 
-/** Keys in on-screen order, so focus can find the first failure. */
-const FIELD_ORDER: ReadonlyArray<keyof FormValues> = [
-  "brand",
-  "model",
-  "reference",
-  "collection",
-  "yearIntroduced",
-  "summary",
-  "basePrice",
-  "diameterMm",
-  "dialColorName",
-  "strapColorName",
-];
-
 interface UploadedImage {
   url: string;
   name: string;
+}
+
+/** On-screen names, so the summary popup reads like the form, not like the wire. */
+const FIELD_LABELS: Record<string, string> = {
+  brand: "Brand or maker",
+  model: "Model",
+  reference: "Reference",
+  collection: "Collection",
+  yearIntroduced: "Year introduced",
+  summary: "Summary",
+  basePrice: "Base price",
+  dialColorName: "Dial colour name",
+  strapColorName: "Strap colour name",
+  images: "At least one photograph",
+};
+
+/** Keys whose value is a string, so the required-field pass can trim them. */
+type StringField = {
+  [K in keyof FormValues]: FormValues[K] extends string ? K : never;
+}[keyof FormValues];
+
+interface Issue {
+  field: string;
+  message: string;
+}
+
+/**
+ * The client's courtesy check, run before the request.
+ *
+ * It mirrors the required fields in `lib/catalog/listing.ts` so a seller is told
+ * what is missing in one popup instead of one round-trip per field. The server
+ * re-runs every one of these and remains the authority; this only decides whether
+ * to bother the network at all, and whether to raise the warning.
+ */
+function validateListing(values: FormValues, images: UploadedImage[]): Issue[] {
+  const issues: Issue[] = [];
+
+  const required: ReadonlyArray<readonly [StringField, string]> = [
+    ["brand", "Enter the brand or maker."],
+    ["model", "Enter the model."],
+    ["reference", "Enter the reference."],
+    ["collection", "Enter the collection."],
+  ];
+  for (const [field, message] of required) {
+    if (!values[field].trim()) issues.push({ field, message });
+  }
+
+  const year = Number(values.yearIntroduced);
+  if (!values.yearIntroduced.trim()) {
+    issues.push({ field: "yearIntroduced", message: "Enter the year introduced." });
+  } else if (!Number.isFinite(year) || year < 1900 || year > 2100) {
+    issues.push({ field: "yearIntroduced", message: "Enter a year between 1900 and 2100." });
+  }
+
+  const summary = values.summary.trim();
+  if (!summary) {
+    issues.push({ field: "summary", message: "Enter a short summary." });
+  } else if (summary.length < 8) {
+    issues.push({ field: "summary", message: "Use at least 8 characters." });
+  }
+
+  const price = Number(values.basePrice);
+  if (!values.basePrice.trim() || !Number.isFinite(price) || price < 1) {
+    issues.push({ field: "basePrice", message: "Enter a base price." });
+  }
+
+  if (values.dialColorName.trim().length < 2) {
+    issues.push({ field: "dialColorName", message: "Name the dial colour." });
+  }
+  if (values.strapColorName.trim().length < 2) {
+    issues.push({ field: "strapColorName", message: "Name the strap colour." });
+  }
+  if (images.length === 0) {
+    issues.push({ field: "images", message: "Add at least one photograph." });
+  }
+
+  return issues;
 }
 
 export function ListingForm({ storageConfigured }: { storageConfigured: boolean }) {
@@ -213,6 +277,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<{ title: string; items: string[] } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -313,6 +378,20 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       return;
     }
 
+    const issues = validateListing(values, images);
+    if (issues.length > 0) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of issues) {
+        if (!fieldErrors[issue.field]) fieldErrors[issue.field] = issue.message;
+      }
+      setErrors(fieldErrors);
+      setWarning({
+        title: "Please fill in the missing fields",
+        items: issues.map((issue) => FIELD_LABELS[issue.field] ?? issue.field),
+      });
+      return;
+    }
+
     setSending(true);
 
     let response: Response;
@@ -343,8 +422,10 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       const fieldErrors = (data as { errors?: Record<string, string> }).errors;
       if (fieldErrors) {
         setErrors(fieldErrors);
-        const first = FIELD_ORDER.find((key) => fieldErrors[key]);
-        if (first) document.getElementById(first)?.focus();
+        setWarning({
+          title: "Please fill in the missing fields",
+          items: Object.keys(fieldErrors).map((field) => FIELD_LABELS[field] ?? field),
+        });
       }
     } else {
       setServerError("The listing could not be saved. Try again.");
@@ -718,8 +799,8 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
           <div>
             <h2 className="text-xl">Photographs</h2>
             <p className="mt-2xs measure text-sm leading-relaxed text-muted">
-              One or more photographs. They are stored on Cloudflare R2 and shown on
-              the card in place of the drawn watch.
+              At least one photograph is required. They are stored on Cloudflare R2
+              and shown on the card in place of the drawn watch.
             </p>
           </div>
           <span className="measure shrink-0 text-xs text-faint">
@@ -731,8 +812,8 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
           <div className="mt-md">
             <FormNote tone="error">
               Image storage is not configured. Add the R2_ variables to <code>.env</code>{" "}
-              and restart the server to enable uploads. The listing can still be saved
-              without photographs.
+              and restart the server to enable uploads. A reference cannot be published
+              without a photograph, so uploads must be enabled first.
             </FormNote>
           </div>
         ) : null}
@@ -789,6 +870,10 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
             <FormNote tone="error">{uploadError}</FormNote>
           </div>
         ) : null}
+
+        {errors.images ? (
+          <p className="mt-2xs text-xs leading-relaxed text-error">{errors.images}</p>
+        ) : null}
       </section>
 
       <div className="rule-t flex flex-col gap-md pt-md sm:flex-row sm:items-center sm:justify-between">
@@ -806,6 +891,23 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       </div>
 
       {serverError ? <FormNote tone="error">{serverError}</FormNote> : null}
+
+      <Modal
+        open={warning !== null}
+        onClose={() => setWarning(null)}
+        title={warning?.title ?? ""}
+      >
+        <ul className="flex flex-col gap-sm">
+          {(warning?.items ?? []).map((item) => (
+            <li key={item} className="flex items-baseline gap-xs text-md leading-relaxed">
+              <span aria-hidden="true" className="text-error">
+                &mdash;
+              </span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </Modal>
     </form>
   );
 }

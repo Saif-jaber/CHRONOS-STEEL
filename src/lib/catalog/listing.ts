@@ -205,16 +205,20 @@ class Reader {
 
   images(): string[] {
     const value = this.raw.images;
-    if (!Array.isArray(value)) return [];
-    const urls = value
+    const entries = Array.isArray(value) ? value : [];
+    const valid = entries
       .filter((entry): entry is string => typeof entry === "string")
       .map((entry) => entry.trim())
-      .filter(isStorageUrl)
-      .slice(0, MAX_IMAGES_PER_LISTING);
-    if (Array.isArray(value) && value.length > urls.length) {
+      .filter(isStorageUrl);
+
+    if (valid.length === 0) {
+      this.fail("images", "Add at least one photograph.");
+      return [];
+    }
+    if (valid.length !== entries.length) {
       this.fail("images", "One or more photographs could not be accepted. Re-upload them.");
     }
-    return urls;
+    return valid.slice(0, MAX_IMAGES_PER_LISTING);
   }
 }
 

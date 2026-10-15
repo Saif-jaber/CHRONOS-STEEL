@@ -41,12 +41,17 @@ function rowClass(invalid: boolean, onDark: boolean): string {
        renders. It sits 1px below the border, so the pair reads as one 2px line
        rather than as two lines a pixel apart. */
     "after:absolute after:inset-x-0 after:-bottom-px after:h-px after:content-['']",
-    "after:origin-left after:scale-x-0 after:transition-transform after:dur-base after:ease-out",
-    "focus-within:after:scale-x-100",
-    /* Only the resting rule differs by ground; the focus colour is shared. */
+    "after:origin-left after:transition-transform after:dur-base after:ease-out",
+    /* Only the resting rule differs by ground; the focus colour is shared.
+       When the field is invalid the second line is simply drawn at rest
+       (`after:scale-x-100`) so the fault reads as a solid 2px red rule, visible
+       without having to focus the field. The resting `scale-x-0` lives in the
+       valid branch alone, so the two scale utilities never disagree. */
     invalid
-      ? "border-error after:bg-error"
+      ? "border-error after:bg-error after:scale-x-100"
       : cx(
+          "after:scale-x-0",
+          "focus-within:after:scale-x-100",
           onDark ? "border-navy-rule" : "border-rule-2",
           "focus-within:border-beige-3 after:bg-beige-3",
         ),
@@ -89,7 +94,7 @@ export function Field({
 }) {
   return (
     <div className="flex flex-col">
-      <label htmlFor={id} className="eyebrow block">
+      <label htmlFor={id} className={cx("eyebrow block", error && "text-error")}>
         {label}
       </label>
 
