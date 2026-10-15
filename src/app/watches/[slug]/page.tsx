@@ -7,6 +7,7 @@ import { Photo } from "@/components/ui/Photo";
 import { Cta } from "@/components/ui/Button";
 import { WatchRender } from "@/components/watch/WatchRender";
 import { catalog } from "@/lib/catalog/repository";
+import { currentAccount } from "@/lib/auth/session";
 import {
   STOCK_COPY,
   defaultVariant,
@@ -41,7 +42,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const product = await catalog.getProductBySlug(slug);
-  if (!product) return { title: "Reference not found" };
+  if (!product || product.published === false) return { title: "Reference not found" };
   return {
     title: `${product.brand} ${product.model}`,
     description: product.summary,
@@ -52,6 +53,13 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
   const { slug } = await params;
   const product = await catalog.getProductBySlug(slug);
   if (!product) notFound();
+
+  /* A draft is private. Only the seller who owns it may open its page, so they
+     can check it before publishing. Everyone else is told it does not exist. */
+  if (product.published === false) {
+    const account = await currentAccount();
+    if (!account || product.sellerId !== account.id) notFound();
+  }
 
   const variant = defaultVariant(product);
   const stock = STOCK_COPY[stockState(variant)];

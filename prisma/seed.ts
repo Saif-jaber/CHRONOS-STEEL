@@ -65,6 +65,7 @@ async function main() {
       editionSize: product.editionSize,
       featured: product.featured,
       tags: product.tags,
+      published: true,
     };
 
     /* The option axes are expressed once as plain create inputs. `deleteMany`

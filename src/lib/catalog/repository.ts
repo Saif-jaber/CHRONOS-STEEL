@@ -31,6 +31,8 @@ export interface CatalogRepository {
   getProductsByStoreSlug(storeSlug: string): Promise<Product[]>;
   /** Persists a seller listing and returns it in catalogue shape. */
   createListing(input: NewListingInput): Promise<Product>;
+  /** Flips one seller's own reference from draft to published; null if not theirs. */
+  publishListing(id: string, sellerId: string): Promise<Product | null>;
 }
 
 /** The reference implementation of the interface above, served from the seed
@@ -38,7 +40,7 @@ export interface CatalogRepository {
     database, and what a test can use without Postgres. */
 export class SeedCatalogRepository implements CatalogRepository {
   async listProducts(): Promise<Product[]> {
-    return PRODUCTS;
+    return PRODUCTS.filter((product) => product.published !== false);
   }
 
   async getProductBySlug(slug: string): Promise<Product | null> {
@@ -53,6 +55,7 @@ export class SeedCatalogRepository implements CatalogRepository {
   async listCollections(): Promise<Array<{ name: string; count: number }>> {
     const counts = new Map<string, number>();
     for (const product of PRODUCTS) {
+      if (product.published === false) continue;
       counts.set(product.collection, (counts.get(product.collection) ?? 0) + 1);
     }
     return [...counts.entries()]
@@ -65,7 +68,9 @@ export class SeedCatalogRepository implements CatalogRepository {
   }
 
   async getProductsByStoreSlug(storeSlug: string): Promise<Product[]> {
-    return PRODUCTS.filter((product) => product.storeSlug === storeSlug);
+    return PRODUCTS.filter(
+      (product) => product.storeSlug === storeSlug && product.published !== false,
+    );
   }
 
   async createListing(input: NewListingInput): Promise<Product> {
@@ -80,6 +85,13 @@ export class SeedCatalogRepository implements CatalogRepository {
       input,
     });
     PRODUCTS.push(product);
+    return product;
+  }
+
+  async publishListing(id: string, sellerId: string): Promise<Product | null> {
+    const product = PRODUCTS.find((entry) => entry.id === id && entry.sellerId === sellerId);
+    if (!product) return null;
+    product.published = true;
     return product;
   }
 }

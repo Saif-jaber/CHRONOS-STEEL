@@ -280,6 +280,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
   const [warning, setWarning] = useState<{ title: string; items: string[] } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [pendingIntent, setPendingIntent] = useState<"draft" | "publish" | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
@@ -369,8 +370,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
     setImages((current) => current.filter((image) => image.url !== url));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submit(intent: "draft" | "publish") {
     setServerError(null);
 
     if (uploading) {
@@ -392,6 +392,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       return;
     }
 
+    setPendingIntent(intent);
     setSending(true);
 
     let response: Response;
@@ -399,10 +400,15 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       response = await fetch("/api/listings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, images: images.map((image) => image.url) }),
+        body: JSON.stringify({
+          ...values,
+          images: images.map((image) => image.url),
+          published: intent === "publish",
+        }),
       });
     } catch {
       setSending(false);
+      setPendingIntent(null);
       setServerError("The listing could not be sent. Try again.");
       return;
     }
@@ -414,6 +420,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
     }
 
     setSending(false);
+    setPendingIntent(null);
     const data = await response.json().catch(() => null);
     if (data && typeof data === "object") {
       if (typeof (data as { error?: unknown }).error === "string") {
@@ -430,6 +437,11 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
     } else {
       setServerError("The listing could not be saved. Try again.");
     }
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submit("publish");
   }
 
   return (
@@ -879,14 +891,24 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       <div className="rule-t flex flex-col gap-md pt-md sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-md">
           <Button type="submit" disabled={sending || uploading} className={cx(sending && "opacity-70")}>
-            {sending ? "Publishing…" : "Publish listing"}
+            {sending && pendingIntent === "publish" ? "Publishing…" : "Publish reference"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={sending || uploading}
+            onClick={() => void submit("draft")}
+            className={cx(sending && "opacity-70")}
+          >
+            {sending && pendingIntent === "draft" ? "Saving…" : "Save as draft"}
           </Button>
           <ButtonLink href="/seller" variant="outline">
             Cancel
           </ButtonLink>
         </div>
         <p className="measure text-xs text-faint">
-          Published references appear on your storefront and in the collection straight away.
+          Published references appear on your storefront and in the collection straight
+          away. A draft stays private to you until you publish it from your storefront.
         </p>
       </div>
 

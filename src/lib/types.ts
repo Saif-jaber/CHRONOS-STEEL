@@ -169,6 +169,9 @@ export interface Product {
   storeName?: string | null;
   /** Optional store slug. */
   storeSlug?: string | null;
+  /** False while a seller is still assembling the reference. Absent means the
+      catalogue data, which is always published. Customers only ever see true. */
+  published?: boolean;
 }
 
 /* ── Resolved variants ─────────────────────────────────────────────────────

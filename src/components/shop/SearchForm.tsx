@@ -1,26 +1,36 @@
+"use client";
+
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { FilterState } from "@/lib/types";
 import { filtersToQuery } from "@/lib/filters";
 import { IconArrowRight, IconSearch } from "@/components/ui/Icon";
 import { cx } from "@/lib/format";
 
 /**
- * Search, as a GET form.
+ * Search, live.
  *
- * No state, no handler, no debounce. The form posts to the collection route, so the
- * query string it produces is the same one the rail and the chips write, and a search
- * is linkable, shareable and back-button-friendly without a line of JavaScript.
+ * The collection is filtered on the server from the URL, so the shortest path to
+ * "results change as you type" is to write the URL as you type: the same
+ * `lib/filters.ts` engine runs again on each change and the grid re-renders with
+ * no button to press. The term is debounced so a fast typist makes one request,
+ * not one per keystroke, and `useTransition` keeps the field responsive while the
+ * server answers.
  *
- * The hidden fields are the one subtlety. A GET form replaces the whole query string
- * with its own fields, so without them, typing a model name into a search box that
- * already had "automatic" and "42 mm" narrowed would silently throw both away. They
- * are generated from the current state through the same serialiser the rest of the
- * page uses, minus `q`, so they cannot fall out of step with a new filter.
+ * It is still a GET form over the same fields, so a search stays linkable and
+ * shareable, and the arrow (or Enter) commits immediately without waiting out the
+ * debounce. The hidden fields are the carried filters, minus `q`: a GET form
+ * replaces the whole query string with its own fields, so without them a search
+ * would silently drop the facets already applied. They are produced by the same
+ * serialiser the rail uses, so they cannot fall out of step.
  *
  * The field is a hairline with a rule that grows from the left on focus, the same
- * gesture as every other field on the site. `type="search"` is deliberate even though
- * it brings the browser's own clear button with it: it puts the search keyboard on a
- * phone, which is worth the decoration.
+ * gesture as every other field on the site. `type="search"` is deliberate even
+ * though it brings the browser's own clear button with it: it puts the search
+ * keyboard on a phone, which is worth the decoration.
  */
+const DEBOUNCE_MS = 160;
+
 export function SearchForm({
   state,
   basePath = "/collection",
@@ -28,13 +38,65 @@ export function SearchForm({
   state: FilterState;
   basePath?: string;
 }) {
+  const router = useRouter();
+  const [value, setValue] = useState(state.q);
+  const [isPending, startTransition] = useTransition();
+
+  /* The term last pushed to the URL. It guards the prop-to-field sync so a slow
+     response can never overwrite a word the shopper is still typing, while a
+     change that did *not* come from typing (a chip removal, the back button)
+     still flows back into the field. */
+  const committed = useRef(state.q);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (state.q !== committed.current) {
+      committed.current = state.q;
+      setValue(state.q);
+    }
+  }, [state.q]);
+
+  useEffect(() => {
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, []);
+
+  function commit(next: string) {
+    committed.current = next;
+    const query = filtersToQuery({ ...state, q: next });
+    const href = query ? `${basePath}?${query}` : basePath;
+    console.log("[sf] commit", JSON.stringify(next), "->", href);
+    startTransition(() => router.replace(href, { scroll: false }));
+  }
+
+  function change(next: string) {
+    setValue(next);
+    console.log("[sf] change", JSON.stringify(next));
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => commit(next), DEBOUNCE_MS);
+  }
+
+  // Carried filters for the no-JS fallback; live browsing reads the same state in
+  // `commit`, so the two cannot disagree about what is already applied.
   const carried = new URLSearchParams(filtersToQuery(state));
   carried.delete("q");
 
   return (
-    <form method="get" action={basePath} role="search" className="w-full sm:max-w-[20rem]">
-      {Array.from(carried.entries()).map(([name, value]) => (
-        <input key={name} type="hidden" name={name} value={value} />
+    <form
+      method="get"
+      action={basePath}
+      role="search"
+      aria-busy={isPending}
+      className="w-full sm:max-w-[20rem]"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (timer.current) clearTimeout(timer.current);
+        commit(value);
+      }}
+    >
+      {Array.from(carried.entries()).map(([name, carriedValue]) => (
+        <input key={name} type="hidden" name={name} value={carriedValue} />
       ))}
 
       <label htmlFor="collection-search" className="eyebrow block">
@@ -55,7 +117,8 @@ export function SearchForm({
           id="collection-search"
           name="q"
           type="search"
-          defaultValue={state.q}
+          value={value}
+          onChange={(event) => change(event.target.value)}
           enterKeyHint="search"
           autoComplete="off"
           maxLength={80}
@@ -64,7 +127,11 @@ export function SearchForm({
         />
         <button
           type="submit"
-          className="hit relative inline-flex size-6 shrink-0 items-center justify-center text-ink transition-opacity dur-base ease-out hover:opacity-60"
+          className={cx(
+            "hit relative inline-flex size-6 shrink-0 items-center justify-center text-ink",
+            "transition-opacity dur-base ease-out hover:opacity-60",
+            isPending && "opacity-40",
+          )}
         >
           <span className="sr-only">Search the collection</span>
           <IconArrowRight />

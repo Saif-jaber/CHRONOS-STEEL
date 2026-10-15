@@ -84,12 +84,29 @@ export function Modal({
     }
 
     document.addEventListener("keydown", onKeyDown);
-    const previousOverflow = document.body.style.overflow;
+
+    /* Freeze the page behind. The viewport scrolls on <html>, and this site sets
+       `overflow-x: clip` there, so locking <body> alone does not reliably stop it
+       — lock the root as well. Removing the scrollbar would otherwise shift the
+       page sideways, so its width is reserved on the body for the duration. */
+    const root = document.documentElement;
+    const previousRootOverflow = root.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyPaddingRight = document.body.style.paddingRight;
+    const scrollbar = window.innerWidth - root.clientWidth;
+
+    root.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    if (scrollbar > 0) {
+      const existing = parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
+      document.body.style.paddingRight = `${existing + scrollbar}px`;
+    }
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
+      root.style.overflow = previousRootOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.paddingRight = previousBodyPaddingRight;
       restoreRef.current?.focus();
     };
   }, [open, onClose]);

@@ -70,6 +70,8 @@ export interface NewListingInput {
   tags: string[];
   images: string[];
   sellerId: string;
+  /** True when the seller chose to publish immediately; false saves a draft. */
+  published: boolean;
 }
 
 /* ── Closed sets, mirrored from lib/types.ts ────────────────────────────── */
@@ -288,6 +290,7 @@ export function parseListing(raw: Record<string, unknown>): ParseListingResult {
   const featured = r.bool("featured", false);
   const tags = r.tags("tags");
   const images = r.images();
+  const published = r.bool("published", false);
 
   if (Object.keys(r.errors).length > 0) {
     return { ok: false, errors: r.errors };
@@ -355,6 +358,7 @@ export function parseListing(raw: Record<string, unknown>): ParseListingResult {
       tags,
       images,
       sellerId: String(raw.sellerId ?? ""),
+      published,
     },
   };
 }
@@ -435,5 +439,6 @@ export function buildProductFromListing(params: {
     tags: input.tags,
     images: input.images,
     sellerId: input.sellerId,
+    published: input.published,
   };
 }

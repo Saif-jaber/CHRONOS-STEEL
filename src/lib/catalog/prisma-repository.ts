@@ -136,12 +136,14 @@ function toProduct(row: ProductRow): Product {
     sellerId: row.sellerId ?? null,
     storeName: row.seller?.storeName ?? undefined,
     storeSlug: row.seller?.storeSlug ?? undefined,
+    published: row.published,
   };
 }
 
 export class PrismaCatalogRepository implements CatalogRepository {
   async listProducts(): Promise<Product[]> {
     const rows = await prisma.product.findMany({
+      where: { published: true },
       include: productInclude,
       orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
     });
@@ -168,6 +170,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
   async listCollections(): Promise<Array<{ name: string; count: number }>> {
     const groups = await prisma.product.groupBy({
       by: ["collection"],
+      where: { published: true },
       _count: { _all: true },
     });
     return groups
@@ -186,11 +189,26 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
   async getProductsByStoreSlug(storeSlug: string): Promise<Product[]> {
     const rows = await prisma.product.findMany({
-      where: { seller: { storeSlug } },
+      where: { seller: { storeSlug }, published: true },
       include: productInclude,
       orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
     });
     return rows.map(toProduct);
+  }
+
+  async publishListing(id: string, sellerId: string): Promise<Product | null> {
+    const owned = await prisma.product.findFirst({
+      where: { id, sellerId },
+      select: { id: true },
+    });
+    if (!owned) return null;
+
+    const row = await prisma.product.update({
+      where: { id },
+      data: { published: true },
+      include: productInclude,
+    });
+    return toProduct(row);
   }
 
   async createListing(input: NewListingInput): Promise<Product> {
@@ -244,6 +262,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
         tags: input.tags,
         images: input.images,
         sellerId: input.sellerId,
+        published: input.published,
 
         dials: {
           create: [

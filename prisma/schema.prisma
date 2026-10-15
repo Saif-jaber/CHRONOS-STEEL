@@ -112,6 +112,11 @@ model Product {
   sellerId String?
   seller   Account? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
 
+  /* Drafts. False while a seller is still assembling the reference, true once
+     they publish it. The seeded catalogue is written published. Only published
+     rows are shown to customers; a seller always sees their own. */
+  published Boolean @default(false)
+
   dials     Dial[]
   straps    Strap[]
   inventory Inventory[]
@@ -119,6 +124,7 @@ model Product {
   @@index([collection])
   @@index([featured])
   @@index([sellerId])
+  @@index([published])
 }
 
 /* Option ids (`dial-silver`, `strap-leather`) are scoped to their product, not

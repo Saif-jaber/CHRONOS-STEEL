@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { catalog } from "@/lib/catalog/repository";
 import { currentAccount } from "@/lib/auth/session";
 import { ShopCard } from "@/components/shop/ShopCard";
+import { PublishButton } from "@/components/seller/PublishButton";
 
 export default async function SellerPage() {
   const account = await currentAccount();
@@ -19,6 +20,7 @@ export default async function SellerPage() {
 
   const storeName = account.storeName || "Your Storefront";
   const storeSlug = account.storeSlug;
+  const draftCount = products.filter((product) => product.published === false).length;
 
   return (
     <>
@@ -40,7 +42,11 @@ export default async function SellerPage() {
               <p className="prose-measure text-md leading-relaxed text-silver-2">
                 {products.length === 0
                   ? "You haven't listed any references yet. When you do, they'll appear here."
-                  : `Listing ${products.length} ${products.length === 1 ? "reference" : "references"}.`}
+                  : `Listing ${products.length} ${products.length === 1 ? "reference" : "references"}${
+                      draftCount > 0
+                        ? `, ${draftCount} still a draft until you publish`
+                        : ""
+                    }.`}
               </p>
               <div className="flex shrink-0 flex-col gap-sm lg:items-end">
                 <ButtonLink href="/seller/listings/new" variant="outline" onDark>
@@ -72,8 +78,21 @@ export default async function SellerPage() {
             ) : (
               <ul className="mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => (
-                  <li key={product.id}>
+                  <li key={product.id} className="flex flex-col gap-sm">
                     <ShopCard product={product} />
+                    {product.published === false ? (
+                      <div className="flex flex-wrap items-center gap-md border-t border-rule pt-sm">
+                        <span className="eyebrow text-error">Draft</span>
+                        <p className="measure text-xs text-faint">
+                          Not shown to customers until you publish it.
+                        </p>
+                        <PublishButton id={product.id} />
+                      </div>
+                    ) : (
+                      <p className="border-t border-rule pt-sm text-xs text-muted">
+                        Published &middot; visible in the collection
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
