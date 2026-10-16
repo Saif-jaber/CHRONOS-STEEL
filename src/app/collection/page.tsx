@@ -177,7 +177,7 @@ export default async function CollectionPage({
 
                 {results.length > 0 ? (
                   <ul
-                    className={`mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 ${
+                    className={`mt-md grid grid-cols-2 gap-y-lg gap-x-xs sm:gap-x-md ${
                       filtersOn > 0 || state.q ? "xl:grid-cols-2" : "xl:grid-cols-3"
                     }`}
                   >

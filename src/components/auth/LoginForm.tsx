@@ -26,7 +26,13 @@ import {
 
 const EMPTY: LoginValues = { email: "", password: "" };
 
-export function LoginForm() {
+/**
+ * `next` is where to send the person after signing in, when a guarded page has
+ * asked for them back (the bag, an order, a reference they tried to add). It is
+ * validated as a same-site path by the page before it reaches here, so this only
+ * has to prefer it over the role default.
+ */
+export function LoginForm({ next }: { next?: string | null }) {
   const router = useRouter();
   const [values, setValues] = useState<LoginValues>(EMPTY);
   const [errors, setErrors] = useState<LoginErrors>({});
@@ -79,15 +85,17 @@ export function LoginForm() {
       return;
     }
 
-    /* The shop, not the landing page: signing in is how you get back to buying,
-       and /collection is where every watch for sale is.
+    /* Sellers land on their dashboard at /seller; customers land on the shop
+       at /collection, where every watch for sale is. The role comes from the
+       account the login route echoes back — a seller should never be walked
+       through the customer storefront just because they signed in.
 
        No `router.refresh()` after the push, deliberately. The push already fetches
        the destination's server components; a refresh queued on top of it cancels
        the navigation's scroll-to-top, which is what was leaving people dropped at
        the bottom of the collection after signing in. `sending` stays set so the
        button holds "Signing in" until the router has somewhere new to render. */
-    router.push("/collection");
+    router.push(next ?? (result.account?.role === "seller" ? "/seller" : "/collection"));
   }
 
   return (

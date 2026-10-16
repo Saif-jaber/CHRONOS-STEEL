@@ -62,7 +62,7 @@ export default async function SellerStorefrontPage({
                 <h2 className="text-xl">No listings yet</h2>
               </div>
             ) : (
-              <ul className="mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 xl:grid-cols-3">
+              <ul className="mt-md grid grid-cols-2 gap-y-lg gap-x-xs sm:gap-x-md xl:grid-cols-3">
                 {products.map((product) => (
                   <li key={product.id}>
                     <ShopCard product={product} />

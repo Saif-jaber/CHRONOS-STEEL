@@ -8,8 +8,10 @@ import { IconClose } from "@/components/ui/Icon";
 /**
  * A blocking popup.
  *
- * Used to stop a seller at the door when a reference is not ready to publish. It
- * is deliberately modal in the strict sense: a full-screen backdrop sits over the
+ * Two jobs. It stops a seller at the door when a reference is not ready to publish,
+ * and it asks before a state change the reader cannot take back — signing out. Pass
+ * `onConfirm` to turn it from a single-dismiss notice into a yes/no confirmation.
+ * It is deliberately modal in the strict sense: a full-screen backdrop sits over the
  * page and swallows every click, so nothing behind it can be reached while it is
  * open. The only way out is the close control — the backdrop does not dismiss, so
  * a stray click cannot wave the warning away before it is read.
@@ -29,12 +31,22 @@ export function Modal({
   onClose,
   title,
   confirmLabel = "Close",
+  onConfirm,
+  cancelLabel = "Cancel",
+  confirmDisabled = false,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   confirmLabel?: string;
+  /**
+   * When set, the dialog is a confirmation rather than a single-dismiss notice:
+   * the confirm control runs this, and a cancel control appears beside it.
+   */
+  onConfirm?: () => void;
+  cancelLabel?: string;
+  confirmDisabled?: boolean;
   children: ReactNode;
 }) {
   /* True only after hydration. The portal needs a live `document`, and this is
@@ -141,10 +153,21 @@ export function Modal({
 
         <div className="mt-md">{children}</div>
 
-        <div className="mt-lg flex justify-end">
-          <Button type="button" onClick={onClose}>
-            {confirmLabel}
-          </Button>
+        <div className="mt-lg flex justify-end gap-sm">
+          {onConfirm ? (
+            <>
+              <Button type="button" variant="outline" onClick={onClose}>
+                {cancelLabel}
+              </Button>
+              <Button type="button" onClick={onConfirm} disabled={confirmDisabled}>
+                {confirmLabel}
+              </Button>
+            </>
+          ) : (
+            <Button type="button" onClick={onClose}>
+              {confirmLabel}
+            </Button>
+          )}
         </div>
       </div>
     </div>,

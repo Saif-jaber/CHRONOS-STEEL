@@ -1,22 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { useSignOut } from "./useSignOut";
+import { SignOutConfirm } from "./SignOutConfirm";
 
 /**
  * Sign out.
  *
  * A button rather than a link, because signing out is a state change and a GET
- * must not be able to perform one — the route is a POST for the same reason.
- * The shared hook holds the response-then-navigate contract; this component is
- * only its text-button form for the account page.
+ * must not be able to perform one — the route is a POST for the same reason. It
+ * opens the shared confirmation rather than signing out outright, so the account
+ * page and the header ask the same question in the same words.
  */
 export function SignOutButton({ className }: { className?: string }) {
-  const { sending, signOut } = useSignOut();
+  const [open, setOpen] = useState(false);
 
   return (
-    <Button type="button" onDark disabled={sending} onClick={signOut} className={className}>
-      {sending ? "Signing out…" : "Sign out"}
-    </Button>
+    <>
+      <Button type="button" onDark onClick={() => setOpen(true)} className={className}>
+        Sign out
+      </Button>
+      <SignOutConfirm open={open} onCancel={() => setOpen(false)} />
+    </>
   );
 }

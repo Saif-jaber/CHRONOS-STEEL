@@ -76,7 +76,7 @@ export default async function SellerPage() {
                 </div>
               </div>
             ) : (
-              <ul className="mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 xl:grid-cols-3">
+              <ul className="mt-md grid grid-cols-2 gap-y-xl gap-x-xs sm:gap-x-md xl:grid-cols-3">
                 {products.map((product) => (
                   <li key={product.id} className="flex flex-col gap-sm">
                     <ShopCard product={product} />

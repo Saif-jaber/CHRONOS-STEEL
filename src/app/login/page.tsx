@@ -10,15 +10,37 @@ import { currentAccount } from "@/lib/auth/session";
  * only navigation on it is the one link out.
  *
  * Someone who already holds a session never sees the form: the check is on the
- * server, before render, and it sends them to the shop, not to the account
- * page. The account header icon links here, so a signed-in visitor who taps it
+ * server, before render, and it sends them to the surface their role owns — a
+ * seller to their dashboard at /seller, a customer to the shop at /collection.
+ * The account header icon links here, so a signed-in customer who taps it
  * keeps shopping instead of being parked on their own details — this is a
  * storefront first. The account page still exists at /account for anyone who
  * wants it directly.
+ *
+ * `?next=` is how a guarded page asks for the person back — the bag, an order,
+ * a reference they tried to add while signed out. It is honoured only when it is
+ * a same-site absolute path, so it cannot be used to bounce a fresh sign-in to
+ * another origin.
  */
-export default async function LoginPage() {
+function safeNext(value: string | string[] | undefined): string | null {
+  const raw = typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;
+  if (!raw) return null;
+  /* Reject protocol-relative (`//evil`) and anything carrying a scheme. */
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const next = safeNext((await searchParams).next);
+
   const account = await currentAccount();
-  if (account) redirect("/collection");
+  if (account) {
+    redirect(next ?? (account.role === "seller" ? "/seller" : "/collection"));
+  }
 
   return (
     <AuthShell
@@ -33,7 +55,7 @@ export default async function LoginPage() {
         </>
       }
     >
-      <LoginForm />
+      <LoginForm next={next} />
     </AuthShell>
   );
 }

@@ -222,6 +222,71 @@ export interface Account {
   storeName: string | null;
 }
 
+/* ── The bag and orders ───────────────────────────────────────────────────
+ * A bag is a list of configured lines, resolved at read time exactly like a
+ * variant: the price is whatever the product's current dial and strap deltas
+ * say, so the bag and the product page can never quote different numbers. An
+ * order is the opposite — it is a frozen snapshot, because a receipt that
+ * changes when the seller edits the reference is not a receipt. */
+
+export interface CartLine {
+  /** The cart row id, used to change or remove this line. */
+  id: string;
+  productId: string;
+  slug: string;
+  brand: string;
+  model: string;
+  reference: string;
+  /** First photograph, or null when the card renders the drawing instead. */
+  imageUrl: string | null;
+  selection: VariantSelection;
+  dialName: string;
+  strapName: string;
+  /** Resolved live; never stored on the row. */
+  unitPriceInCents: number;
+  quantity: number;
+  lineTotalInCents: number;
+  sku: string;
+  /** false when the pairing is no longer built; the line cannot be bought. */
+  available: boolean;
+}
+
+export interface Cart {
+  lines: CartLine[];
+  /** Sum of quantities, for the masthead badge. */
+  count: number;
+  subtotalInCents: number;
+  currency: Currency;
+  /** True when at least one line is no longer available. */
+  hasUnavailable: boolean;
+}
+
+export interface OrderLine {
+  productId: string | null;
+  slug: string;
+  brand: string;
+  model: string;
+  reference: string;
+  dialName: string;
+  strapName: string;
+  sku: string;
+  unitPriceInCents: number;
+  quantity: number;
+  imageUrl: string | null;
+}
+
+export interface Order {
+  id: string;
+  number: string;
+  status: string;
+  currency: Currency;
+  subtotalInCents: number;
+  totalInCents: number;
+  /** ISO 8601. */
+  placedAt: string;
+  lines: OrderLine[];
+}
+
 /* ── Faceted filtering ─────────────────────────────────────────────────── */
 
 export type SortKey =

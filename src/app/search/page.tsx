@@ -99,7 +99,7 @@ export default async function SearchPage({
               />
 
               {results.length > 0 ? (
-                <ul className="mt-md grid gap-y-xl gap-x-md sm:grid-cols-2 xl:grid-cols-2">
+                <ul className="mt-md grid grid-cols-2 gap-y-lg gap-x-xs sm:gap-x-md xl:grid-cols-2">
                   {results.map((product) => (
                     <li key={product.id}>
                       <ShopCard product={product} />

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useSyncExternalStore, useState } from "react";
-import { useSignOut } from "@/components/auth/useSignOut";
+import { SignOutConfirm } from "@/components/auth/SignOutConfirm";
+import { BagButton } from "@/components/layout/BagButton";
 import { HeaderSearch } from "@/components/layout/HeaderSearch";
 import { Logo } from "@/components/brand/Logo";
 import { Cta, IconButton, IconLink } from "@/components/ui/Button";
-import { IconAccount, IconBag, IconClose, IconMenu, IconSignOut } from "@/components/ui/Icon";
+import { IconAccount, IconClose, IconMenu, IconSignOut } from "@/components/ui/Icon";
 import { cx } from "@/lib/format";
-import { hasAuthHint } from "@/lib/auth/api";
+import { authHintValue, parseAuthHint } from "@/lib/auth/api";
 
 /**
  * Masthead.
@@ -23,18 +24,24 @@ import { hasAuthHint } from "@/lib/auth/api";
  * rail carries three, so the right group is held a little off the edge to keep the
  * composition centred.
  *
- * The rail knows whether a session exists. It cannot ask the server — a session
- * read in a shared component would make the home page dynamic and break the
- * prerender the audit suite asserts — so it reads the plain `cs-auth` hint
- * cookie (`lib/auth/api.ts`) through `useSyncExternalStore`: hydration matches
- * the static shell, then React swaps in the client value before the first
- * paint, no request and no flash of the wrong glyph. Signed out, the first
- * glyph is the account link into the sign-in page; signed in, the same slot
- * becomes a sign-out control — a swap, not an addition, so the rail stays
- * three glyphs either way. The panel's auth entry follows the same state.
+ * The rail knows whether a session exists, and which role it belongs to. It cannot
+ * ask the server — a session read in a shared component would make the home page
+ * dynamic and break the prerender the audit suite asserts — so it reads the plain
+ * `cs-auth` hint cookie (`lib/auth/api.ts`) through `useSyncExternalStore`:
+ * hydration matches the static shell, then React swaps in the client value before
+ * the first paint, no request and no flash of the wrong glyph. Signed out, the
+ * first glyph is the account link into the sign-in page; signed in, the same slot
+ * becomes a sign-out control — a swap, not an addition. A customer keeps the three
+ * glyphs (sign out, search, bag); a seller gets the seller navigation and drops the
+ * customer-only search and bag, because a seller has a dashboard rather than a bag.
  */
 
-const MENU = [
+type MenuColumn = {
+  heading: string;
+  links: ReadonlyArray<{ label: string; href: string; auth?: boolean }>;
+};
+
+const CUSTOMER_MENU: MenuColumn[] = [
   {
     heading: "Collections",
     links: [
@@ -61,7 +68,35 @@ const MENU = [
       { label: "Sign in", href: "/login", auth: true },
     ],
   },
-] as const;
+];
+
+/* A seller never sees the shop's browse columns; the panel is their control room.
+   The storefront link needs the slug, which rides in the hint cookie. */
+function sellerMenu(storeSlug: string | null): MenuColumn[] {
+  return [
+    {
+      heading: "Seller",
+      links: [
+        { label: "Dashboard", href: "/seller" },
+        { label: "Add a reference", href: "/seller/listings/new" },
+      ],
+    },
+    {
+      heading: "Storefront",
+      links: [
+        {
+          label: "My storefront",
+          href: storeSlug ? `/sellers/${storeSlug}` : "/seller",
+        },
+        { label: "Account", href: "/account" },
+      ],
+    },
+    {
+      heading: "House",
+      links: [{ label: "Sign out", href: "/login", auth: true }],
+    },
+  ];
+}
 
 const cxSkip =
   "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-menu " +
@@ -71,18 +106,24 @@ const cxMenuLink =
   "font-display text-lg leading-tight text-ink transition-opacity dur-base ease-out hover:opacity-60";
 
 /* The hint is a plain cookie: there is no event to subscribe to, so the
-   subscription is a no-op and renders re-read it. The server snapshot is
-   false, which is exactly the static shell's account glyph — hydration
-   matches, then React swaps in the client snapshot before the first paint,
-   so a signed-in visitor never sees the wrong glyph. */
+   subscription is a no-op and renders re-read it. The server snapshot is the
+   empty string, which is exactly the static shell's signed-out glyph —
+   hydration matches, then React swaps in the client snapshot before the first
+   paint, so a visitor never sees the wrong glyph. The snapshot is a primitive
+   (the raw cookie), and `parseAuthHint` derives the role from it, so the
+   snapshot identity is stable across renders. */
 const subscribeHint = () => () => {};
-const hintOnServer = () => false;
+const hintOnServer = () => "";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const signedIn = useSyncExternalStore(subscribeHint, hasAuthHint, hintOnServer);
-  const { sending, signOut } = useSignOut();
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const authValue = useSyncExternalStore(subscribeHint, authHintValue, hintOnServer);
+  const auth = parseAuthHint(authValue);
+  const signedIn = auth !== null;
+  const isSeller = auth?.role === "seller";
+  const menu = isSeller ? sellerMenu(auth?.storeSlug ?? null) : CUSTOMER_MENU;
 
   /* Keep the masthead transparent for as long as the hero is behind it. */
   useEffect(() => {
@@ -168,16 +209,16 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Right rail: sign out (or the account link), search and bag. The
-              swap keeps the rail at three glyphs either way. */}
+          {/* Right rail. Signed out: account, search, bag. Signed-in customer:
+              sign out, search, bag. Signed-in seller: sign out only — the search
+              and bag are the customer's controls, and a seller's destination is
+              the dashboard. */}
           <div className="flex items-center justify-end gap-md">
             {signedIn ? (
               <IconButton
-                label={sending ? "Signing out…" : "Sign out"}
+                label="Sign out"
                 onDark
-                disabled={sending}
-                className={sending ? "opacity-50" : undefined}
-                onClick={() => void signOut()}
+                onClick={() => setConfirmSignOut(true)}
               >
                 <IconSignOut onDark />
               </IconButton>
@@ -186,10 +227,12 @@ export function Header() {
                 <IconAccount onDark />
               </IconLink>
             )}
-            <HeaderSearch />
-            <IconButton label="Bag, 0 items" onDark>
-              <IconBag onDark />
-            </IconButton>
+            {!isSeller && (
+              <>
+                <HeaderSearch />
+                <BagButton signedIn={signedIn} />
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -205,7 +248,7 @@ export function Header() {
         >
           <div className="container flex-1 py-xl">
             <nav aria-label="Primary" className="grid gap-xl md:grid-cols-3">
-              {MENU.map((column) => (
+              {menu.map((column) => (
                 <div key={column.heading} className="rule-t pt-sm">
                   <p className="eyebrow">{column.heading}</p>
                   <ul className="mt-md space-y-2xs">
@@ -222,7 +265,7 @@ export function Header() {
                               type="button"
                               onClick={() => {
                                 close();
-                                void signOut();
+                                setConfirmSignOut(true);
                               }}
                               className={cxMenuLink}
                             >
@@ -247,16 +290,19 @@ export function Header() {
 
             <div className="rule-t mt-xl flex flex-wrap items-end justify-between gap-md pt-md">
               <p className="prose-measure text-sm text-muted">
-                Every reference is specified to the millimetre, priced plainly,
-                and warranted for five years.
+                {isSeller
+                  ? "Your references, drafts and storefront, in one place."
+                  : "Every reference is specified to the millimetre, priced plainly, and warranted for five years."}
               </p>
-              <Cta href="/collection" onClick={close}>
-                Browse the collection
+              <Cta href={isSeller ? "/seller" : "/collection"} onClick={close}>
+                {isSeller ? "Open dashboard" : "Browse the collection"}
               </Cta>
             </div>
           </div>
         </div>
       )}
+
+      <SignOutConfirm open={confirmSignOut} onCancel={() => setConfirmSignOut(false)} />
     </>
   );
 }

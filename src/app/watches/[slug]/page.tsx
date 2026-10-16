@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ToTopButton } from "@/components/ui/ToTopButton";
-import { Photo } from "@/components/ui/Photo";
 import { Cta } from "@/components/ui/Button";
 import { WatchRender } from "@/components/watch/WatchRender";
+import { Gallery } from "@/components/watch/Gallery";
+import { AddToBag } from "@/components/watch/AddToBag";
 import { catalog } from "@/lib/catalog/repository";
 import { currentAccount } from "@/lib/auth/session";
 import {
@@ -54,12 +55,20 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
   const product = await catalog.getProductBySlug(slug);
   if (!product) notFound();
 
+  /* Reading the session makes this page dynamic, which is exactly what a page
+     with a buy control wants: the account decides whether the control adds to a
+     bag or asks the visitor to sign in first. */
+  const account = await currentAccount();
+
   /* A draft is private. Only the seller who owns it may open its page, so they
      can check it before publishing. Everyone else is told it does not exist. */
   if (product.published === false) {
-    const account = await currentAccount();
     if (!account || product.sellerId !== account.id) notFound();
   }
+
+  /* A seller does not buy from their own shelf; everyone else sees the control,
+     signed in or not. */
+  const canBuy = account?.role !== "seller";
 
   const variant = defaultVariant(product);
   const stock = STOCK_COPY[stockState(variant)];
@@ -93,31 +102,23 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
         </section>
 
         <section className="section bg-paper">
-          <div className="container grid gap-xl lg:grid-cols-[minmax(0,1fr)_22rem]">
+          {/* Centred at ~74rem (≈ the gallery's old 40rem once the container's
+              inline padding is subtracted) so the photos fill their column and
+              sit a single small gutter from the specs, rather than hugging the
+              left edge with a wide empty strip before the information. */}
+          <div className="container grid max-w-[74rem] gap-md lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div>
               {images.length > 0 ? (
-                <div className="grid gap-md sm:grid-cols-2">
-                  {images.map((url, index) => (
-                    <Photo
-                      key={url}
-                      src={url}
-                      alt={`${product.brand} ${product.model}, photograph ${index + 1}`}
-                      ratio={1}
-                      fit="cover"
-                      priority={index === 0}
-                      className={index === 0 ? "sm:col-span-2" : undefined}
-                    />
-                  ))}
-                </div>
+                <Gallery images={images} altBase={`${product.brand} ${product.model}`} />
               ) : (
-                <div className="bg-paper-2 px-md py-lg">
+                <div className="bg-paper-2 px-sm py-md">
                   <WatchRender
                     product={product}
                     dial={resolveDialSpec(product, variant.dial)}
                     strap={variant.strap}
                     detail="full"
                     transitionKey={variant.key}
-                    className="mx-auto w-full max-w-[24rem]"
+                    className="mx-auto w-full max-w-[20rem]"
                   />
                 </div>
               )}
@@ -132,6 +133,14 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
                   {stock.label} &middot; {stock.detail}
                 </p>
               </div>
+
+              {canBuy ? (
+                <AddToBag
+                  productId={product.id}
+                  slug={product.slug}
+                  signedIn={account !== null}
+                />
+              ) : null}
 
               <dl className="rule-t flex flex-col gap-2xs pt-sm text-sm">
                 <Spec label="Brand" value={product.brand} />

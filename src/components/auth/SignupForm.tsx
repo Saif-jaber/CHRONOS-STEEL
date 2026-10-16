@@ -115,12 +115,12 @@ export function SignupForm({ fixedRole }: { fixedRole?: UserRole }) {
       return;
     }
 
-      /* Straight to the shop: an account is a means, not a destination. When
-         /seller/onboarding exists it takes over this branch for sellers; until
-         then both roles land on the watches for sale rather than on a 404. No
+      /* Sellers land on their dashboard at /seller; customers land on the shop
+         at /collection. A customer sent to /seller would only be bounced back
+         by the role guard, so route them correctly the first time. No
          `router.refresh()` — see the matching comment in LoginForm: it cancels
          the scroll-to-top and drops the visitor at the bottom of the page. */
-      router.push("/seller");
+      router.push(result.account?.role === "seller" ? "/seller" : "/collection");
     }
 
   const isSeller = values.role === "seller";

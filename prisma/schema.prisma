@@ -1,11 +1,12 @@
 /* Chronos & Steel — PostgreSQL schema.
  *
- * Two families of table. The auth pair (Account, Session) is described in full in
- * `src/lib/auth/repository.ts` and mirrors `Account` in `src/lib/types.ts`. The
+ * Three families of table. The auth pair (Account, Session) is described in full in
+ * `src/lib/auth/repository.ts` and mirrors `Account` in `lib/types.ts`. The
  * catalogue quartet mirrors `Product` and its option axes the same way, with the
  * nested value objects (`caseSpec`, `movement`) flattened into columns so every
  * field the TypeScript types name has exactly one column of the same name and
- * `toProduct` in the repository adapter is a mechanical mapping.
+ * `toProduct` in the repository adapter is a mechanical mapping. The commerce
+ * trio (CartItem, Order, OrderItem) is described where it is declared below.
  *
  * Strings rather than native enums for the unions (material, finish, movement
  * type, and the rest): they are closed sets in TypeScript, but at the database
@@ -36,8 +37,10 @@ model Account {
   storeSlug       String?   @unique
   storeName       String?
 
-  sessions Session[]
-  products Product[]
+  sessions  Session[]
+  products  Product[]
+  cartItems CartItem[]
+  orders    Order[]
 }
 
 model Session {
@@ -117,9 +120,11 @@ model Product {
      rows are shown to customers; a seller always sees their own. */
   published Boolean @default(false)
 
-  dials     Dial[]
-  straps    Strap[]
-  inventory Inventory[]
+  dials      Dial[]
+  straps     Strap[]
+  inventory  Inventory[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 
   @@index([collection])
   @@index([featured])
@@ -182,4 +187,79 @@ model Inventory {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+}
+
+/* ── Commerce ─────────────────────────────────────────────────────────────── */
+
+/* A line in a signed-in account's bag. The variant is pinned by its two option
+   ids rather than by a foreign key, for the same reason `Inventory` pins them
+   as plain strings: dials and straps are recreated wholesale when a seller's
+   reference is edited, and a bag line must survive that edit rather than
+   cascade away. The price is *not* stored — it is resolved from the product's
+   current dials and straps on every read (`lib/catalog/variants.ts`), so a bag
+   line always quotes the same price the product page does. The order, placed
+   later, is where the price is frozen. */
+model CartItem {
+  id        String   @id @default(uuid())
+  accountId String
+  productId String
+  dialId    String
+  strapId   String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  /* Adding the same reference in the same configuration twice increments the
+     one line rather than stacking duplicates, which the unique index enforces
+     instead of a read-then-write in the route. */
+  @@unique([accountId, productId, dialId, strapId])
+  @@index([accountId])
+}
+
+/* A placed order. Everything a receipt needs is snapshotted onto the order and
+   its items at placement time — names, reference, SKU, unit price — so the
+   record of what was bought does not change when the seller later edits or
+   unpublishes the reference. `number` is the human-facing order code. */
+model Order {
+  id              String   @id @default(uuid())
+  number          String   @unique
+  accountId       String
+  status          String   @default("placed")
+  currency        String
+  subtotalInCents Int
+  totalInCents    Int
+  placedAt        DateTime @default(now())
+
+  account Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+
+  @@index([accountId])
+}
+
+model OrderItem {
+  id               String  @id @default(uuid())
+  orderId          String
+  productId        String?
+  slug             String
+  brand            String
+  model            String
+  reference        String
+  dialId           String
+  dialName         String
+  strapId          String
+  strapName        String
+  sku              String
+  unitPriceInCents Int
+  quantity         Int
+  imageUrl         String?
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /* Nullable and SetNull: a seller deleting a reference must not erase the
+     fact that it was bought. The snapshot columns above survive it. */
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
 }

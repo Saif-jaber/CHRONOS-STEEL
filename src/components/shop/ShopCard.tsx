@@ -53,17 +53,19 @@ export function ShopCard({
             edges above and below, which is how the strap reads as continuing
             past the crop.
 
-            A seller's photograph, when there is one, takes the frame: a real
-            picture of the real watch beats a drawing of it every time. The
-            derived drawing is the fallback, not the default, so the collection
-            still reads as complete before any seller has uploaded anything. */}
-        <div className="relative bg-paper-2 px-md py-md">
+            A seller's photograph, when there is one, takes the frame and fills
+            it edge to edge: the square crops the upload to the panel's width, so
+            a landscape shot is cropped rather than letterboxed into a narrow
+            column that leaves the tone showing down both sides. The derived
+            drawing is the fallback, not the default, so the collection still
+            reads as complete before any seller has uploaded anything. */}
+        <div className="relative bg-paper-2 px-xs py-xs sm:px-sm sm:py-sm">
           {product.images && product.images.length > 0 ? (
             <Photo
               src={product.images[0]}
               alt={`${product.brand} ${product.model}`}
               ratio={1}
-              className="mx-auto w-full max-w-56"
+              className="w-full"
             />
           ) : (
             <WatchRender
@@ -72,16 +74,16 @@ export function ShopCard({
               strap={variant.strap}
               detail="card"
               transitionKey={variant.key}
-              className="mx-auto w-full max-w-56"
+              className="mx-auto w-full max-w-48"
             />
           )}
         </div>
 
-        <div className="mt-sm flex items-baseline justify-between gap-sm">
-          <h3 className="text-md leading-tight text-ink transition-opacity dur-base ease-out group-hover:opacity-70">
+        <div className="mt-xs flex items-baseline justify-between gap-sm">
+          <h3 className="text-sm leading-tight text-ink transition-opacity dur-base ease-out group-hover:opacity-70 sm:text-md">
             {product.model}
           </h3>
-          <p className="measure shrink-0 text-sm text-ink-2">
+          <p className="measure shrink-0 text-xs text-ink-2 sm:text-sm">
             {formatPrice(variant.priceInCents, STOREFRONT_CURRENCY)}
           </p>
         </div>

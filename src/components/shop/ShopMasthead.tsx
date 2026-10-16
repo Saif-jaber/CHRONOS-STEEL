@@ -44,19 +44,12 @@ export function ShopMasthead({
         }}
       />
 
-      <div className="container pt-[calc(var(--spacing-nav)+3.5rem)] pb-lg">
+      <div className="container pt-[calc(var(--spacing-nav)+2rem)] pb-md">
         <p className="eyebrow text-silver">The collection</p>
-        <h1 className="mt-2xs text-display text-paper">{countWord(total)} references</h1>
+        <div className="mt-2xs flex flex-wrap items-baseline justify-between gap-x-md gap-y-2xs">
+          <h1 className="text-display text-paper">{countWord(total)} references</h1>
 
-        <div className="mt-md flex flex-col gap-md lg:flex-row lg:items-end lg:justify-between">
-          <p className="prose-measure text-md leading-relaxed text-silver-2">
-            Every reference is built to order in the case diameter, dial and
-            strap of your choosing, and every one of them is priced before it is
-            configured rather than after. Narrow by the millimetre if you know
-            it, or by the hour if you do not.
-          </p>
-
-          <p className="measure shrink-0 text-xs text-navy-muted lg:text-right">
+          <p className="measure shrink-0 text-xs text-navy-muted">
             {formatPrice(bounds.priceMinInCents, currency)} to{" "}
             {formatPrice(bounds.priceMaxInCents, currency)}, by base case
           </p>
@@ -64,7 +57,7 @@ export function ShopMasthead({
 
         {/* The named lines. A link, not a facet in the rail, because a line is the one
             grouping the brand names rather than the shopper. */}
-        <nav aria-label="Collections" className="mt-lg border-t border-navy-rule pt-sm">
+        <nav aria-label="Collections" className="mt-md border-t border-navy-rule pt-sm">
           <ul className="flex flex-wrap items-baseline gap-x-md gap-y-2xs">
             {collections.map((collection) => {
               const selected = state.collection.includes(collection.name);

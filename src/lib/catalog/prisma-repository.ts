@@ -143,7 +143,11 @@ function toProduct(row: ProductRow): Product {
 export class PrismaCatalogRepository implements CatalogRepository {
   async listProducts(): Promise<Product[]> {
     const rows = await prisma.product.findMany({
-      where: { published: true },
+      // Only real seller listings reach the storefront. The seeded demo
+      // catalogue carries no seller, so `sellerId: { not: null }` hides every
+      // mock reference without deleting a row; the landing page still shows its
+      // editorial selection from the static `PRODUCTS` array.
+      where: { published: true, sellerId: { not: null } },
       include: productInclude,
       orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
     });
@@ -170,7 +174,9 @@ export class PrismaCatalogRepository implements CatalogRepository {
   async listCollections(): Promise<Array<{ name: string; count: number }>> {
     const groups = await prisma.product.groupBy({
       by: ["collection"],
-      where: { published: true },
+      // Same rule as `listProducts`: the browse facets count real listings only,
+      // so a collection the seeded catalogue invented disappears from the rail.
+      where: { published: true, sellerId: { not: null } },
       _count: { _all: true },
     });
     return groups
