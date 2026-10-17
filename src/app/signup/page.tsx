@@ -4,15 +4,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { currentAccount } from "@/lib/auth/session";
 
-/**
- * Create an account.
- *
- * The form asks whether you are buying or selling before it asks for anything
- * else, because that answer decides what the rest of the page is for. An
- * existing session is sent to the shop before this renders — same rule as the
- * sign-in page: a signed-in visitor who ends up here should be shopping, and
- * the two auth pages can never be shown to someone who no longer needs them.
- */
+
 export default async function SignupPage() {
   const account = await currentAccount();
   if (account) redirect("/collection");

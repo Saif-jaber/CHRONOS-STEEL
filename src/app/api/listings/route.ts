@@ -4,17 +4,6 @@ import { isObject, readJson } from "@/lib/auth/api";
 import { catalog } from "@/lib/catalog/repository";
 import { parseListing } from "@/lib/catalog/listing";
 
-/**
- * POST /api/listings.
- *
- * Creates a reference for the signed-in seller. The body is parsed and validated
- * by `parseListing` — the same function regardless of what the form checked — and
- * the seller id is taken from the session, never the body, so a seller cannot
- * post a listing onto someone else's storefront.
- *
- * Photographs arrive as R2 public URLs and are refused unless they point at this
- * bucket, which stops a listing being used to serve arbitrary third-party images.
- */
 export async function POST(request: Request): Promise<NextResponse> {
   const account = await currentAccount();
   if (!account || account.role !== "seller") {

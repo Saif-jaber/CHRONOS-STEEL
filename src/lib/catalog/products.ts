@@ -1,17 +1,5 @@
 import type { Product } from "../types";
 
-/**
- * Seeded catalogue.
- *
- * Placeholder *product* data rather than marketing copy, so it can carry real
- * numbers without inventing claims: case diameters, lug-to-lug figures and calibre
- * specs are the merchandise itself, and nothing here attributes a specification to
- * a real manufacturer. All references are house references.
- *
- * Replace with your Prisma query in `lib/catalog/repository.ts`. Nothing downstream
- * of that file needs to change.
- */
-
 const DIAL = {
   silverSunburst: {
     id: "dial-silver",
@@ -586,8 +574,7 @@ export const PRODUCTS: Product[] = [
     straps: [
       STRAP.leather("calf-37-tan", "Tan calfskin", "#6B4A2B", 18, "#C9A227"),
       STRAP.leather("calf-37-black", "Black calfskin", "#1C1C1C", 18, "#6E6A62"),
-      // A 19 mm strap on an 18 mm case. The configurator must not offer this
-      // pairing, and reconciling a strap change has to fall back to an 18 mm.
+      // 19 mm strap on an 18 mm case — a deliberate mismatch, never offered.
       STRAP.leather("calf-37-19mm", "Chestnut, 19 mm", "#5A3A22", 19, "#C9A227"),
     ],
     indexStyle: "arabic",

@@ -1,7 +1,4 @@
-/* Confirms the prerendered home page really contains the six sections the brief
- * asks for, in order, and that the font pairing resolved to the intended faces.
- * A section that silently fails to render still produces a valid page, so this
- * asserts the markup rather than trusting the build to have complained. */
+// Confirms the prerendered home page contains the six brief sections in order and the intended font faces.
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -15,10 +12,7 @@ const html = fs.readFileSync(file, "utf8");
 const SECTIONS = [
   ["Hero", "Time, Made"],
   ["Feature strip", "House standards"],
-  /* Was anchored on the literal "ANATOMY", the display word behind this heading.
-   * That word has been removed, so the section is anchored on its own prose
-   * instead, which is unique to it. Re-anchor here rather than reintroducing a
-   * decorative string purely to give the check something to hold on to. */
+  // Anchored on the section's own prose; the old "ANATOMY" display word was removed.
   ["Anatomy", "A mechanical watch is a stack of tolerances"],
   ["Anatomy heading", "Six parts, and nothing hidden"],
   ["Lifestyle story", "Built for the hours nobody sees"],
@@ -26,22 +20,14 @@ const SECTIONS = [
   ["Footer newsletter", "Time Worth Keeping"],
 ];
 
-/* Production next/font emits unhashed family names ("Playfair Display"); the dev
- * server uses hashed ones ("__Playfair_Display_1dd02c61"). Assert the
- * production spelling, since that is what ships. */
+// Production next/font emits unhashed family names; the dev server hashes them. Assert the production spelling.
 const FACES = [
   ["Playfair Display", "font-family:Playfair Display"],
   ["Inter", "font-family:Inter"],
   ["JetBrains Mono", "font-family:JetBrains Mono"],
 ];
 
-/* next/font hashes its generated family names and writes them into the CSS
- * bundle, not the HTML, so the face names are asserted against the stylesheet
- * while the preloads are asserted against the document.
- *
- * Scoped to .next/static on purpose. .next/dev still holds artifacts from the
- * previous type direction, and sweeping those in would report Hallmark fonts as
- * a live regression when they are only stale dev chunks. */
+// next/font writes face names into the CSS bundle, not the HTML. Scoped to .next/static so stale .next/dev chunks are not swept in.
 function walk(dir) {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -77,11 +63,7 @@ const preloads = (html.match(/font\/woff2/g) || []).length;
 console.log(`  ${preloads >= 3 ? "OK     " : "THIN  "}  ${"preloaded faces".padEnd(18)} ${preloads} woff2`);
 if (preloads < 3) failed += 1;
 
-// The old Hallmark palette must be entirely gone from the shipped CSS.
-// The radius token is assembled from parts on purpose: `src/app/globals.css`
-// excludes this directory with `@source not`, but if that exclusion is ever
-// removed, a literal here would make Tailwind emit the very utility this is
-// checking for, and the check would fail on its own source text.
+// Old Hallmark palette must be gone from shipped CSS. The radius token is built from parts so Tailwind cannot emit it from this file.
 console.log("\nregressions:");
 const FORBIDDEN = [
   ["Hallmark brass token", "--color-accent:"],
@@ -96,38 +78,13 @@ for (const [name, needle] of FORBIDDEN) {
   console.log(`  ${present ? "PRESENT" : "absent "}  ${name}`);
 }
 
-/* The brief allows exactly one filled control, and it is Add to Bag on a product
- * page. The home page must therefore contain none. Asserting the navy Button's
- * literal class signature is the precise check; counting "bg-navy" would also
- * match the footer and the hero band.
- *
- * This asserts against the document, not the stylesheet, and that distinction is
- * the whole check. Tailwind emits one rule per utility — `.border-navy{…}`,
- * `.bg-navy{…}`, `.text-paper{…}` — so the contiguous string
- * "border-navy bg-navy text-paper" is a class *attribute* and can never appear
- * in a CSS file at all. Reading the bundle therefore returned false
- * unconditionally: the guard reported "absent" whether or not home actually
- * rendered a solid control, and it would have kept passing if someone had put a
- * navy Button on the home page.
- *
- * The outline variant is the near-miss that makes the signature worth asserting
- * rather than dropping to a count. Home does render outline controls, and their
- * tail is `border-rule-2 bg-transparent text-ink hover:border-navy hover:text-navy`
- * — it contains "border-navy" and "text-navy" but never adjacent to "bg-navy",
- * so it stays out of this guard while the filled control is caught. */
+// Home must contain no filled Button (only Add to Bag may be filled). The class-signature check must run against the document, not the CSS: the contiguous class string is an attribute and can never appear in a stylesheet.
 console.log("\nsolid controls:");
 const solidOnHome = html.includes("border-navy bg-navy text-paper");
 console.log(`  ${solidOnHome ? "PRESENT" : "absent "}  navy Button signature on home`);
 if (solidOnHome) failed += 1;
 
-/* The headline once rendered navy-on-navy. `.on-navy` re-points the ink family
- * so sections on navy can keep using text-ink, but it must not re-point
- * --color-paper: `text-paper` is how light text is written on a dark ground, so
- * remapping it made the hero headline, the arrow CTAs and the footer heading
- * invisible. Nor --color-silver, which lands near 3.9:1 at 13px.
- *
- * Asserting the absence of these two re-definitions catches the whole class,
- * rather than screenshotting one headline. */
+// `.on-navy` must re-point --color-ink but never --color-paper or --color-silver: remapping those made light text invisible on navy.
 console.log("\nnavy surface tokens:");
 const onNavy = css.match(/\.on-navy\{[^}]*\}/);
 if (!onNavy) {
@@ -144,7 +101,6 @@ if (!onNavy) {
     if (bad) failed += 1;
     console.log(`  ${bad ? "PRESENT" : "absent "}  ${name}`);
   }
-  // The remap that IS wanted: ink family must still be inverted.
   const inkOk = /--color-ink\s*:\s*#f5f4f0/i.test(body);
   if (!inkOk) failed += 1;
   console.log(`  ${inkOk ? "OK     " : "MISSING"}  --color-ink inverted to off-white`);
@@ -161,19 +117,7 @@ if (!heroH1) {
   console.log(`  ${ok ? "OK     " : "MISSING"}  hero h1 uses text-paper  (${heroH1[1].trim()})`);
 }
 
-/* Typography hygiene, asserted on the shipped HTML.
- *
- * The em dash is banned in copy. It is the punctuation mark this design reads
- * as a template tell: it arrives in AI-written marketing copy by reflex, and
- * the house register is quiet, so it has been removed entirely. A middot or a
- * comma does the separating work.
- *
- * Asserted against the rendered document rather than the source, because that
- * is what a reader sees, and because it also catches copy that arrives through
- * data (the product stories in products.ts are the risk here, not the JSX).
- *
- * En dashes are NOT banned. `13-15px`, `45-75ch` and `${lo}-${hi} mm` are
- * numeric ranges, where an en dash is the correct mark and a hyphen is not. */
+// Em dash is banned in copy (a template tell); en dashes are kept for numeric ranges. Checked on the rendered HTML so copy arriving through data is caught too.
 console.log("\ntypography hygiene:");
 const EM_DASH = /\u2014/;
 const enDashCount = (html.match(/\u2013/g) || []).length;
@@ -197,11 +141,7 @@ if (emDashCount > 0) {
 }
 console.log(`  ${enDashCount > 0 ? "OK     " : "none   "}  en dash retained for ranges  (${enDashCount})`);
 
-/* Mojibake guard. Several source comments were once written through a latin1
- * round trip, which stores an em dash as the three code points U+00E2 U+0080
- * U+0094 and renders it as "aEUR".". It survived a naive em dash count because
- * the character is no longer an em dash. A C1 control range is never legitimate
- * in this output, so its presence is a hard failure. */
+/* Mojibake guard: a C1 control range is never legitimate in this output. */
 const mojibake = html.match(/[\u00c2-\u00c3][\u0080-\u009f]/g);
 if (mojibake) {
   failed += 1;
@@ -210,9 +150,7 @@ if (mojibake) {
   console.log(`  absent   mojibake sequence`);
 }
 
-/* Beige is the highlight colour. Asserted in the shipped CSS rather than by
- * eye, because the requirement is not "a beige exists" but "beige is what the
- * cursor highlight and the focus ring actually resolve to". */
+// Beige must be what selection and focus ring actually resolve to, not merely exist.
 console.log("\nbeige highlight:");
 const BEIGE = [
   ["selection background", /::selection\{[^}]*--color-beige-2/i],
@@ -220,8 +158,7 @@ const BEIGE = [
   ["focus ring", /:focus-visible\{outline:2px solid var\(--color-focus\)/i],
   ["focus token is beige", /--color-focus:\s*var\(--color-beige-3\)/i],
   ["cta hover accent", /\.cta:hover[^{]*\{[^}]*--color-beige-3/is],
-  // Single colon: the minifier rewrites ::after to :after, so a double-colon
-  // selector would report a false failure against the shipped bundle.
+  // Single colon: the minifier rewrites ::after to :after.
   ["quiet link accent", /\.quiet-link:hover:after[^{]*\{[^}]*--color-beige-3/i],
   ["beige-2 token emitted", /--color-beige-2:\s*#ddd0b6/i],
   ["beige-3 token emitted", /--color-beige-3:\s*#8a7a5c/i],
@@ -233,17 +170,12 @@ for (const [name, re] of BEIGE) {
   console.log(`  ${ok ? "OK     " : "MISSING"}  ${name}`);
 }
 
-/* The base --color-beige is intentionally absent from the bundle: nothing uses
- * bg-beige or text-beige, and Tailwind v4 only emits theme variables that are
- * referenced. Asserted so the absence reads as intended rather than as a miss. */
+// Base --color-beige is intentionally tree-shaken (no bg-beige/text-beige consumer).
 console.log(
   `  ${/--color-beige:\s*#c8b89a/i.test(css) ? "PRESENT" : "absent "}  unused base --color-beige (tree-shaken)`,
 );
 
-/* The beige tones are only correct if they clear contrast on both grounds.
- * beige-3 is the interactive one and has to work on paper and on navy without
- * an override; beige-2 has to carry dark text. Recomputed here so a future
- * tweak to the hex cannot quietly break the guarantee the comment claims. */
+// Beige tones must clear contrast on both paper and navy grounds.
 function luminance(hex) {
   const n = parseInt(hex.replace("#", ""), 16);
   const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {

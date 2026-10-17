@@ -3,14 +3,6 @@
 import { Modal } from "@/components/ui/Modal";
 import { useSignOut } from "./useSignOut";
 
-/**
- * The confirmation before signing out.
- *
- * Signing out is a state change the reader cannot undo with the back button, so it
- * asks first: an alertdialog that names the consequence and offers the two answers.
- * The shared hook owns the response-then-navigate contract; this component only
- * decides when to call it.
- */
 export function SignOutConfirm({
   open,
   onCancel,

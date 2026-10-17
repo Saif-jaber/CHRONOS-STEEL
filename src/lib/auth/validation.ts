@@ -1,24 +1,8 @@
 import type { UserRole } from "@/lib/types";
 
-/**
- * Account form rules.
- *
- * There is no form library in this project and adding one for eight fields would be
- * the larger decision, so these are plain functions over plain objects. `validateSignup`
- * runs in the browser for immediate feedback, and the identical function runs again on
- * the server where it is the only thing between a crafted POST and a user row. Client
- * validation is a courtesy, never the gate.
- *
- * Messages are written the way the rest of the site writes: no "Oops", no exclamation
- * mark, no unasked-for advice. A field either violates a rule or it does not, and the
- * message says which rule.
- */
+/** Plain functions over plain objects; the same validation runs in the browser and again on the server, and only the server is the gate. */
 
-/**
- * Twelve characters, not eight. An account here is tied to a saved address, a payment
- * method and a warranty, so it is worth the extra typing, and a length floor is the one
- * password rule that survives a dictionary attack intact.
- */
+/** Twelve, not eight: a length floor is the one password rule that survives a dictionary attack. */
 export const MIN_PASSWORD_LENGTH = 12;
 
 export interface LoginValues {
@@ -58,11 +42,7 @@ export function hasErrors(errors: object): boolean {
   return Object.keys(errors).length > 0;
 }
 
-/**
- * Deliberately loose. The only addresses this has to reject are typos, because
- * anything stricter starts refusing addresses that are genuinely deliverable,
- * and the confirmation email is the real check on the address anyway.
- */
+/** Deliberately loose: it only has to catch typos, and the confirmation email is the real check. */
 export function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
 }
@@ -76,8 +56,7 @@ export function validateLogin(values: LoginValues): LoginErrors {
     errors.email = "That address is missing an @ or a domain.";
   }
 
-  /* No length rule here. A short password is not a login error; the server will simply
-     reject the credential, and saying otherwise would leak the floor to anyone who asks. */
+  /* Deliberately no length rule: a short password is not a login error, and the floor must not leak here. */
   if (!values.password) {
     errors.password = "Enter your password.";
   }
@@ -114,9 +93,7 @@ export function validateSignup(values: SignupValues): SignupErrors {
     errors.role = "Choose whether you are buying or selling.";
   }
 
-  /* Only a seller has a storefront, so this is the one field whose requirement
-     depends on another answer. A conditional rule that is not checked is a rule
-     that gets skipped. */
+  /* The one field whose requirement depends on another answer, so it must be checked here. */
   if (values.role === "seller" && !values.storeName.trim()) {
     errors.storeName = "Enter the name your storefront will use.";
   }
@@ -128,8 +105,7 @@ export function validateSignup(values: SignupValues): SignupErrors {
   return errors;
 }
 
-/** Drops values the field set no longer needs, so a half-typed shop name cannot ride
-    along into the payload when the role changes to customer. */
+/** Drops a half-typed store name once the role becomes customer. */
 export function pruneForRole(
   values: SignupValues,
   role: UserRole | "",

@@ -23,17 +23,7 @@ import {
   humanise,
 } from "@/lib/format";
 
-/**
- * A reference.
- *
- * The page a card points at. Where a seller has uploaded photographs they lead;
- * the derived drawing stands in when they have not, so every reference — seeded
- * or listed — resolves to a real page rather than a 404.
- *
- * Built on the server from the same repository the collection uses, so the price
- * and the specifications here are the price and the specifications the grid
- * showed, not a second reading of them.
- */
+
 type Params = { slug: string };
 
 export async function generateMetadata({
@@ -55,19 +45,15 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
   const product = await catalog.getProductBySlug(slug);
   if (!product) notFound();
 
-  /* Reading the session makes this page dynamic, which is exactly what a page
-     with a buy control wants: the account decides whether the control adds to a
-     bag or asks the visitor to sign in first. */
+  // Session determines buy control behavior
   const account = await currentAccount();
 
-  /* A draft is private. Only the seller who owns it may open its page, so they
-     can check it before publishing. Everyone else is told it does not exist. */
+  // Drafts are private to owner
   if (product.published === false) {
     if (!account || product.sellerId !== account.id) notFound();
   }
 
-  /* A seller does not buy from their own shelf; everyone else sees the control,
-     signed in or not. */
+  // Sellers cannot buy own listings
   const canBuy = account?.role !== "seller";
 
   const variant = defaultVariant(product);
@@ -102,10 +88,7 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
         </section>
 
         <section className="section bg-paper">
-          {/* Centred at ~74rem (≈ the gallery's old 40rem once the container's
-              inline padding is subtracted) so the photos fill their column and
-              sit a single small gutter from the specs, rather than hugging the
-              left edge with a wide empty strip before the information. */}
+
           <div className="container grid max-w-[74rem] gap-md lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div>
               {images.length > 0 ? (

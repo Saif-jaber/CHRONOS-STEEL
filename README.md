@@ -1,101 +1,128 @@
 # Chronos & Steel
 
-A luxury ecommerce watch brand website developed as a student frontend project, built with Next.js and TypeScript to deliver a premium digital shopping experience with strong branding, immersive visuals, and polished user experience.
+An e-commerce storefront for a fictional mechanical watch house, built with Next.js, TypeScript, Prisma, and PostgreSQL. It pairs a cinematic marketing site with a working catalogue: server-side filtering, a variant configurator, accounts, a bag and checkout, and a seller dashboard with image uploads.
 
-## Overview
+## Features
 
-Chronos & Steel is a student development project focused on creating a modern online storefront for a premium watch brand. The goal was to design and build a refined ecommerce experience that reflects elegance, craftsmanship, and digital brand storytelling.
+**Storefront**
+- Landing page with a video hero, an interactive "six parts" anatomy section, a lifestyle story, and a featured collection.
+- Watch drawings are generated as SVG from each product's own measurements — there are no product photographs.
+- Collection page with server-side filtering, facet counts, sorting, and full-text search, all driven from the URL so results are linkable and shareable.
+- Per-watch page with a live configurator (dial and strap axes), variant pricing, stock state, lead times, and a spec sheet.
 
-The project combines strong product presentation with a clean and responsive interface, helping demonstrate how modern web technologies can be used to create a premium user experience for retail brands. It is designed to showcase both creative design thinking and front-end development capability.
+**Accounts and commerce**
+- Email/password sign-up and sign-in for two roles: customer and seller. Sessions use a random httpOnly cookie, looked up server-side.
+- Per-account bag with add/remove, and checkout that turns the bag into a placed order with a confirmation page and order history.
+- Seller dashboard: create listings, upload photographs, and move a listing from draft to published. A seller storefront page lists their published watches.
 
-## Project Objective
+**Platform**
+- Data persisted in PostgreSQL through Prisma 7.
+- Listing images uploaded directly to Cloudflare R2 via presigned PUT URLs.
+- Seed catalogue in `src/lib/catalog/products.ts`, written to the database by `prisma/seed.ts`.
 
-This project was developed to:
+## Tech stack
 
-- Create a luxury ecommerce brand experience
-- Showcase premium watch products in a visually compelling way
-- Build a responsive and modern user interface
-- Demonstrate front-end development and design skills as a student project
-- Present a portfolio-ready website that can impress recruiters and hiring teams
+- **Framework:** Next.js 16 (App Router), React 19
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS 4
+- **Data:** PostgreSQL 18, Prisma 7 (`@prisma/adapter-pg`)
+- **Storage:** Cloudflare R2 over the S3 API (`@aws-sdk/client-s3`)
 
-## Key Features
+## Getting started
 
-- Premium, luxury-inspired visual design
-- Responsive storefront layout for multiple screen sizes
-- Cinematic hero section and immersive brand storytelling
-- Product showcase cards and structured catalog presentation
-- Clean, modern UI with strong visual hierarchy
-- Scalable front-end architecture for future ecommerce expansion
+### Prerequisites
 
-## Tech Stack
+- Node.js 20.9 or newer
+- A running PostgreSQL database
 
-- Next.js
-- TypeScript
-- React
-- CSS and component-driven styling
-- Responsive UI design
-
-## Why This Project Matters
-
-Chronos & Steel demonstrates the ability to build a polished and branded digital product from concept to implementation. It highlights skills in frontend development, product presentation, visual hierarchy, and user-centered design, which are important qualities for recruiters evaluating student projects.
-
-This project reflects a strong understanding of:
-
-- UI/UX design principles
-- Brand-focused web experiences
-- Frontend architecture and maintainability
-- Attention to detail in product visualization
-- Building professional-quality interfaces in a real-world style
-
-## Project Structure
-
-```bash
-src/
-  app/
-  components/
-  lib/
-public/
-  vids/
-```
-
-## Getting Started
-
-1. Clone the repository
-2. Navigate to the project folder
-3. Install dependencies
-4. Start the app locally
+### Install
 
 ```bash
 npm install
-npm run dev
 ```
 
-Then open http://localhost:3000 in your browser.
+### Configure
 
-## Available Scripts
+Create a `.env` file in the project root. The `DATABASE_URL` variable is required; the five `R2_*` variables enable image uploads and can be left out to run without them.
+
+```bash
+# PostgreSQL (used by the Prisma CLI and the app at runtime)
+DATABASE_URL="postgresql://user:password@localhost:5432/chronos_steel"
+
+# Cloudflare R2 — optional, listing uploads stay disabled until all five are set
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET=
+R2_PUBLIC_URL=
+```
+
+### Set up the database
+
+Generate the Prisma client, apply migrations, and seed the catalogue:
+
+```bash
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+```
+
+### Run
 
 ```bash
 npm run dev
-npm run build
-npm run start
-npm run lint
-npm run typecheck
 ```
 
-## Future Enhancements
+Open http://localhost:3000.
 
-- Shopping cart and checkout flow
-- Product search and filtering
-- User authentication
-- Wishlist functionality
-- Payment integration
-- Product management with CMS or database support
-- Advanced animations and motion effects
+## Available scripts
 
-## Conclusion
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript, no emit |
+| `npm run db:generate` | Generate the Prisma client |
+| `npm run db:migrate` | Run Prisma migrations in development |
+| `npm run db:seed` | Seed the database from the catalogue |
+| `npm run db:studio` | Open Prisma Studio |
+| `npm run db:setup` | generate + migrate + seed in one step |
+| `npm run audit` | Full check: encoding, types, lint, then the geometry, CSS, home, and hero audits |
 
-Chronos & Steel is a student project designed to reflect professional frontend development standards and premium brand presentation. It serves as a strong portfolio piece, showcasing both technical capability and creative problem-solving in a realistic ecommerce context.
+### Audits
 
----
+The `audit:*` scripts are project-specific regression checks run against a real build (and, for the home and hero audits, the rendered HTML):
 
-Built as a student project to demonstrate modern web development, UI design thinking, and a luxury ecommerce brand experience.
+- `audit:encoding` — scans for mojibake / broken character sequences.
+- `audit:geometry` — builds the app and asserts the generated SVG watch drawings stay within size and proportion bounds.
+- `audit:css` — verifies required utility classes and custom properties are present in the emitted CSS.
+- `audit:home` — checks the home page sections, fonts, contrast, and design-token regressions.
+- `audit:hero` — checks hero/footer surface treatments, image sources, and text contrast.
+
+## Project structure
+
+```
+prisma/
+  schema.prisma        Database schema
+  migrations/          Committed migrations
+  seed.ts              Writes the seed catalogue into PostgreSQL
+scripts/               Audit and verification scripts
+src/
+  app/                 Routes, pages, and API route handlers (App Router)
+  components/          UI: layout, sections, shop, watch, auth, seller
+  lib/
+    auth/              Accounts, sessions, password hashing
+    cart/              Bag
+    catalog/           Products, variants, listings
+    orders/            Checkout and orders
+    storage/           Cloudflare R2 uploads
+  generated/prisma/    Generated Prisma client (not committed)
+public/                Static assets
+```
+
+## Notes
+
+- `src/generated/prisma/` is generated by `npm run db:generate` and is not committed.
+- Product photography is intentionally absent; each watch is drawn from its measurements.

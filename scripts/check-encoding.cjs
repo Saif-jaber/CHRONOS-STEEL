@@ -4,47 +4,15 @@ const path = require("node:path");
 const ROOT = process.argv[2];
 const bad = [];
 
-// Mojibake is a UTF-8 byte sequence that was decoded as Windows-1252, so what
-// lands in the file is not one odd character but a PAIR: a lead character from
-// the Latin-1 supplement, then a character from the CP1252 0x80-0x9F block or the
-// CP1252 specials that stands in for 0x80-0x9F. U+2192 stored as e2 86 92 and
-// read as CP1252 is U+00E2 U+2020 U+2019, which is three characters on screen and
-// a three-character-wide gap in the layout.
-//
-// The previous version of this file missed all of it, and the reason is worth
-// keeping in mind. It built its needles as
-// `String.fromCharCode(0xc3) + String.fromCharCode(0xa2)` and expected that
-// expression to be the A-circumflex, but `fromCharCode` takes code points, not
-// bytes, so it is U+00C3 U+00A2, two characters, and the A-circumflex it was
-// named after is the single code point U+00E2. The other needle had the same
-// problem one character along, asking for U+0080 where the file held U+2020. So
-// the sweep reported clean while a CTA arrow was rendering as garbage on the
-// live page, which is the worst failure mode an audit can have: it is not wrong
-// in a way anyone notices.
-//
-// Both bad needles are named here by code point rather than written out, because
-// pasting the characters themselves into this file would plant live mojibake in
-// the one file whose job is to report it.
-//
-// So the test is on the pair, by shape rather than by exact sequence.
+// Mojibake (UTF-8 bytes mis-decoded as CP1252) shows up as a lead char followed by a CP1252 stand-in. Needles are named by code point, never pasted as characters.
 const LEAD = /[\u00C2\u00C3\u00E2\u00EF\u00F4\u00F5]/;
-// Deliberately excludes U+00E0, U+00E8, U+00E9 and U+00FC, which are the
-// accented letters of ordinary European prose. Including them would flag real
-// text like "Müller®", where U+00AE is a legitimate registered trademark, and a
-// checker that cries wolf on correct text gets ignored.
+// Excludes accented letters of ordinary European prose so the checker does not cry wolf.
 const TRAIL = /[\u0080-\u00BF\u0152\u0153\u0160\u0161\u0178\u017E\u0192\u02C6\u02DC\u2013\u2014\u2018\u2019\u201A\u201C\u201D\u201E\u2020\u2021\u2022\u2026\u2030\u2039\u203A\u20AC\u2122]/;
 
 const NON_ASCII = /[^\x00-\x7F]/;
 const QP = String.fromCharCode(0x22) + String.fromCharCode(0x3f);
 
-/* Self-test. A detector that matches nothing is indistinguishable from a clean
- * repository, which is precisely how the old version of this file came to pass
- * while the page was visibly broken. These fixtures are built from code points
- * rather than pasted as characters, so the test file cannot itself be the thing
- * that trips the sweep, and so the code points under test stay legible.
- *
- * Note that .cjs is not in the extension list walked below, so this block is not
- * scanned either way. That is convenient here and is not the reason to rely on it. */
+/* Self-test: fixtures built from code points (not pasted characters) so this file cannot trip its own sweep. Note .cjs is not walked below, so this block is never scanned. */
 const SELFTEST = [
   { cps: [0x00e2, 0x2020, 0x2019], label: "U+2192 right arrow, round tripped" },
   { cps: [0x00e2, 0x20ac, 0x2122], label: "U+2019 curly quote, round tripped" },
@@ -80,7 +48,6 @@ if (selfTestFailures.length) {
   process.exit(1);
 }
 
-
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === "node_modules" || entry.name === ".next" || entry.name === ".git") continue;
@@ -98,16 +65,14 @@ function check(file) {
     bad.push(`${rel}:${line}  ${label}\n      ...${ctx}...`);
   };
 
-  // The replacement character on its own is unambiguous, unlike the pair test,
-  // so it stays a simple substring scan.
+  // U+FFFD on its own is unambiguous, so it stays a simple substring scan.
   let r = s.indexOf(String.fromCharCode(0xfffd));
   while (r !== -1) {
     report(s.slice(0, r).split("\n").length, "U+FFFD replacement character", r);
     r = s.indexOf(String.fromCharCode(0xfffd), r + 1);
   }
 
-  // A lead character followed by a CP1252 stand-in, which is what a mis-decode
-  // actually looks like once it has been written to disk.
+  // Lead character followed by a CP1252 stand-in, i.e. a written mis-decode.
   for (let i = 0; i < s.length - 1; i++) {
     if (LEAD.test(s[i]) && TRAIL.test(s[i + 1])) {
       const cps = [s.codePointAt(i), s.codePointAt(i + 1)]
@@ -118,8 +83,7 @@ function check(file) {
     }
   }
 
-  // A quote+question pair is only mojibake when it is welded to a non-ASCII
-  // character on the left.
+  // A quote+question pair is only mojibake when welded to a non-ASCII char on the left.
   let j = s.indexOf(QP);
   while (j !== -1) {
     const before = s[j - 1];

@@ -10,14 +10,7 @@ import { currentAccount } from "@/lib/auth/session";
 import { orders } from "@/lib/orders/repository";
 import { formatPrice } from "@/lib/format";
 
-/**
- * An order, as placed.
- *
- * Guarded and scoped to the account like the bag: an order id that is not the
- * caller's answers exactly like one that does not exist, so nothing leaks by
- * guessing a code. The figures come from the frozen order rows, not from the
- * catalogue, which is the whole reason the order snapshots them.
- */
+
 
 export const metadata: Metadata = {
   title: "Order confirmed",

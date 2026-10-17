@@ -12,25 +12,6 @@ import { IconArrowRight } from "@/components/ui/Icon";
 import { WatchRender } from "@/components/watch/WatchRender";
 import { Photo } from "@/components/ui/Photo";
 
-/**
- * A reference, as a card in the shop.
- *
- * The photograph is not used here. `ProductCard` on the front page is built around a
- * local photo slot and a missing file renders as an empty frame, which is defensible
- * for six cards on a landing page and broken-looking for a shop. So the shop draws its
- * own: `WatchRender` at `detail="card"` is the tier built for exactly this grid, it is
- * derived from the product's own measurements, and it costs no image request.
- *
- * The drawing's proportions are honest in a way a flat-lay photograph cannot be. The
- * 36 mm Sector really is drawn smaller than the 44 mm Vantage on the same scale, so a
- * shopper narrowing by diameter is comparing like with like, and the dial colour on
- * screen is the dial the price is for.
- *
- * Everything else follows the front page's card: image-forward, one line of name and
- * price, one line of measurement, and an arrow in space that is already reserved. The
- * one addition is the availability line, because a shop that does not say whether a
- * watch is on the shelf is not selling anything.
- */
 export function ShopCard({
   product,
   className,
@@ -49,16 +30,7 @@ export function ShopCard({
         href={href}
         className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
       >
-        {/* The frame is a tonal panel, not a card. The drawing bleeds to its own
-            edges above and below, which is how the strap reads as continuing
-            past the crop.
-
-            A seller's photograph, when there is one, takes the frame and fills
-            it edge to edge: the square crops the upload to the panel's width, so
-            a landscape shot is cropped rather than letterboxed into a narrow
-            column that leaves the tone showing down both sides. The derived
-            drawing is the fallback, not the default, so the collection still
-            reads as complete before any seller has uploaded anything. */}
+        {/* The drawing is the fallback; if a seller photograph exists, it fills the square. */}
         <div className="relative bg-paper-2 px-xs py-xs sm:px-sm sm:py-sm">
           {product.images && product.images.length > 0 ? (
             <Photo
@@ -88,24 +60,18 @@ export function ShopCard({
           </p>
         </div>
 
-        {/* The measurement column, in the house mono, so the cards line up into a
-            column a collector can read down. */}
+        {/* Measurement column, set in mono for alignment. */}
         <p className="measure mt-2xs text-xs text-muted">
           {product.reference} &middot; {formatMm(product.caseSpec.diameterMm)} mm
           &middot; {product.caseSpec.material.replace(/-/g, " ")}
         </p>
 
-        {/* Availability, as a sentence rather than a badge. "Made to order" and "in
-            stock" are different promises and a shopper deciding today needs to know
-            which one this is before they fall in love with the dial. */}
+        {/* Availability. */}
         <p className="mt-2xs text-xs text-faint">
           {stock.label} &middot; {stock.detail}
         </p>
 
-        {/* Dials available, as swatches. The count is the useful half; the colours
-            are there so two cards can be told apart at a glance. The swatches are
-            square because the house has no radius tokens, and a hairline keeps the pale
-            ones off the panel. */}
+        {/* Dials and straps available. */}
         <p className="mt-2xs flex items-center gap-2xs text-xs text-faint">
           <span aria-hidden="true" className="flex items-center gap-3xs">
             {product.dials.map((dial) => (

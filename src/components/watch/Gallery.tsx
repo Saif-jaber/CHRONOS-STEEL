@@ -6,17 +6,8 @@ import { IconArrowRight, IconClose, IconSearch } from "@/components/ui/Icon";
 import { Photo } from "@/components/ui/Photo";
 
 /**
- * The reference's photographs.
- *
- * The grid is the same as it has always been — square crops, the first frame
- * spanning the full width — but each frame is now a control: pressing it opens
- * the photograph large, where it can be inspected the way a buyer inspects a
- * watch. Fit to the screen by default; click to zoom in, drag to pan, click
- * again to reset. Arrows and the arrow keys step through the set, Escape closes.
- *
- * The lightbox is drawn, not imported: a dependency-free overlay keeps the
- * bundle free of a modal library and lets the interaction follow the house
- * rules — the navy ground, the 1px glyph, no radius, no shadow.
+ * The reference's photographs. Each grid frame opens a lightbox: click to zoom,
+ * drag to pan, arrows/keys to step, Escape to close.
  */
 
 const MIN_SCALE = 1;
@@ -58,8 +49,7 @@ export function Gallery({
               fit="cover"
               priority={index === 0}
             />
-            {/* The affordance, because a plain photograph does not announce
-                itself as pressable. */}
+            {/* Zoom affordance; a plain photograph does not announce itself as pressable. */}
             <span
               aria-hidden="true"
               className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity dur-base ease-out group-hover:bg-navy/25 group-hover:opacity-100"
@@ -113,8 +103,7 @@ function Lightbox({
   const zoomed = scale > MIN_SCALE;
   const many = images.length > 1;
 
-  /* Focus lands on the close control so the keyboard is oriented immediately,
-     and the page behind is frozen while the overlay is up. */
+  /* Focus the close control; freeze the page behind while the overlay is up. */
   useEffect(() => {
     closeRef.current?.focus();
     const previous = document.body.style.overflow;
@@ -124,8 +113,8 @@ function Lightbox({
     };
   }, []);
 
-  /* A new photograph opens fitted, never mid-zoom. The reset rides on the step
-     itself rather than an effect on `index`, which would cascade a render. */
+  /* A new photograph opens fitted, never mid-zoom; resetting here rather than in
+     an effect on `index` avoids an extra cascading render. */
   const reset = useCallback(() => {
     setScale(MIN_SCALE);
     setOffset({ x: 0, y: 0 });
@@ -215,8 +204,8 @@ function Lightbox({
         </button>
       </div>
 
-      {/* The stage itself closes on a backdrop press; the image stops propagation
-          so a click on the picture zooms rather than dismisses. */}
+      {/* The stage closes on a backdrop press; the image stops propagation so a
+          click on the picture zooms rather than dismisses. */}
       <div
         className="relative flex flex-1 items-center justify-center overflow-hidden px-md"
         onClick={onClose}

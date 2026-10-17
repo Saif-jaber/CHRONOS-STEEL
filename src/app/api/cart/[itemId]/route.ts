@@ -3,14 +3,6 @@ import { currentAccount } from "@/lib/auth/session";
 import { isObject, readJson } from "@/lib/auth/api";
 import { cart } from "@/lib/cart/repository";
 
-/**
- * One line in the bag.
- *
- * PATCH sets its quantity; DELETE removes it. Both are scoped to the signed-in
- * account by the repository, and a line that is not the caller's answers exactly
- * like one that does not exist.
- */
-
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ itemId: string }> },

@@ -9,22 +9,8 @@ import type {
 } from "./types";
 import { humanise } from "./format";
 
-/**
- * The facet engine.
- *
- * Two rules govern everything below:
- *
- *   1. OR within a facet, AND across facets. Selecting "automatic" and "manual"
- *      widens the movement facet; adding a case material narrows the result.
- *
- *   2. Counts are computed against *every other facet's* current selection, so a
- *      count answers "how many will I get if I click this?" rather than "how many
- *      exist?", which is the only question a shopper is asking.
- *
- * Everything here is a pure function of (products, state), so the same code runs
- * on the server for the first paint and again on the client when the URL changes,
- * and the two cannot disagree.
- */
+/** OR within a facet, AND across facets. Counts are computed against every other
+ * facet's current selection. Pure functions of (products, state). */
 
 export type FacetId =
   | "collection"
@@ -62,9 +48,7 @@ export const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: "newest", label: "Most recent" },
 ];
 
-/* ── Facet catalogue ──────────────────────────────────────────────────────
- * Order here is the order they appear in the rail. Measurement facets lead,
- * because a collector narrows by size before they narrow by colour. */
+/* ── Facet catalogue ────────────────────────────────────────────────────── */
 
 export const MOVEMENT_VALUES: MovementType[] = ["automatic", "manual", "quartz"];
 
@@ -97,13 +81,7 @@ export const COMPLICATION_VALUES: Complication[] = [
   "alarm",
 ];
 
-/**
- * Facets that are multi-select lists, and the accessor that fills their counts.
- *
- * `readonly` on the return type because a dial's complications are already a
- * readonly array; widening them here just to satisfy a signature would be a copy
- * of every complication on every product on every count pass.
- */
+/** Multi-select facets and the accessor that fills their counts. */
 const CHIP_FACETS = {
   collection: (p: Product) => [p.collection],
   movement: (p: Product) => [p.movement.type],
@@ -119,13 +97,7 @@ export function isChipFacet(id: FacetId): id is ChipFacetId {
   return id in CHIP_FACETS;
 }
 
-/**
- * Selected values for a chip facet, or an empty array for the rest.
- *
- * Exported because the rail has to mark a value as chosen and the chip row has to
- * know which values are already in the URL, and neither should re-implement this
- * switch to find out.
- */
+/** Selected values for a chip facet, or an empty array for the rest. */
 export function selectedValues(state: FilterState, id: FacetId): string[] {
   switch (id) {
     case "collection":
@@ -145,8 +117,7 @@ export function selectedValues(state: FilterState, id: FacetId): string[] {
   }
 }
 
-/* ── Range bounds, derived from the catalogue rather than hard-coded ──────
- * A slider whose limits do not match the inventory is a lie with two handles. */
+/* ── Range bounds, derived from the catalogue ───────────────────────────── */
 
 export interface CatalogBounds {
   diameterMin: number;
@@ -186,8 +157,7 @@ export function catalogBounds(products: Product[]): CatalogBounds {
 function matchesText(product: Product, query: string): boolean {
   if (query.length === 0) return true;
   const needle = query.toLowerCase();
-  // Reference and model are searched alongside the prose, because a collector
-  // typing "114" means the calibre or the reference, not the description.
+  // Reference, model and calibre are searched alongside the prose.
   const haystack = [
     product.brand,
     product.model,
@@ -215,14 +185,10 @@ function inRange(value: number, min: number | null, max: number | null): boolean
 function chipFacetMatches(product: Product, id: ChipFacetId, selected: string[]): boolean {
   if (selected.length === 0) return true;
   const available: readonly string[] = CHIP_FACETS[id](product);
-  // OR within the facet: the product qualifies if it offers *any* selected value.
   return selected.some((value) => available.includes(value));
 }
 
-/**
- * The single match predicate. `skip` removes one facet from consideration so
- * counts can answer the "what if I clicked this?" question.
- */
+/** The single match predicate. `skip` drops one facet so counts can be asked. */
 export function productMatches(
   product: Product,
   state: FilterState,
@@ -283,9 +249,7 @@ export function sortProducts(products: Product[], sort: SortKey): Product[] {
       return sorted.sort((a, b) => b.yearIntroduced - a.yearIntroduced);
     case "featured":
     default:
-      // Featured first, then the narrowest case, a collector reads a small
-      // diameter as the more considered choice, so it is a better tiebreak
-      // than alphabetical order, which is what the sort would otherwise do.
+      // Featured first, then narrowest case.
       return sorted.sort(
         (a, b) =>
           Number(b.featured) - Number(a.featured) ||
@@ -294,12 +258,8 @@ export function sortProducts(products: Product[], sort: SortKey): Product[] {
   }
 }
 
-/**
- * Live count per value for one facet, computed against every *other* facet.
- * A value counting zero is still returned, the UI disables it rather than
- * hiding it, because a filter list that reshuffles under the cursor is worse
- * than one that shows you what is unavailable.
- */
+/** Live count per value against every other facet. A zero count is kept, so the
+ * UI disables it rather than hiding it. */
 export function countFacetValues(
   products: Product[],
   state: FilterState,
@@ -316,8 +276,7 @@ export function countFacetValues(
     }
   }
 
-  // A selected value whose products were all removed by a sibling facet still
-  // needs a count, or the active chip loses its number and looks broken.
+  // Selected values always get an entry, even at 0, so the active chip keeps its number.
   for (const value of selected) {
     if (!counts.has(value)) counts.set(value, 0);
   }
@@ -325,23 +284,13 @@ export function countFacetValues(
   return counts;
 }
 
-/* ── URL serialisation ────────────────────────────────────────────────────
- * Filters live in the URL, not in component state, so a filtered view can be
- * shared, bookmarked, and server-rendered. The parse is total: any garbage in
- * the query string falls back to the default rather than throwing. */
+/* ── URL serialisation. Filters live in the URL; bad input falls back to defaults. ── */
 
-/**
- * Splits a comma list and drops tokens that do not match `shape`.
- *
- * When `allowed` is omitted (dial ids and collection names are catalogue-derived,
- * so there is no static list) the token is only shape-checked; an unknown id then
- * matches no product, which keeps the parse total.
- */
+/** Splits a comma list and drops tokens that fail `shape` or `allowed`. */
 function parseList<T extends string>(
   raw: string | null,
   allowed?: readonly T[],
-  /* The comma split means a token can never contain a comma, which is why the
-     collection pattern below can safely allow spaces and still round-trip. */
+  /* A token can never contain a comma, so allowing spaces still round-trips. */
   shape: RegExp = /^[a-z0-9-]+$/,
 ): T[] {
   if (!raw) return [];
@@ -360,16 +309,8 @@ function parseNumber(raw: string | null): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-/**
- * Accepts "min-max", "min-" or "-max". Returns nulls for an open or invalid bound.
- *
- * Anything with more than two parts is rejected outright rather than partially
- * read. "-5-999" is the case that matters: read at face value it becomes "every
- * price up to 9.99", which is a wrong answer rather than a missing one. A query
- * string is user input and this function's contract is that garbage falls back to
- * the default, so an unrecognised shape yields no bounds at all. Measurements and
- * prices are never negative, so nothing legitimate is lost by refusing.
- */
+/** Accepts "min-max", "min-" or "-max". More than two parts is rejected so an
+ * input like "-5-999" cannot be read as "up to 9.99". */
 function parseRange(raw: string | null): [number | null, number | null] {
   if (!raw) return [null, null];
   const parts = raw.split("-");
@@ -390,8 +331,7 @@ export function parseFilters(params: URLSearchParams): FilterState {
 
   return {
     q: params.get("q")?.slice(0, 80) ?? "",
-    /* Collection names are brand words, not slugs: "Meridian" has a capital and
-     * "Grand Sport" would have a space, so the shape allows both. */
+    /* Collection names allow capitals and spaces, not slugs. */
     collection: parseList(params.get("collection"), undefined, /^[a-z0-9][a-z0-9 -]{0,40}$/i),
     movement: parseList(params.get("movement"), MOVEMENT_VALUES),
     material: parseList(params.get("case"), MATERIAL_VALUES),
@@ -407,11 +347,8 @@ export function parseFilters(params: URLSearchParams): FilterState {
   };
 }
 
-/**
- * Serialise back to a query string. Parameters are emitted in a fixed order so
- * the same filter state always produces byte-identical URLs, which keeps
- * `useMemo` deps and Next's router cache from thrashing.
- */
+/** Serialise back to a query string. Fixed parameter order so identical filter
+ * state always produces identical URLs. */
 export function filtersToQuery(state: FilterState): string {
   const params = new URLSearchParams();
   if (state.q) params.set("q", state.q);

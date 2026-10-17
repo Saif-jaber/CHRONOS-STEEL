@@ -3,19 +3,6 @@ import { currentAccount } from "@/lib/auth/session";
 import { isObject, readJson } from "@/lib/auth/api";
 import { cart } from "@/lib/cart/repository";
 
-/**
- * The bag.
- *
- * GET returns the signed-in account's bag; POST adds a configured reference to
- * it; DELETE empties it. The account is always taken from the session, never the
- * body, so a request can only ever touch the caller's own bag.
- *
- * Every refusal a shopper can hit is written here, in the register the rest of
- * the shop uses — a sentence, not a status code — and mapped to one status each:
- * an unknown reference is a 404, one that is not for sale a 409, and a pairing
- * the maker will not build a 400.
- */
-
 function unauthorised(): NextResponse {
   return NextResponse.json({ error: "Sign in to use your bag." }, { status: 401 });
 }

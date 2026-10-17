@@ -6,22 +6,9 @@ import { STOREFRONT_CURRENCY } from "@/lib/format";
 import type { Currency, Order, OrderLine } from "@/lib/types";
 import type { OrderRepository, PlaceOrderResult } from "./repository";
 
-/**
- * The Postgres implementation of the order seam.
- *
- * `placeOrder` is the only interesting method, and its shape is the point: read
- * the bag, refuse it if it is empty or holds something that can no longer ship,
- * then write the order and clear the bag in one transaction. The order number is
- * generated and its uniqueness guaranteed by the unique index, retried on
- * collision rather than trusted to a counter that two checkouts could race.
- *
- * `toOrder` is the reverse mapping: a row (with its snapshot items) becoming the
- * domain `Order`. No decisions live in it, which is deliberate — the snapshot
- * columns were named to match `OrderLine` exactly so this is mechanical.
- */
+/** Postgres order adapter: read the bag, refuse it if empty or unshippable, then write the order and clear the bag in one transaction. */
 
-/* Crockford-ish alphabet: no I, O, 0 or 1, so an order code read aloud or typed
-   back is unambiguous. */
+/* Crockford-ish alphabet: no I, O, 0 or 1, so a code read aloud or typed back is unambiguous. */
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function code(length: number): string {
@@ -125,9 +112,7 @@ export class PrismaOrderRepository implements OrderRepository {
       imageUrl: line.imageUrl,
     }));
 
-    /* Reordering the same bag at the same second is the only way to collide, and
-       a fresh code resolves it; four characters is enough that a handful of
-       retries is already implausible. */
+    /* Reorder at the same second is the only collision path; a fresh code resolves it. */
     for (let attempt = 0; ; attempt += 1) {
       try {
         const row = await prisma.$transaction(async (tx) => {
@@ -138,8 +123,7 @@ export class PrismaOrderRepository implements OrderRepository {
               status: "placed",
               currency,
               subtotalInCents: subtotal,
-              /* No shipping or tax model yet; the total is the subtotal until one
-                 exists, rather than a number guessed here. */
+              /* No shipping or tax model yet; the total is the subtotal until one exists. */
               totalInCents: subtotal,
               items: { create: items },
             },

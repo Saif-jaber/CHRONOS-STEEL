@@ -4,22 +4,9 @@ import { useEffect, useRef, useState, type ElementType, type ReactNode } from "r
 import { cx } from "@/lib/format";
 
 /**
- * Scroll reveal.
- *
- * The CSS in globals.css holds the hidden and shown states; this component only
- * decides *when*. An IntersectionObserver sets `data-shown`, which starts the
- * opacity and translate transition.
- *
- * Two deliberate choices:
- *
- * 1. `rootMargin: "0px 0px -12% 0px"`, so the reveal fires when the element is
- *    genuinely inside the viewport rather than when it first clips the bottom edge.
- *    A 0px margin makes things pop in while you are still looking elsewhere.
- * 2. Once shown, the observer disconnects. Content never re-animates on the way
- *    back up, which is what makes a slow site feel slow.
- *
- * With JavaScript disabled the element renders visible, because the attribute that
- * hides it is only ever set by this effect.
+ * Decides *when* to reveal; the CSS in globals.css holds the hidden/shown states.
+ * The observer disconnects after firing so content never re-animates on scroll back.
+ * Without JS the element renders visible, since only this effect sets the hiding attribute.
  */
 export function Reveal({
   children,

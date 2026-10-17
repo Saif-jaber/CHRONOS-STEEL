@@ -23,29 +23,7 @@ import { SortControl } from "@/components/shop/SortControl";
 import { IconChevron } from "@/components/ui/Icon";
 import { Cta } from "@/components/ui/Button";
 
-/**
- * The collection.
- *
- * This is the shop. It filters, counts, sorts and searches on the server from the URL,
- * the trade `lib/catalog/repository.ts` documents: the first paint is already the right
- * answer, a narrowed view can be shared or bookmarked, and every control is a link, so
- * none of it depends on the bundle having loaded.
- *
- * The route is therefore dynamic. Nothing is cached against a product list that does not
- * exist yet: swap the seeded repository for a Prisma adapter in one file and the facets,
- * the counts, the chips and the grid all keep working, because none of them knows where
- * the products came from.
- *
- * The rail is rendered twice on purpose, once in the mobile disclosure and once in the
- * desktop column; `display: none` removes the hidden copy from the accessibility tree as
- * well as the screen, so a screen reader announces one rail, not two.
- *
- * Filtering moves nothing. Every control is a `FilterLink` that stops the router
- * scrolling the document, and the results column holds a minimum height so a narrowed
- * list cannot collapse the page out from under the reader. There is no scroll restoration
- * on purpose: restoring a position is still a movement, and a reader who taps a filter is
- * asking for the list to change, not for the page to travel.
- */
+
 export const metadata: Metadata = {
   title: "The collection",
   description:
@@ -54,10 +32,7 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-/** `searchParams` arrives as repeated keys or as arrays; the filter engine takes
- *  one flat `URLSearchParams`, and anything repeated is joined the way a browser
- *  would send it. A page that took only the first value would quietly disagree
- *  with a hand-typed URL. */
+
 function toSearchParams(params: SearchParams): URLSearchParams {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -96,9 +71,7 @@ export default async function CollectionPage({
 
         <section className="section bg-paper">
           <div className="container">
-            {/* Toolbar. The count on the left is the only number that changes
-                when a facet is clicked, so it is the first thing on the page
-                after the masthead rather than a caption under the grid. */}
+            {/* Toolbar */}
             <div className="flex flex-col gap-md border-b border-rule pb-md lg:flex-row lg:items-end lg:justify-between">
               <div className="flex flex-col gap-2xs">
                 <p className="measure text-md text-ink" role="status">
@@ -155,19 +128,7 @@ export default async function CollectionPage({
                 </div>
               </aside>
 
-              {/* The results column, with a floor under it.
-
-                  A shopper who has scrolled to the eighth card taps "steel" and the list
-                  drops to three. Without a floor the document becomes far shorter than the
-                  scroll offset the browser is holding, so it clamps to the new bottom and
-                  reads as the page throwing the reader at the footer. Reserving a screen of
-                  height lets the column shrink a long way before the page gets short enough
-                  to clamp; at three cards there is quiet space below the last one, which
-                  reads as a short list rather than a broken page.
-
-                  `svh` rather than `vh` because the phone browser's chrome grows and
-                  shrinks as the reader scrolls, and a `vh` floor tall enough on paper is a
-                  floor that overflows in the real thing. */}
+            {/* Results column with min-height floor */}
               <div className="min-h-[70svh]">
                 <ActiveFilters
                   state={state}
@@ -191,9 +152,7 @@ export default async function CollectionPage({
                   <EmptyState on={state} clearHref={clearHref} total={products.length} />
                 )}
 
-                {/* The next step, below the grid rather than above it: someone
-                    who has just read twelve references is being offered the end
-                    of the list, not the start of it. */}
+                {/* Footer summary */}
                 {results.length > 0 ? (
                   <p className="measure rule-t mt-xl pt-md text-xs text-faint">
                     Showing {results.length} of {products.length}. Prices are for
@@ -214,13 +173,7 @@ export default async function CollectionPage({
   );
 }
 
-/**
- * Nothing matched.
- *
- * The likely cause is named rather than guessed at, because the URL knows: a
- * search term, a facet, or both. So the recovery is a link that removes exactly
- * that, plus one that starts again from the whole collection.
- */
+
 function EmptyState({
   on,
   clearHref,

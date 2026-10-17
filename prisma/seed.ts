@@ -3,20 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PRODUCTS } from "../src/lib/catalog/products";
 
-/**
- * Writes the seed catalogue into PostgreSQL.
- *
- * Run with `npm run db:seed` (Prisma 7 no longer runs it as a side effect of
- * migrating). It is idempotent: every product is an upsert keyed on its id, and
- * the option axes are replaced wholesale under it, so running it twice leaves the
- * same table rather than doubling it, and editing a dial in
- * `src/lib/catalog/products.ts` and re-running moves the change.
- *
- * This script builds its own client rather than importing `src/lib/prisma.ts`:
- * that module carries `server-only`, which exists to fail loudly in a React
- * bundle and has no business in a standalone Node script. Same adapter, same
- * connection string, one less condition to reason about.
- */
+// Seeds the catalogue (npm run db:seed). Idempotent upserts keyed on product id.
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -68,10 +55,7 @@ async function main() {
       published: true,
     };
 
-    /* The option axes are expressed once as plain create inputs. `deleteMany`
-       belongs to the *update* path only — a product being inserted for the
-       first time has nothing to replace — so the two arms of the upsert share
-       the scalars and differ only in that one key. */
+    // `deleteMany` belongs to the update path only; both upsert arms share the scalars.
     const dials = product.dials.map((dial, position) => ({
       id: dial.id,
       sortOrder: position,

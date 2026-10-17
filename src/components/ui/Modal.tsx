@@ -5,27 +5,6 @@ import { createPortal } from "react-dom";
 import { Button, IconButton } from "@/components/ui/Button";
 import { IconClose } from "@/components/ui/Icon";
 
-/**
- * A blocking popup.
- *
- * Two jobs. It stops a seller at the door when a reference is not ready to publish,
- * and it asks before a state change the reader cannot take back — signing out. Pass
- * `onConfirm` to turn it from a single-dismiss notice into a yes/no confirmation.
- * It is deliberately modal in the strict sense: a full-screen backdrop sits over the
- * page and swallows every click, so nothing behind it can be reached while it is
- * open. The only way out is the close control — the backdrop does not dismiss, so
- * a stray click cannot wave the warning away before it is read.
- *
- * It is an `alertdialog`, so assistive tech interrupts rather than waiting to be
- * asked, and the heading names it. Focus is trapped inside and returned to
- * whatever was focused before, so a keyboard user is never stranded. Escape still
- * closes, because a modal with no keyboard exit is a trap.
- *
- * The panel keeps the site's language: a paper ground, a single navy hairline,
- * square corners and no shadow, in a portal on `body` so no section's `overflow`
- * can clip it.
- */
-
 export function Modal({
   open,
   onClose,
@@ -40,18 +19,14 @@ export function Modal({
   onClose: () => void;
   title: string;
   confirmLabel?: string;
-  /**
-   * When set, the dialog is a confirmation rather than a single-dismiss notice:
-   * the confirm control runs this, and a cancel control appears beside it.
-   */
+  /** When set, the dialog is a confirmation: the confirm control runs this, and a cancel control appears beside it. */
   onConfirm?: () => void;
   cancelLabel?: string;
   confirmDisabled?: boolean;
   children: ReactNode;
 }) {
-  /* True only after hydration. The portal needs a live `document`, and this is
-     the no-effect way to learn that the client has taken over — the server
-     snapshot is false, so the dialog stays out of the SSR output entirely. */
+  /* True only after hydration: the portal needs a live `document`, and the
+     server snapshot is false so the dialog stays out of the SSR output. */
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -97,10 +72,9 @@ export function Modal({
 
     document.addEventListener("keydown", onKeyDown);
 
-    /* Freeze the page behind. The viewport scrolls on <html>, and this site sets
-       `overflow-x: clip` there, so locking <body> alone does not reliably stop it
-       — lock the root as well. Removing the scrollbar would otherwise shift the
-       page sideways, so its width is reserved on the body for the duration. */
+    /* Freeze the page behind. The viewport scrolls on <html> and this site clips
+       overflow-x there, so lock the root as well; reserve the scrollbar width on
+       the body so hiding it does not shift the page sideways. */
     const root = document.documentElement;
     const previousRootOverflow = root.style.overflow;
     const previousBodyOverflow = document.body.style.overflow;
@@ -127,8 +101,8 @@ export function Modal({
 
   return createPortal(
     <div className="fixed inset-0 z-menu flex items-center justify-center p-sm sm:p-md">
-      {/* Blocks the page behind: no click handler, but it covers the viewport and
-          catches every pointer event, so only the panel below is reachable. */}
+      {/* Backdrop covers the viewport and swallows every click; it deliberately
+          does not dismiss. */}
       <div
         aria-hidden="true"
         className="absolute inset-0 cursor-default bg-navy/75 backdrop-blur-sm"

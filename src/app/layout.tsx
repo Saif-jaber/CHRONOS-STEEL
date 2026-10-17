@@ -3,21 +3,6 @@ import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-/**
- * Two faces doing two jobs, plus one specialist.
- *
- * Playfair Display is a high-contrast Didone-adjacent serif and it carries
- * storytelling headlines only, it is never asked to set a price, a label or a
- * spec. Inter is the whole functional layer: navigation, body copy, buttons,
- * form controls, eyebrows. It tracks at +0.05em in the interface and +0.12em on
- * uppercase nav, which is what keeps the sans from reading as software.
- *
- * JetBrains Mono appears in exactly one role: the measurement column of a
- * specification table, where a 44.0 mm has to line up with a 12.1 mm. Used
- * anywhere else it would read as decoration, and decoration is the thing this
- * brand cannot afford.
- */
-
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
@@ -53,8 +38,6 @@ export const metadata: Metadata = {
   },
   description: SITE.tagline,
   applicationName: SITE.name,
-  /* "C&S" monogram. Served from src/app/icon.svg; declaring it explicitly keeps
-     the name Next files it under predictable. */
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/icon.svg" }],
@@ -86,12 +69,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      /* globals.css puts `scroll-behavior: smooth` on html. Next reads this
-         attribute to know that is intentional: during a route transition it
-         temporarily switches scrolling to instant, then restores it. Without
-         the attribute Next warns in development and lets the transition
-         glide, which is how a navigation can travel the whole page instead
-         of starting at the top. */
       data-scroll-behavior="smooth"
       className={`${playfair.variable} ${inter.variable} ${jetbrains.variable} h-full`}
       suppressHydrationWarning

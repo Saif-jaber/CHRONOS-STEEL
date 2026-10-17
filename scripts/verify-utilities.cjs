@@ -1,7 +1,4 @@
-/* Verifies that the custom utilities this design system relies on actually
- * emitted CSS. A wrong Tailwind namespace fails silently — the class simply
- * never exists and the property it was meant to set is quietly absent — so this
- * is checked rather than assumed. */
+// Verifies the custom utilities this design system relies on actually emitted CSS; a wrong Tailwind namespace fails silently.
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -80,32 +77,9 @@ const REQUIRED = [
 
 const missing = REQUIRED.filter((sel) => !css.includes(sel));
 
-/* `--text-2xs` (0.75rem) is deliberately absent from the class list above and was
- * the one entry this check used to fail on. The step is still declared in the
- * scale at globals.css; it simply has no consumer yet, and Tailwind v4 removes an
- * unreferenced theme value, not just the utility generated from it. Verified
- * against a real build: `.text-3xs` appears both as a `:root` variable and as a
- * class because Logo.tsx uses it, while `--text-2xs` is absent from the output
- * entirely. Asserting it would demand the toolchain emit a step the design does
- * not use, which would mean writing a call site to satisfy a test.
- *
- * If 2xs ever gets used, add `.text-2xs` back to REQUIRED at that point: then it
- * is a real dependency and a missing utility would be a genuine regression.
- *
- * A class cannot be asserted as a variable here, because unlike `--text-display`
- * nothing references `--text-2xs` and so it is not emitted to `:root` either.
- *
- * `.ghost-word` was on this list and is not any more. It was the watermark set
- * behind the anatomy heading, and it has been removed along with the rule in
- * globals.css. A hand-written component class with no call site emits nothing,
- * so leaving the assertion would have failed the audit rather than protected
- * anything, and leaving the rule would have left ~100 lines of commented CSS
- * describing a treatment that no longer renders. */
+/* `--text-2xs` and `.ghost-word` are deliberately not asserted: the former is an unreferenced theme step Tailwind v4 tree-shakes; the latter was removed along with its rule in globals.css. Add `.text-2xs` back if it ever gains a consumer. */
 
-/* Custom properties are checked separately from classes. `--text-display` is
- * consumed by the `h1` base rule rather than by a `text-display` utility, so
- * Tailwind is right not to emit a class for it — checking the variable is the
- * assertion that actually means something. */
+/* Custom properties are checked separately from classes; `--text-display` has no utility class, only the `h1` base rule. */
 const REQUIRED_VARS = [
   "--color-paper",
   "--color-navy",

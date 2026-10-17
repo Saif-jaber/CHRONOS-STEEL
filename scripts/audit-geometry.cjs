@@ -1,11 +1,4 @@
-/**
- * Geometry audit. Parses every <svg> the audit page prerendered and asserts the
- * numbers that a typechecker cannot: that nothing is NaN, that nothing escapes
- * the viewBox, that the dial fits inside its bezel, and that the drawn case
- * diameter is proportional to the stated millimetres across the whole catalogue.
- *
- * Run: node scripts/audit-geometry.cjs
- */
+// Geometry audit: parses every <svg> in the prerendered audit page and asserts NaN-free attributes, viewBox containment, and proportional case radii. Run: node scripts/audit-geometry.cjs
 
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
@@ -55,11 +48,8 @@ function viewBoxOf(svg) {
 }
 
 /* ── 2. Nothing escapes the viewBox ─────────────────────────────────────
- * The strap is *meant* to run off the top and bottom edges — a watch is
- * photographed as a fragment, and `strapGeometry` starts each band at y=-4 so
- * there is no seam at the canvas edge. So a small vertical bleed is correct;
- * horizontal bleed is not, because the case is centred and must be fully visible.
- */
+ * Vertical bleed is allowed (the strap is meant to run off the edges);
+ * horizontal bleed is not — the case must stay fully visible. */
 const VBLEED = 6;
 for (const [n, svg] of svgs.entries()) {
   const vb = viewBoxOf(svg);
@@ -143,8 +133,7 @@ console.log(
   `total inline svg: ${(bytes / 1024).toFixed(0)} KB, mean ${(bytes / svgs.length / 1024).toFixed(1)} KB`,
 );
 
-// Per-tier weight, read from each render's own data-detail attribute. This is
-// the number that decides whether a 12-card catalogue grid is acceptable.
+// Per-tier weight, read from each render's own data-detail attribute.
 const tiers = {};
 for (const m of html.matchAll(/<svg[^>]*data-detail="(card|full)"[\s\S]*?<\/svg>/g)) {
   const name = m[1];

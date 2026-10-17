@@ -1,14 +1,5 @@
-/**
- * Domain model for Chronos & Steel.
- *
- * These types are the seam between this frontend and the backend you own. Mirror
- * these field names in `schema.prisma` so the repository adapter in
- * `lib/catalog/repository.ts` is the only file you need to touch.
- *
- * Money is always integer minor units (cents), never a float. `basePriceInCents`
- * is the configurator's starting price; variant prices are derived from it at read
- * time, never stored. See `resolveVariantPrice`.
- */
+/** Domain model for Chronos & Steel. Money is always integer minor units (cents),
+ * never a float. */
 
 export type Currency = "USD" | "EUR" | "GBP" | "JPY";
 
@@ -160,8 +151,8 @@ export interface Product {
   editionSize: number | null;
   featured: boolean;
   tags: string[];
-  /** Seller-uploaded photographs (R2 public URLs), in display order. Empty or
-      absent means the card renders the derived WatchRender drawing instead. */
+  /** Seller-uploaded photographs (R2 public URLs). Empty or absent means the card
+      renders the derived WatchRender drawing instead. */
   images?: string[];
   /** Optional seller account this product belongs to. */
   sellerId?: string | null;
@@ -170,14 +161,11 @@ export interface Product {
   /** Optional store slug. */
   storeSlug?: string | null;
   /** False while a seller is still assembling the reference. Absent means the
-      catalogue data, which is always published. Customers only ever see true. */
+      seeded catalogue data, which is always published. */
   published?: boolean;
 }
 
-/* ── Resolved variants ─────────────────────────────────────────────────────
- * A variant is one dial x one strap choice, computed rather than stored, which
- * keeps the schema to two option tables and stops the axes drifting apart. Stock
- * is per-variant when the backend supplies it, otherwise inherited. */
+/* ── Resolved variants: one dial x one strap, computed rather than stored. ── */
 
 export interface ResolvedVariant {
   key: string;
@@ -199,10 +187,7 @@ export interface VariantSelection {
   strapId: string;
 }
 
-/* ── Accounts ─────────────────────────────────────────────────────────────
- * Two roles rather than a permissions table: a customer buys from a storefront,
- * a seller *is* a storefront. Anything finer belongs in the authorisation layer,
- * not in the shape of the account. */
+/* ── Accounts: a customer buys, a seller *is* a storefront. ─────────────── */
 
 export type UserRole = "customer" | "seller";
 
@@ -222,12 +207,7 @@ export interface Account {
   storeName: string | null;
 }
 
-/* ── The bag and orders ───────────────────────────────────────────────────
- * A bag is a list of configured lines, resolved at read time exactly like a
- * variant: the price is whatever the product's current dial and strap deltas
- * say, so the bag and the product page can never quote different numbers. An
- * order is the opposite — it is a frozen snapshot, because a receipt that
- * changes when the seller edits the reference is not a receipt. */
+/* ── The bag and orders: cart lines resolve live, orders are frozen snapshots. ── */
 
 export interface CartLine {
   /** The cart row id, used to change or remove this line. */

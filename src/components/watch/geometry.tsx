@@ -10,15 +10,9 @@ import {
 } from "./appearance";
 
 /**
- * Geometry for the watch drawing.
- *
- * Everything is derived from the product's own measurements, so the case you
- * see is the case that is described: a 44 mm Vantage really is drawn larger than
- * a 36 mm Sector, and the 4.2 mm Reserve really is the thinnest thing on the
- * page. `MM` is the conversion, pixels per millimetre at the reference size.
- *
- * 0° is 12 o'clock and angles increase clockwise, which is how a dial is
- * actually numbered and saves an axis flip in every index routine.
+ * Geometry for the watch drawing. Everything derives from the product's own
+ * measurements; `MM` is pixels per millimetre at the reference size. 0° is 12
+ * o'clock, angles increase clockwise (how a dial is numbered).
  */
 
 export const MM = 1.409;
@@ -43,16 +37,12 @@ export function lugExtension(diameterMm: number, lugToLugMm: number): number {
 }
 
 /**
- * Rounds a coordinate for serialisation. Every mark in the drawing goes through
- * this, and it is worth roughly 40% of the inline payload: an unrounded
- * `102.38069600000001` is 19 characters where `102.38` is 6, and at 220 units
- * wide the third decimal is far below a device pixel. Pure serialisation
- * concern, all maths still runs at full float precision.
+ * Rounds a coordinate for serialisation. Worth roughly 40% of the inline
+ * payload; maths elsewhere still runs at full float precision.
  *
- * Note for future edits: a comment anywhere in this project that contains a
- * bare utility name will be picked up by Tailwind's scanner and emitted into the
- * shipped stylesheet. `scripts/audit-home.cjs` asserts that no radius utility
- * is present, so keep class-like tokens out of comments.
+ * NOTE FOR FUTURE EDITS: comments must not contain bare utility names —
+ * Tailwind's scanner picks them up and emits them into the shipped stylesheet.
+ * `scripts/audit-home.cjs` asserts this.
  */
 const px = (n: number): number => Math.round(n * 100) / 100;
 
@@ -65,10 +55,7 @@ export function polar(radius: number, degrees: number): { x: number; y: number }
   return { x: px(CX + radius * Math.cos(radians)), y: px(CY + radius * Math.sin(radians)) };
 }
 
-/**
- * Polar about an arbitrary centre. Subsidiary dials need this: their hands and
- * ticks are laid out around their own centre, not the middle of the movement.
- */
+/** Polar about an arbitrary centre, for subsidiary dials. */
 export function polarRing(
   centre: { x: number; y: number },
   radius: number,
@@ -82,9 +69,8 @@ export function polarRing(
 }
 
 /* ── Display time ────────────────────────────────────────────────────────
- * 10:08:37 is the display convention: the hands frame the signature instead of
- * covering it, and the seconds hand sits clear of both. Fixed rather than live,
- * because a catalogue whose thumbnails disagree with each other reads as a bug.
+ * 10:08:37, the catalogue display convention: the hands frame the signature.
+ * Fixed rather than live, so thumbnails agree with each other.
  */
 const HOUR_DEGREES = ((10 + 8 / 60) / 12) * 360;
 const MINUTE_DEGREES = ((8 + 37 / 60) / 60) * 360;
@@ -93,8 +79,8 @@ const SECOND_DEGREES = (37 / 60) * 360;
 export const DISPLAY_TIME = { hour: HOUR_DEGREES, minute: MINUTE_DEGREES, second: SECOND_DEGREES };
 
 /* ── Strap ───────────────────────────────────────────────────────────────
- * The band runs from the case edge to the frame boundary, so the watch reads as
- * continuing past the crop rather than ending inside it. */
+ * The band runs from the case edge past the frame boundary so the watch reads
+ * as continuing beyond the crop. */
 
 export interface StrapGeometry {
   top: { x: number; y: number };
@@ -126,8 +112,8 @@ export function StrapBand({
   geo: StrapGeometry;
   appearance: StrapAppearance;
   type: StrapType;
-  /** Per-instance id prefix. SVG gradient ids are document-global, so two
-      cards showing the same strap type would otherwise share one gradient. */
+  /** Per-instance id prefix: SVG gradient ids are document-global, so two cards
+      showing the same strap type would otherwise share one gradient. */
   uid?: string;
 }) {
   const { top, width, from, to } = geo;
@@ -146,9 +132,8 @@ export function StrapBand({
     L ${top.x + outerHalf} ${outerY}
     L ${top.x + innerHalf} ${innerY} Z`;
 
-  // Link dividers are accumulated into two paths, one for the horizontal
-  // separators, one for the bracelet's centre links, instead of two <line>
-  // elements per row. At eight rows a band that was 16 elements is now 2.
+  // Link dividers accumulate into two paths (separators, centre links) rather
+  // than two elements per row.
   let dividers = "";
   let centres = "";
   const pitch = type === "bracelet" ? 11 : 9;
@@ -259,11 +244,9 @@ export function StrapBand({
 }
 
 /* ── Lugs ───────────────────────────────────────────────────────────────
- * Two prongs at each end, splayed 9° off the vertical. That splay is the whole
- * reason the 44 mm Vantage measures 49.4 mm lug-to-lug instead of the 52 mm its
- * diameter implies, and because the prongs are off-axis, the tip radius has to
- * be derived from the *vertical* extent, not from the lug-to-lug figure directly.
- * `LUG_SPREAD` is the cosine that reconciles the two. */
+ * Two prongs at each end, splayed 9° off vertical. Because the prongs are
+ * off-axis the tip radius derives from the *vertical* extent; the cosine below
+ * reconciles that with the stated lug-to-lug. */
 
 const LUG_SPREAD = 9;
 
@@ -281,8 +264,8 @@ export function Lugs({
   uid?: string;
 }) {
   const half = widthPx / 2;
-  // Solve for the tip radius that produces the stated lug-to-lug once the
-  // prongs are projected back onto the vertical axis.
+  // Solve for the tip radius that yields the stated lug-to-lug once the prongs
+  // are projected onto the vertical axis.
   const tip = (lugToLugMm * MM) / (2 * Math.cos((LUG_SPREAD * Math.PI) / 180));
   const inner = half * 0.26;
   const outer = half * 0.97;
@@ -292,8 +275,7 @@ export function Lugs({
     const dx = Math.cos(radians);
     const dy = Math.sin(radians);
     // Perpendicular to the prong axis, used to taper it. Named `taperX/taperY`
-    // rather than `px/py` because `px` is the coordinate-rounding helper above
-    // and shadowing it here would make the two unrelated things read alike.
+    // because `px` is the rounding helper above and shadowing it would confuse.
     const taperX = -dy;
     const taperY = dx;
 
@@ -337,13 +319,8 @@ export function Lugs({
 }
 
 /* ── Minute track ───────────────────────────────────────────────────────
- * Drawn as two dashed circles rather than 60 <line> elements. `pathLength` is
- * normalised to the tick count, so the dash maths is a ratio of the circumference
- * and not a function of the dial radius, the same markup is correct for the
- * 36 mm and the 44 mm. Minor ticks are a 60-dash circle; the twelve five-minute
- * markers are a 12-dash circle drawn at a slightly smaller radius and heavier
- * stroke, which is how they read on a real dial: longer and bolder.
- */
+ * Two dashed circles rather than 60 elements. `pathLength` is normalised to the
+ * tick count, so the same markup is correct at 36 mm and 44 mm. */
 
 export function MinuteTrack({
   dialRadius,
@@ -361,8 +338,7 @@ export function MinuteTrack({
     <g>
       {rail && (
         <>
-          {/* Railroad track: the minute ring inside its own hairline, which is
-              the whole point of the Sector dial. */}
+          {/* Railroad track: the minute ring inside its own hairline. */}
           <circle
             cx={CX}
             cy={CY}
@@ -409,10 +385,8 @@ export function MinuteTrack({
 }
 
 /* ── Indices ──────────────────────────────────────────────────────────────
- * `simplified` collapses the twelve applied markers into a single <path> of
- * dots. It is what a catalogue card uses: at 96 px the difference between a
- * polished baton and a printed dot is invisible, and the saving is 24 elements.
- */
+ * `simplified` collapses the twelve applied markers into a single path of dots,
+ * for cards where the difference is invisible at 96 px. */
 
 const ROMAN = ["XII", "I", "II", "III", "IIII", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
 
@@ -435,16 +409,15 @@ export function Indices({
   sectorRail: boolean;
   simplified?: boolean;
 }) {
-  // The rail eats the outer 10% of the dial, so the indices step in when it is
-  // present, otherwise the XII would land on top of the track.
+  // The rail eats the outer 10% of the dial, so indices step in when present or
+  // the XII would land on top of the track.
   const reach = dialRadius * (sectorRail ? 0.78 : 0.87);
   const furniture = night && lume ? LUME_GLOW : metal.furniture;
   const lumeFill = night && lume ? LUME_GLOW : LUME_FILL;
   const isDarkDial = appearance.isDark;
 
   if (simplified && style !== "roman" && style !== "arabic") {
-    // Twelve dots, one path. `M x y a r r 0 1 0 .01 0` is the compact way to
-    // stamp a filled circle without twelve separate <circle> elements.
+    // Twelve dots, one path, instead of twelve <circle> elements.
     const r = dialRadius * 0.05;
     const d = Array.from({ length: 12 }, (_, i) => {
       const p = polar(reach, i * 30);
@@ -592,8 +565,8 @@ export function Subdial({
 
   for (let i = 0; i < ticks; i += 1) {
     const isQuarter = i % quarterEvery === 0;
-    // Tick angles are absolute on the dial, so the subdial is indexed from its
-    // own position and reads upright, the way a real subsidiary dial is cut.
+    // Tick angles are absolute on the dial, indexed from the subdial's own
+    // position, so it reads upright as a real subsidiary dial is cut.
     const angle = deg + i * (360 / ticks);
     const a = polarRing(centre, r * (isQuarter ? 0.68 : 0.78), angle);
     const b = polarRing(centre, r * 0.9, angle);
@@ -759,8 +732,7 @@ export function GmtRing({ dialRadius, appearance }: { dialRadius: number; appear
   );
 }
 
-/** A 0–72 hour sector. The last third is warmer so the reading survives
- *  peripheral vision, which is the point of putting it on a dial at all. */
+/** A 0–72 hour sector; the last third is warmer to survive peripheral vision. */
 export function PowerReserveSector({
   dialRadius,
   appearance,
@@ -832,8 +804,8 @@ export function Hands({
   const furniture = night && lume ? LUME_GLOW : metal.furniture;
   const lumeFill = night && lume ? LUME_GLOW : LUME_FILL;
 
-  // Complications take the lower dial, so the hour and minute hands are pulled
-  // in to stop them crossing a subdial they have no business crossing.
+  // Complications take the lower dial, so the hands are pulled in to avoid
+  // crossing a subdial.
   const inset = hasSmallSeconds || hasPowerReserve || hasGmt ? 0.86 : 1;
   const hourLength = dialRadius * 0.5 * inset;
   const minuteLength = dialRadius * 0.76 * inset;
@@ -924,8 +896,7 @@ export function Crown({
   const crownW = radius * 0.18;
   const crownH = radius * 0.27;
 
-  // Pushers sit above and below the crown, each tilted along the case flank so
-  // they read as machined from the same block rather than stuck on the side.
+  // Pushers sit above and below the crown, tilted along the case flank.
   const pusherOffsets = pushers === 2 ? [-1, 1] : pushers === 1 ? [1] : [];
 
   return (

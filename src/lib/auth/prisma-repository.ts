@@ -10,21 +10,6 @@ import type {
   SessionRecord,
 } from "./repository";
 
-/**
- * The Postgres implementation of the auth seam.
- *
- * Everything the interface promised is enforced here by the database rather than
- * by the code: the unique index on `email` is what actually rejects a duplicate
- * registration (the `catch` below just turns that rejection into the `null` the
- * interface promises, for the race where two identical sign-ups interleave), and
- * `onDelete: Cascade` is what makes a deleted account end its sessions.
- *
- * `toAccount` is the whole mapping: a row's `createdAt` arrives as a `Date` and
- * the domain type asks for an ISO string, and `role` arrives as the `String`
- * column the schema documents as `"customer" | "seller"`. Everything else is
- * name-for-name.
- */
-
 function toAccount(row: AccountRow): Account {
   return {
     id: row.id,
@@ -91,8 +76,7 @@ export class PrismaAuthRepository implements AuthRepository {
     const row = await prisma.session.findUnique({ where: { token } });
     if (!row) return null;
     if (row.expiresAt.getTime() <= Date.now()) {
-      /* Best effort: the row is dead either way, and a failure to delete it must
-         not surface as a failed lookup. */
+      /* Best-effort delete: a failure must not surface as a failed lookup. */
       await prisma.session.deleteMany({ where: { token } }).catch(() => undefined);
       return null;
     }
@@ -103,13 +87,7 @@ export class PrismaAuthRepository implements AuthRepository {
     await prisma.session.deleteMany({ where: { token } });
   }
 
-  /**
-   * Same suffix rule as the in-memory repository, decided against the table rather
-   * than a Map. Read-then-write rather than a retry loop: two storefronts registering
-   * the identical name at the identical millisecond is rare enough that a unique
-   * index on `storeSlug` (which the schema has) remains the real guarantee, and the
-   * `createAccount` caller already turns a violation from it into a null.
-   */
+  /** Same suffix rule as the memory repo; the unique index on `storeSlug` is the real guarantee. */
   private async uniqueSlug(storeName: string): Promise<string> {
     const base = slugify(storeName);
     const taken = new Set(

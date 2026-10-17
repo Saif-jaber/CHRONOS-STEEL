@@ -3,18 +3,6 @@ import { Cta } from "@/components/ui/Button";
 import { PRODUCTS } from "@/lib/catalog/products";
 import { countWord } from "@/lib/format";
 
-/**
- * 404.
- *
- * The navigation deliberately points at routes that do not exist yet, so this page is
- * load-bearing and Next serves it for every one of them. Shipping the framework default
- * would undo the impression the rest of the site works for.
- *
- * It keeps the masthead and the footer, drops to the same full-bleed navy the hero uses,
- * and offers the three references with the highest case diameter, the closest thing this
- * catalogue has to a "popular" set. No apology copy beyond a line, and no search box
- * pretending to work.
- */
 export default function NotFound() {
   const suggestions = [...PRODUCTS]
     .sort((a, b) => b.caseSpec.diameterMm - a.caseSpec.diameterMm)
@@ -57,8 +45,6 @@ export default function NotFound() {
             </Cta>
           </div>
 
-          {/* Three largest references, as a way onward rather than as a
-              recommendation engine. */}
           <ul className="mt-2xl grid gap-md border-t border-navy-rule pt-md sm:grid-cols-3">
             {suggestions.map((product) => (
               <li key={product.id}>

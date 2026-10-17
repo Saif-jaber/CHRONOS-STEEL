@@ -3,31 +3,7 @@ import { cookies } from "next/headers";
 import { auth } from "./repository";
 import type { Account } from "@/lib/types";
 
-/**
- * Sessions.
- *
- * A random token in an httpOnly cookie, looked up server-side, rather than a signed
- * JWT carrying the account. The site has exactly two server contexts that need to know
- * who is asking — an API route and a page render — both of which can afford one
- * indexed lookup, and a stateless token cannot be revoked, which matters more than
- * the thirty milliseconds it saves. The token is never a user id: a leak of the
- * session table gives an attacker nothing that identifies anyone.
- *
- * Cookie choices, each for a reason:
- *
- * - `httpOnly` — script cannot read it, so an XSS cannot exfiltrate a session.
- * - `sameSite: "lax"` — absent from cross-site POSTs, so a form on another origin
- *   cannot log someone out or act as them; still sent on top-level navigation, so
- *   arriving from an email link lands signed in.
- * - `secure` in production only — in development the cookie would be dropped over
- *   plain http and every local login would silently fail.
- * - `path: "/"` — every route is behind it, not just the API.
- *
- * `currentAccount` is read-only on purpose: Next only allows cookie *writes* in route
- * handlers and server actions, so a page render may look a session up but must not
- * try to clean up a dead one. The expired token simply fails the lookup and expires
- * from the browser by age.
- */
+/** Random token in an httpOnly cookie, looked up server-side. Cookie writes only from route handlers and server actions — a Next restriction. */
 
 const SESSION_COOKIE = "cs-session";
 const SESSION_SECONDS = 60 * 60 * 24 * 30;

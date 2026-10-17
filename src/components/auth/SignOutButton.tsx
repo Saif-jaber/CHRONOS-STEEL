@@ -4,14 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { SignOutConfirm } from "./SignOutConfirm";
 
-/**
- * Sign out.
- *
- * A button rather than a link, because signing out is a state change and a GET
- * must not be able to perform one — the route is a POST for the same reason. It
- * opens the shared confirmation rather than signing out outright, so the account
- * page and the header ask the same question in the same words.
- */
+/** A button, not a link: a GET must not perform a state change. */
 export function SignOutButton({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
 

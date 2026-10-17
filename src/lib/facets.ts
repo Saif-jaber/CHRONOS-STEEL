@@ -13,26 +13,6 @@ import {
 } from "./filters";
 import { formatMm, formatPrice, humanise } from "./format";
 
-/**
- * Facet presentation.
- *
- * `lib/filters.ts` decides what matches and how many there are. This file decides
- * what the rail shows: which values exist, what they are called, and in what order.
- * The split exists because the value lists are read off the catalogue rather than
- * written by hand. A hand-written list goes stale the first time a dial is
- * discontinued, and the rail then offers a dial nobody can buy, with a count, on
- * purpose.
- *
- * Counts are the engine's numbers, not this file's, and a value that currently
- * returns zero is still listed and rendered inert: a rail that reshuffles under
- * the cursor is worse than one that admits what is unavailable.
- *
- * Range options are derived from the values actually in the catalogue, so every
- * option is non-empty by construction and its label is the truth about the
- * watches inside it. Whole millimetres are what a collector narrows by anyway, and
- * a bucket links where a dual-handle slider would report two numbers to the URL.
- */
-
 /** Abbreviations the label cannot be derived from. Everything else humanises. */
 const LABELS: Record<string, string> = {
   gmt: "GMT",
@@ -67,15 +47,7 @@ interface ValueMeta {
 
 /* ── Chip groups ────────────────────────────────────────────────────────── */
 
-/**
- * Every distinct value a facet can take, in the declared order where the engine
- * has one, then in catalogue order.
- *
- * The declared order is there so the rail is not alphabetical by accident:
- * automatic before manual before quartz is a meaningful order, and so is bracelet
- * before NATO. A value the declared list has never heard of still appears, at the
- * end.
- */
+/** Every distinct value a facet can take: declared order first, then catalogue order. */
 function collect(
   products: Product[],
   pick: (product: Product) => readonly string[],
@@ -98,11 +70,7 @@ function collect(
   return ordered.map((value) => ({ value, label: label(value) }));
 }
 
-/**
- * Dials keep the catalogue's own name and colour rather than a label derived
- * from the id. "Midnight blue" is what the house calls it, and the swatch is
- * the whole point of reading this facet as a colour.
- */
+/** Dials keep the catalogue's own name and colour swatch. */
 function dialValues(products: Product[]): ValueMeta[] {
   const byId = new Map<string, ValueMeta>();
   for (const product of products) {
@@ -138,28 +106,13 @@ function chipGroup(
 
 /* ── Range groups ───────────────────────────────────────────────────────── */
 
-/**
- * How many products a hypothetical state would return.
- *
- * `productMatches` takes a `skip` argument and it is deliberately not used here.
- * A range option's count is asked with the *new* bounds already in the state, so
- * skipping the facet would skip the very thing being counted and every band would
- * report the whole catalogue. Where a band is already selected the hypothetical
- * state replaces it, which is the question being asked: "how many if I move to
- * this band".
- */
+/** How many products a hypothetical state would return. The facet is not skipped,
+ * because its new bounds are already in the state being counted. */
 function countWith(products: Product[], hypothetical: FilterState): number {
   return products.filter((product) => productMatches(product, hypothetical)).length;
 }
 
-/**
- * Case diameter, in inclusive millimetre bands of two.
- *
- * Built from the diameters that exist, so the label always describes the watches
- * inside it. 36 and 37 are one band because no collector separates a 36 from a
- * 37; 42 and 43 likewise. The upper bound is inclusive, so "40.0–41.0 mm" means
- * what it says.
- */
+/** Case diameter, in inclusive millimetre bands of two. */
 function diameterGroup(products: Product[], state: FilterState): FacetGroup {
   const diameters = [...new Set(products.map((p) => p.caseSpec.diameterMm))].sort(
     (a, b) => a - b,
@@ -182,14 +135,7 @@ function diameterGroup(products: Product[], state: FilterState): FacetGroup {
   return { id: "diameter", label: "Case diameter", options };
 }
 
-/**
- * Lug to lug, as an upper bound.
- *
- * This is the one facet the state can only narrow downwards, so the option set runs
- * from the narrowest case in the catalogue upward and the widest case is reached by
- * clearing the facet. That is a limitation of `FilterState` rather than a choice:
- * "48 mm and over" needs a lower bound the state does not have.
- */
+/** Lug to lug as an upper bound only; `FilterState` has no lower bound. */
 function wearGroup(products: Product[], state: FilterState): FacetGroup {
   const bounds = catalogBounds(products);
   const options: FacetOption[] = [];
@@ -211,14 +157,7 @@ function wearGroup(products: Product[], state: FilterState): FacetGroup {
   return { id: "lugToLug", label: "Wear", options };
 }
 
-/**
- * Price bands.
- *
- * The edges are round numbers, not quantiles: a shopper asking what is under five
- * thousand does not want a sixth of the catalogue. Bands after the first start one
- * cent above the previous band's top so they do not overlap, which makes the labels
- * exact rather than approximate.
- */
+/** Round-number price edges; each band starts one cent above the previous top. */
 const PRICE_EDGES_IN_CENTS = [500_000, 1_000_000, 2_000_000];
 
 function priceGroup(
@@ -269,15 +208,7 @@ function priceGroup(
 
 /* ── The rail ───────────────────────────────────────────────────────────── */
 
-/**
- * The rail, in the order it appears.
- *
- * Collection first because it is the one question the brand answers rather than
- * the shopper, and the two measurement facets immediately after it because a
- * collector narrows by size before they narrow by colour. Price is last: it is
- * the question asked last, and putting it last keeps it out of the way of the
- * answers that narrow it.
- */
+/** The rail, in the order it appears. */
 export function facetGroups(
   products: Product[],
   state: FilterState,
@@ -326,13 +257,7 @@ export function facetGroups(
   ];
 }
 
-/**
- * Set or clear a range facet's bounds.
- *
- * `id` is the facet being written, not the one being skipped, so the same call both
- * applies a band and removes it. This is the one place that knows `FilterState`
- * models diameter and price as a min and a max, and lug to lug as a max alone.
- */
+/** Set or clear a range facet's bounds. `id` is the facet being written. */
 export function setRange(
   state: FilterState,
   id: FacetId,

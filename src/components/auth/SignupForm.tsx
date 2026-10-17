@@ -18,17 +18,6 @@ import {
 } from "@/lib/auth/validation";
 import type { UserRole } from "@/lib/types";
 
-/**
- * Create an account.
- *
- * The role is asked first because it decides what the rest of the form is: a seller is
- * shown a storefront name, a customer is not asked for one at all. Burying the choice at
- * the end would mean filling in six fields and then discovering a seventh was required.
- *
- * The password rule is stated under the field as prose rather than enforced with a
- * strength bar, which is a judgement and a wrong one often enough.
- */
-
 const EMPTY: SignupValues = {
   name: "",
   email: "",
@@ -62,8 +51,7 @@ export function SignupForm({ fixedRole }: { fixedRole?: UserRole }) {
 
   function setRole(role: UserRole) {
     setValues((v) => ({ ...v, ...pruneForRole(v, role) }));
-    /* A change of role invalidates the storefront field either way: it may now
-       be required, or it may no longer exist. */
+    // A role change invalidates the storefront error either way.
     setErrors((e) => {
       const next = { ...e };
       delete next.role;
@@ -86,11 +74,7 @@ export function SignupForm({ fixedRole }: { fixedRole?: UserRole }) {
       return;
     }
 
-    /* What is sent: everything the server needs and nothing it does not.
-       `confirmPassword` is a check on `password`, not a second secret, and
-       `terms` is the server's record to make — the route re-derives both and
-       still runs `validateSignup` over the result. A duplicate address comes
-       back as an error under the email field, merged into `errors` below. */
+    // confirmPassword and terms are re-derived and re-validated by the route.
     setSending(true);
     const result = await postAuth(
       "/api/auth/register",
@@ -115,11 +99,7 @@ export function SignupForm({ fixedRole }: { fixedRole?: UserRole }) {
       return;
     }
 
-      /* Sellers land on their dashboard at /seller; customers land on the shop
-         at /collection. A customer sent to /seller would only be bounced back
-         by the role guard, so route them correctly the first time. No
-         `router.refresh()` — see the matching comment in LoginForm: it cancels
-         the scroll-to-top and drops the visitor at the bottom of the page. */
+      // No `router.refresh()` — it cancels the scroll-to-top (see LoginForm).
       router.push(result.account?.role === "seller" ? "/seller" : "/collection");
     }
 

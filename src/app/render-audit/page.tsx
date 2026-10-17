@@ -5,17 +5,7 @@ import { WatchRender } from "@/components/watch/WatchRender";
 
 export const dynamic = "force-static";
 
-/**
- * Development audit surface for the SVG renderer.
- *
- * Renders every product across four variants in both detail tiers so
- * `scripts/audit-geometry.cjs` can assert the output: no NaN coordinates,
- * nothing outside the viewBox, all url(#id) references resolving, and the drawn
- * case diameter staying proportional to the stated millimetres.
- *
- * It is a build target for the audit script, not a page, so it 404s unless
- * RENDER_AUDIT=1 is set. Do not ship it enabled.
- */
+
 export default function RenderAudit() {
   if (process.env.RENDER_AUDIT !== "1") notFound();
 

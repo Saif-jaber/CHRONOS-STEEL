@@ -4,14 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
-/**
- * Publishes one of the seller's own drafts.
- *
- * The reference exists already — it was saved as a draft — so this is a single
- * POST that flips it live, then `router.refresh()` re-renders the dashboard from
- * the server. No optimistic guess at which card changed: the server is the
- * authority on what is published, and the refresh is cheap.
- */
 export function PublishButton({ id }: { id: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);

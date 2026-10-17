@@ -1,18 +1,6 @@
 ﻿import type { ReactNode } from "react";
 import { cx } from "@/lib/format";
 
-/**
- * Thin-line icons.
- *
- * 24x24, `stroke-width: 1`, round caps and joins, no fills. The weight matches the
- * 1px hairline the rest of the layout is built from, because a 1.5px icon next to a
- * 1px rule looks like a mistake at this scale.
- *
- * These are drawn, not imported. An icon set would arrive with a licence file, a
- * node_modules dependency and a weight axis nobody asked for, in exchange for a dozen
- * glyphs that fit in this file.
- */
-
 type IconProps = { className?: string; onDark?: boolean };
 
 function Frame({
@@ -107,8 +95,6 @@ export function IconWarranty(props: IconProps) {
   );
 }
 
-/* Navigation glyphs. Same 1px weight, 20px box. */
-
 export function IconMenu(props: IconProps) {
   return (
     <Frame {...props}>
@@ -151,8 +137,7 @@ export function IconArrowRight(props: IconProps) {
   );
 }
 
-/** Disclosure chevron, for the sort menu and the filter panel. It rotates on
- *  [open] and does nothing else, which is the only motion a disclosure gets. */
+/** Disclosure chevron, for the sort menu and the filter panel. */
 export function IconChevron(props: IconProps) {
   return (
     <Frame {...props}>
@@ -160,9 +145,6 @@ export function IconChevron(props: IconProps) {
     </Frame>
   );
 }
-
-/* Form glyphs. Same 1px weight, because a password toggle that reads heavier
-   than the rule it sits on looks like a different control. */
 
 export function IconEye(props: IconProps) {
   return (
@@ -183,8 +165,7 @@ export function IconEyeOff(props: IconProps) {
   );
 }
 
-/** The tick that marks a chosen role and an accepted term. Presence is the
-    signal, so it survives greyscale and colour-blindness. */
+/** The tick marking a chosen role or accepted term. */
 export function IconCheck(props: IconProps) {
   return (
     <Frame {...props}>
@@ -193,7 +174,7 @@ export function IconCheck(props: IconProps) {
   );
 }
 
-/** Account: a person, reduced to a head and the line of the shoulders. */
+/** A person: head and shoulder line. */
 export function IconAccount(props: IconProps) {
   return (
     <Frame {...props}>
@@ -203,8 +184,7 @@ export function IconAccount(props: IconProps) {
   );
 }
 
-/** Sign out: an arrow leaving through a doorway. The account glyph answers
-    "who is signed in"; this one answers "end it". */
+/** An arrow leaving through a doorway. */
 export function IconSignOut(props: IconProps) {
   return (
     <Frame {...props}>

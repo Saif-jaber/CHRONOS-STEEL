@@ -19,20 +19,6 @@ import {
   subscribeBag,
 } from "@/lib/cart/store";
 
-/**
- * The bag, on the page.
- *
- * The masthead already keeps a live count of the bag; this reads the same mirror
- * for the lines themselves, so the two can never disagree. The server guard has
- * established that someone is signed in, so the only states here are loading,
- * loaded, empty and failed — never "signed out".
- *
- * Every control writes through the store, which returns the server's own answer,
- * so the list is whatever the database says it is after each tap rather than a
- * local guess that could drift from it. The one exception is checkout, whose
- * effect is a navigation: on success the confirmation page is the source of
- * truth and the mirror is cleared at once so the badge empties before it loads.
- */
 export function BagView() {
   const router = useRouter();
   const bag = useSyncExternalStore(
@@ -80,8 +66,7 @@ export function BagView() {
     if (!result.ok) {
       setPlacing(false);
       setError(result.error);
-      /* The bag may have changed under us (an item sold out); re-read it so the
-         page shows why checkout refused. */
+      /* The bag may have changed under us (item sold out); re-read it. */
       void refreshBag();
       return;
     }
@@ -251,12 +236,8 @@ export function BagView() {
 }
 
 /**
- * The quantity control.
- *
- * Two glyph buttons around the number. The minus is disabled at one because a
- * bag line of zero is a removal, and removal has its own control — a person
- * lowering the count to nothing is telling us they want it gone, so the two
- * gestures are kept distinct rather than one quietly becoming the other.
+ * The quantity control. Minus is disabled at one, since a bag line of zero is a
+ * removal and removal has its own control.
  */
 function Stepper({
   quantity,

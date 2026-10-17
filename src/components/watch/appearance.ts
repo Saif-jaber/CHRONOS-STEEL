@@ -1,16 +1,9 @@
 import type { CaseFinish, CaseMaterial, StrapType } from "@/lib/types";
 
 /**
- * Material appearance tables for the SVG renderer.
- *
- * These are *product appearance data*, not design tokens, the same category as
- * the `colorHex` that arrives from your database for a dial. They are kept in
- * one file, away from the `@theme` block in `globals.css`, so it stays obvious
- * which colours are the interface and which describe an object.
- *
- * Every value below is an approximation of how these alloys actually behave
- * under light: steel is cool and narrow in its highlight, gold is warm and
- * broad, ceramic is a matte that barely moves at all.
+ * Material appearance tables for the SVG renderer. Product appearance data, not
+ * design tokens — kept away from the `@theme` block so interface colours and
+ * object colours stay obvious.
  */
 
 export interface MetalAppearance {
@@ -91,10 +84,8 @@ export function finishTone(
   };
 }
 
-/* ── Dial finishes ───────────────────────────────────────────────────────
- * A sunburst dial is a radial sheen that gets brighter as it rotates toward
- * the light. Guilloché is a crosshatch. Lacquer is a single specular band.
- * Matte is flat, and the only one of the four with no gradient at all. */
+/* Dial finishes: sunburst is a radial sheen, guilloché a crosshatch, lacquer a
+   specular band, matte flat with no gradient at all. */
 
 export interface DialAppearance {
   /** Base fill. */
@@ -171,15 +162,7 @@ export interface StrapAppearance {
   stitchColor: string;
 }
 
-/**
- * How each construction is drawn, and how far its shading runs.
- *
- * This is a table rather than a switch because every row said the same four
- * things and the only differences were the amounts, which is exactly the shape a
- * table reads better than five near-copies of one object literal. The numbers are
- * unchanged: a bracelet catches more light across its links than a woven band,
- * and a mesh reads darker at the edge because the weave is open.
- */
+/** Per-construction drawing style and shading amounts. */
 const STRAP_RECIPE: Record<
   StrapType,
   Pick<StrapAppearance, "construction" | "perforations" | "stitch"> & {
@@ -208,12 +191,12 @@ export function strapAppearance(
     construction: recipe.construction,
     perforations: recipe.perforations,
     stitch: recipe.stitch,
-    // Default thread is a warm contrast against the hide; a strap can override it.
+    // Default thread is a warm contrast against the hide.
     stitchColor: stitchColorHex ?? "#C9A227",
   };
 }
 
-/* ── Colour maths, kept local so the renderer has no dependencies ─────── */
+/* ── Colour maths ─────────────────────────────────────────────────────── */
 
 function clamp(value: number, min = 0, max = 1): number {
   return Math.min(max, Math.max(min, value));

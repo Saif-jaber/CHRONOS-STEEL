@@ -2,20 +2,6 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cx } from "@/lib/format";
 
-/**
- * Actions.
- *
- * The primary interaction on this site is not a button. It is a plain text link
- * with a small arrow that underlines on hover, and `.cta` in globals.css does the
- * work, including the 1px rule that grows from the left and the arrow that nudges
- * 3px right. Both are underline and translation only: nothing scales, nothing
- * lifts, nothing glows.
- *
- * There is exactly one solid control in the design, `Add to Bag`, because a
- * commerce action needs to be unambiguous. Everything else is a link.
- */
-
-/** Plain text link with an arrow. The default for navigation and exploration. */
 export function Cta({
   href,
   children,
@@ -35,10 +21,7 @@ export function Cta({
       {...rest}
     >
       <span>{children}</span>
-      {/* Written as an entity rather than a literal character: this arrow was once
-          stored as UTF-8 read back through Latin-1, which decoded it to three
-          characters and rendered as garbage in every CTA. An entity cannot be
-          mangled the same way twice. */}
+      {/* Entity, not a literal: a past Latin-1 round-trip mangled the UTF-8 arrow. */}
       <span aria-hidden="true" className="cta-arrow">
         &rarr;
       </span>
@@ -46,10 +29,6 @@ export function Cta({
   );
 }
 
-/**
- * A text link with no arrow, for inline references inside a sentence, where an
- * arrow would read as a step in a process that does not exist.
- */
 export function QuietLink({
   href,
   children,
@@ -76,18 +55,6 @@ export function QuietLink({
   );
 }
 
-/**
- * The one filled control. Reserve it for the primary commerce action on a product
- * page; using it twice in a viewport flattens the hierarchy it exists to create.
- *
- * Square corners, 1px navy border so the fill edge stays crisp against paper, 44px
- * tall for touch. Disabled carries a non-colour signal: the border goes dashed,
- * which survives greyscale and colour blindness.
- *
- * `onDark` inverts the fill rather than adding a second variant, so the control is
- * still the only solid thing in the viewport. It exists because the account forms
- * live on a navy band, where a navy fill would be invisible.
- */
 export function Button({
   children,
   className,
@@ -105,15 +72,6 @@ export function Button({
   );
 }
 
-/**
- * The same control as a link, for anything that navigates.
- *
- * A `<button>` with a click handler that calls `router.push` looks identical and
- * is worse in three ways a keyboard user will notice: middle-click and
- * open-in-new-tab do nothing, the status bar shows no destination, and the
- * element is not announced as a link. So the two are separate components that
- * share one class function, rather than one component guessing at intent.
- */
 export function ButtonLink({
   href,
   children,
@@ -133,7 +91,6 @@ export function ButtonLink({
   );
 }
 
-/** Shared between the button and its link twin, so the two cannot drift. */
 function buttonClass(variant: "navy" | "outline", onDark: boolean): string {
   return cx(
     "inline-flex h-11 items-center justify-center gap-xs border px-6",
@@ -150,13 +107,6 @@ function buttonClass(variant: "navy" | "outline", onDark: boolean): string {
   );
 }
 
-/**
- * Square icon control: hamburger, search, bag, close.
- *
- * No border and no background, the glyph is the control. `.hit` stretches the 24px
- * icon out to the 44px touch floor via a pseudo-element, so the tap target is
- * compliant without the icon growing or the layout shifting.
- */
 export function IconButton({
   label,
   children,
@@ -182,7 +132,6 @@ export function IconButton({
   );
 }
 
-/** Shared between the icon button and its link twin, so the two cannot drift. */
 function iconClass(onDark: boolean): string {
   return cx(
     "hit relative inline-flex size-6 shrink-0 items-center justify-center",
@@ -191,11 +140,6 @@ function iconClass(onDark: boolean): string {
   );
 }
 
-/**
- * The same square glyph control, as a link. Account and bag are destinations, so
- * they want an anchor: middle-click, open-in-new-tab and the status bar all work
- * without a click handler reimplementing them.
- */
 export function IconLink({
   href,
   label,

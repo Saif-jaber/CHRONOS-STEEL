@@ -6,27 +6,6 @@ import { SORT_OPTIONS, filtersToQuery } from "@/lib/filters";
 import { IconChevron } from "@/components/ui/Icon";
 import { FilterLink } from "./FilterLink";
 
-/**
- * Sort.
- *
- * A native `<details>` holding links, not a `<select>` and not a custom menu. The
- * page is built out of links on purpose — the rail, the chips and the search are all
- * URLs — so the control is a disclosure over those same URLs rather than a widget with
- * its own state model.
- *
- * The panel floats — absolutely positioned under the summary — so choosing to sort
- * does not push the grid down and reflow the page. It is a hairline panel on paper,
- * the same floating surface as the modal, rather than a shadowed card. It aligns to
- * the summary's left on a phone (where the toolbar stacks and the control sits at the
- * container's edge) and to its right once the toolbar is a row and the control sits at
- * the far side, so the panel always opens back into the page rather than off it.
- *
- * The one piece of client behaviour: choosing an option closes the panel. `details`
- * is uncontrolled DOM state, and a `<Link>` navigation is a soft one — React keeps the
- * same node, so the browser's own "close on navigation" never fires and the panel
- * would sit open over the results it just ordered. A delegated click closes it
- * explicitly, which is what any dropdown does.
- */
 export function SortControl({
   state,
   basePath = "/collection",
@@ -37,8 +16,8 @@ export function SortControl({
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const current = SORT_OPTIONS.find((option) => option.value === state.sort) ?? SORT_OPTIONS[0]!;
 
-  /* Every option is the current URL with one parameter swapped, so changing the
-     sort never drops the filters, the search term or anything else. */
+  /* Every option is the current URL with one parameter swapped; changing sort never
+     drops filters, search term, etc. */
   const hrefFor = (sort: SortKey) => {
     const query = filtersToQuery({ ...state, sort });
     return query ? `${basePath}?${query}` : basePath;

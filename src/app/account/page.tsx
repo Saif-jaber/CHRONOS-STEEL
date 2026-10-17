@@ -7,19 +7,7 @@ import { currentAccount } from "@/lib/auth/session";
 import { orders } from "@/lib/orders/repository";
 import { formatPrice, pluralise } from "@/lib/format";
 
-/**
- * The signed-in destination every auth flow ends at.
- *
- * Guarded on the server: without a session this redirects before anything renders,
- * so there is no state in which the page shows someone else's details or an empty
- * shell that then has to be fixed up on the client. There is no client fetch here
- * either — the account arrives with the render, which is the point of holding the
- * session server-side.
- *
- * It is deliberately small: the details on file, the fact of the sign-in, and the
- * way out. Orders, addresses and warranty records hang off this later, and each one
- * becomes another row here rather than a second account system.
- */
+
 
 export const metadata: Metadata = {
   title: "Your account",

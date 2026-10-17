@@ -2,18 +2,7 @@ import "server-only";
 import { PrismaOrderRepository } from "./prisma-repository";
 import type { Order } from "@/lib/types";
 
-/**
- * The order seam.
- *
- * An order is the moment the bag becomes history. Everything a receipt needs —
- * the names, the reference, the SKU, the unit price — is copied onto the order
- * at this moment, because the catalogue underneath it will keep changing and a
- * receipt that changes is not a receipt. The bag is emptied in the same
- * transaction that writes the order, so a failure on either side leaves neither.
- *
- * There is no reference implementation for the same reason the bag has none:
- * atomicity is the whole point, and a Map cannot express it.
- */
+/** The order seam: receipt fields are snapshotted at placement, and the bag is emptied in the same transaction. */
 
 export type PlaceOrderResult =
   | { ok: true; order: Order }

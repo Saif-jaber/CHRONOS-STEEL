@@ -10,19 +10,6 @@ import {
   type ImageContentType,
 } from "@/lib/storage/r2";
 
-/**
- * POST /api/uploads/presign.
- *
- * Hands a signed-in seller one presigned PUT per image. The browser then uploads
- * the bytes straight to R2; nothing here touches the file. The request carries
- * only the *shape* of what is about to be sent — a content type and a byte
- * length — so a client cannot ask for a URL for a 200 MB video, and cannot make
- * the server stream anything it did not agree to.
- *
- * The seller check is the important one: presigned URLs grant write access to
- * the bucket, so only an authenticated seller may mint them.
- */
-
 interface RequestedFile {
   type: string;
   size: number;

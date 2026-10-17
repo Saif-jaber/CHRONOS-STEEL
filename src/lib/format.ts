@@ -1,20 +1,10 @@
 import type { Currency } from "./types";
 
-/**
- * Every measurement in the store is formatted through here, so the measurement
- * column on the product grid and the spec table can never disagree. "39.0 mm" on
- * one and "39 mm" on the other is the kind of detail that gives a spec-led
- * boutique away.
- */
+/** All measurement and price formatting goes through here, so the grid and the
+ * spec table can never disagree. */
 
-/**
- * The currency the storefront is presented in.
- *
- * Every product carries `currency: "USD"`, which records where the reference was
- * priced, not what the page shows. Naming the storefront currency once here is
- * what stops the price rail, the removable chips and the cards from disagreeing.
- * Swap it here rather than at four call sites.
- */
+/** The storefront presentation currency. Every product carries `currency: "USD"`,
+ * which records where the reference was priced, not what the page shows. */
 export const STOREFRONT_CURRENCY: Currency = "GBP";
 
 const CURRENCY_LOCALE: Record<Currency, string> = {
@@ -46,10 +36,7 @@ export function formatPrice(minorUnits: number, currency: Currency = "USD"): str
   return currencyFormatter(currency).format(minorUnits / 100);
 }
 
-/**
- * The delta shown next to a swatch. A negative one keeps its sign, because a
- * cheaper bracelet that silently reads "$8,900" is a support ticket.
- */
+/** The delta shown next to a swatch; a negative one keeps its sign. */
 export function formatPriceDelta(minorUnits: number, currency: Currency = "USD"): string {
   if (minorUnits === 0) return "Included";
   const formatted = currencyFormatter(currency).format(Math.abs(minorUnits) / 100);
@@ -70,11 +57,7 @@ export function formatWaterResistance(metres: number): string {
   return `${metres} m`;
 }
 
-/**
- * Null spec values read as words, never as a dash. A typographic dash is a
- * placeholder pretending to be content, and on a spec row it reads as a
- * rendering fault rather than as a decision.
- */
+/** Null spec values read as words, never as a dash. */
 export function formatPowerReserve(hours: number | null): string {
   return hours === null ? "Not stated" : `${hours} h`;
 }
@@ -109,15 +92,7 @@ export function pluralise(count: number, singular: string, plural?: string): str
   return count === 1 ? singular : (plural ?? `${singular}s`);
 }
 
-/**
- * Small counts as words, for prose rather than spec sheets: "thirteen references"
- * reads like a sentence, "13 references" reads like a data table.
- *
- * The count was once hardcoded as "Twelve references" in four places while the
- * catalogue held thirteen products, so the number is derived everywhere instead.
- * Only the teens are tabulated, the range the catalogue sits in; anything else
- * falls through to digits rather than inventing a word.
- */
+/** Small counts as words for prose; only the teens are tabulated, else digits. */
 const COUNT_WORDS: Record<number, string> = {
   11: "eleven",
   12: "twelve",

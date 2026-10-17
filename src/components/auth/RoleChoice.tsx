@@ -4,20 +4,6 @@ import { IconCheck } from "@/components/ui/Icon";
 import { cx } from "@/lib/format";
 import type { UserRole } from "@/lib/types";
 
-/**
- * Customer or seller.
- *
- * A radio group, not a select, because the choice changes what the rest of the form
- * asks for: a seller is shown a storefront name, a customer is not. Native radios,
- * visually hidden, with the label as the visible control, keep arrow-key navigation,
- * the roving tab stop and the announced "selected" state, all of which a grid of buttons
- * would have to reimplement.
- *
- * The selected card takes `bg-beige-2`, the token the theme documents for exactly this,
- * and carries a tick. Border colour alone would not be enough: the card sits on paper in
- * one place and navy in another, and a hairline that merely darkens is a weak signal.
- */
-
 const ROLES: ReadonlyArray<{
   value: UserRole;
   label: string;
@@ -49,10 +35,7 @@ export function RoleChoice({
   onDark?: boolean;
 }) {
   return (
-    /* A fieldset already carries group semantics, so the error is announced
-       from the group. `aria-invalid` is deliberately absent from the radios:
-       the attribute is not supported on the implicit radio role, and an
-       attribute the platform ignores is worse than none. */
+    // aria-invalid is not supported on the implicit radio role, so it is omitted.
     <fieldset aria-describedby={error ? `${id}-error` : undefined}>
       <legend className="eyebrow">I am a</legend>
 

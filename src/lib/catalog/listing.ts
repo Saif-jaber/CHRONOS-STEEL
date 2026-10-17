@@ -15,20 +15,6 @@ import type {
 } from "@/lib/types";
 import { isStorageUrl, MAX_IMAGES_PER_LISTING } from "@/lib/storage/r2";
 
-/**
- * A seller listing, parsed and validated.
- *
- * The seller form posts a flat JSON body of strings; this module is the single
- * place that turns it into the typed, fully-resolved shape the repository
- * persists. It runs in the route handler and is the only authority — the client
- * form's own checks are a courtesy and are re-run here.
- *
- * The catalogue's `Product` is a deep object with a dial and a strap axis, but a
- * seller fills in one dial and one strap. Those become the single option on each
- * axis, so a seller-created reference behaves exactly like a seeded one in the
- * configurator, the facet engine and the card without any special-casing.
- */
-
 /* ── The resolved shape the repository consumes ─────────────────────────── */
 
 export interface NewListingInput {
@@ -374,15 +360,6 @@ export function slugify(value: string): string {
   return base || "reference";
 }
 
-/**
- * The seller listing as a catalogue `Product`.
- *
- * One dial and one strap, both with fixed scoped ids, so the variant machinery
- * (which expects at least one of each) resolves a buildable pricing pair with no
- * special-casing for a seller reference. A dial carries no complications and the
- * strap width matches the lug width, which is what makes the single variant
- * buildable rather than "not built".
- */
 export function buildProductFromListing(params: {
   id: string;
   slug: string;

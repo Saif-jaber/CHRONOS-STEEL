@@ -1,10 +1,4 @@
-/**
- * Builds the site with the render-audit route enabled, then asserts the SVG
- * geometry. Cross-platform wrapper so it does not depend on `VAR=1 cmd` syntax,
- * which differs between PowerShell, cmd and bash.
- *
- * Run: npm run audit:geometry
- */
+// Builds with RENDER_AUDIT=1, then runs the geometry assertions (npm run audit:geometry).
 
 const { spawnSync } = require("node:child_process");
 const path = require("node:path");

@@ -15,21 +15,6 @@ import type {
   CartRepository,
 } from "./repository";
 
-/**
- * The Postgres implementation of the bag seam.
- *
- * The whole file is one idea: a bag line is a *reference to a configuration*,
- * and everything else about it — price, SKU, name, availability — is derived
- * from the product when the bag is read. `toLine` is that derivation, and it is
- * the only place a bag line gets a price.
- *
- * Availability is judged honestly. A line is unavailable when the pairing is no
- * longer built, when the seller has unpublished the reference, or when it is a
- * seeded demo row (which has no seller and was never for sale). The bag shows
- * the line rather than silently dropping it, and checkout refuses while any
- * line is unavailable, so a shopper never pays for something that cannot ship.
- */
-
 /** A bag holds a handful of pieces; ten of one reference is the sane ceiling. */
 const MAX_QUANTITY = 10;
 
@@ -89,15 +74,11 @@ export class PrismaCartRepository implements CartRepository {
     const lines: CartLine[] = [];
     for (const row of rows) {
       const product = byId.get(row.productId);
-      /* A cascade deletes a bag line with its product, so a missing product here
-         means the row outran its product between two queries; skip it rather than
-         fail the whole bag. */
+      /* Product deleted between queries; skip the row rather than fail the whole bag. */
       if (!product) continue;
 
       const variants = buildVariants(product);
-      /* The exact pairing the shopper chose. If it is gone — the strap was
-         discontinued — the line stays visible but is marked unavailable rather
-         than silently reprised as a different, buildable one. */
+      /* The exact pairing chosen; if it is gone the line stays visible but unavailable. */
       const exact = variants.find(
         (entry) => entry.dial.id === row.dialId && entry.strap.id === row.strapId,
       );
@@ -126,9 +107,7 @@ export class PrismaCartRepository implements CartRepository {
       });
     }
 
-    /* The subtotal counts only what can actually be bought, and the flag tells
-       the page to say so; a total that quietly included an unavailable line
-       would be a lie the shopper only discovers at checkout. */
+    /* Subtotal counts only available lines; `hasUnavailable` tells the page to say so. */
     const payable = lines.filter((line) => line.available);
     return {
       lines,
@@ -160,15 +139,11 @@ export class PrismaCartRepository implements CartRepository {
     await prisma.cartItem.upsert({
       where: { accountId_productId_dialId_strapId: key },
       create: { ...key, quantity },
-      /* Increment, then clamp: the unique index makes the existing line the one
-         to grow rather than a second row to add. */
+      /* Unique index makes this grow the existing line, not add a second row. */
       update: { quantity: { increment: quantity } },
     });
 
-    /* The clamp has to be applied to the sum, and Prisma's atomic `increment`
-       cannot cap what it adds, so a line pushed past the ceiling is trimmed
-       here. The window is one request wide and the outcome is a smaller number,
-       never a larger one. */
+    /* Prisma's atomic `increment` cannot cap, so a sum past the ceiling is trimmed here. */
     const stored = await prisma.cartItem.findUnique({
       where: { accountId_productId_dialId_strapId: key },
     });

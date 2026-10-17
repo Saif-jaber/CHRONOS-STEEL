@@ -2,22 +2,7 @@
 
 import type { Cart } from "@/lib/types";
 
-/**
- * The bag, on the client.
- *
- * The bag itself lives on the server, tied to the session; this is only the
- * *mirror* the masthead badge and the bag page's controls read and write. It is
- * a module-level store rather than a React context so the masthead — which sits
- * in the layout, above every page — and a page far below it can share one copy
- * without the layout having to provide anything.
- *
- * `useSyncExternalStore` wants a snapshot it can compare by identity, so `state`
- * is replaced, never mutated, and the server snapshot is one frozen constant:
- * the first client render matches the static shell, then React swaps in the
- * client value. Nothing here is a source of truth — every mutation goes to the
- * API and stores exactly what the API returns, so the badge can never disagree
- * with the bag page.
- */
+/** Client mirror of the server bag, shared by the layout and any page. `state` is replaced, never mutated, for `useSyncExternalStore` snapshots. */
 
 export type BagStatus = "idle" | "loading" | "ready" | "signed-out" | "error";
 
@@ -89,7 +74,7 @@ function storeCart(data: unknown): void {
   });
 }
 
-/** Read the signed-in account's bag into the mirror. Safe to call as often as you like. */
+/** Read the signed-in account's bag into the mirror. */
 export async function refreshBag(): Promise<void> {
   try {
     const response = await fetch("/api/cart", { headers: { Accept: "application/json" } });
@@ -196,8 +181,7 @@ export async function checkoutBag(): Promise<CheckoutResult> {
     if (typeof orderId !== "string") {
       return { ok: false, error: "Your order could not be placed." };
     }
-    /* The server emptied the bag; mirror that at once so the badge clears before
-       the confirmation page has even rendered. */
+    /* The server emptied the bag; mirror it so the badge clears immediately. */
     set({ cart: null, status: "ready", error: null });
     return { ok: true, orderId };
   } catch {

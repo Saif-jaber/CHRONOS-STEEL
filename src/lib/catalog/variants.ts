@@ -7,18 +7,6 @@ import type {
   VariantSelection,
 } from "../types";
 
-/**
- * Variant resolution.
- *
- * A product declares two independent option axes, dials and straps. Rather than
- * persisting a row per pairing (which drifts the moment a dial is discontinued),
- * variants are *resolved* at read time: only the deltas and the buildability rules
- * are stored, and the price, SKU and availability are derived here.
- *
- * When you move stock to its own table, replace `resolveStock` with a call into
- * your inventory service. Nothing else in the UI changes.
- */
-
 /** Stable, URL-safe, and ordered so the SKU reads dial-then-strap. */
 export function variantKey(dialId: string, strapId: string): string {
   return `${dialId}::${strapId}`;
@@ -28,11 +16,7 @@ export function selectionKey(selection: VariantSelection): string {
   return variantKey(selection.dialId, selection.strapId);
 }
 
-/**
- * The one hard physical constraint: a strap only fits a case of matching lug
- * width. This is what makes a configurator honest, since offering a 19 mm strap on
- * a 20 mm case is the kind of detail a collector spots immediately.
- */
+/** A strap only fits a case of matching lug width. */
 export function isBuildable(product: Product, strap: StrapOption): boolean {
   return strap.widthMm === product.caseSpec.lugWidthMm;
 }
@@ -51,22 +35,14 @@ function buildSku(product: Product, dial: DialOption, strap: StrapOption): strin
   return `${product.reference}-${dialCode}-${strapCode}`;
 }
 
-/**
- * Per-variant stock, falling back to product-level stock when the backend has not
- * broken stock down by option. `null` means made to order, which is a real answer
- * for a boutique and renders differently from a zero.
- */
+/** Per-variant stock, falling back to product-level stock. `null` = made to order. */
 function resolveStock(product: Product, buildable: boolean): number | null {
   if (!buildable) return 0;
   if (product.stock === null) return null;
   return Math.max(0, product.stock - (product.reserved ?? 0));
 }
 
-/**
- * Weeks before a buildable piece can ship. Zero means it is on the shelf, which
- * `resolveStock` has already decided; the remaining distinction is a product the
- * maker quotes for against one whose stock has run out.
- */
+/** Weeks before a buildable piece ships. Zero means it is on the shelf. */
 export function leadTimeWeeksFor(product: Product, buildable: boolean): number | null {
   if (!buildable) return null;
   const stock = resolveStock(product, buildable);
@@ -94,10 +70,7 @@ export function buildVariants(product: Product): ResolvedVariant[] {
   );
 }
 
-/**
- * Look up one pairing, falling back to the first buildable variant if the exact
- * pairing is unavailable, so the PDP can never render an unconfigured state.
- */
+/** Exact pairing, else the first buildable variant. */
 export function findVariant(
   variants: ResolvedVariant[],
   selection: VariantSelection,
@@ -113,12 +86,7 @@ export function findVariant(
   return variants[0]!;
 }
 
-/**
- * Switching one axis while holding the other is the core of the configurator. When
- * the new choice makes the current pairing unbuildable, 21 mm leather on a 20 mm
- * case, this returns the nearest strap on the same case rather than leaving the
- * shopper on a dead end.
- */
+/** Switch one axis; falls back to a buildable strap if the new pairing is not built. */
 export function reconcileSelection(
   product: Product,
   selection: VariantSelection,
@@ -146,23 +114,13 @@ export function defaultSelection(product: Product): VariantSelection {
   return { dialId: product.dials[0]!.id, strapId: strap.id };
 }
 
-/**
- * The variant a product is shown as before anyone has chosen anything. The hero,
- * the collection grid and the product page all open on this, so it has to be one
- * function rather than three hopeful expressions of `variants[0]`.
- *
- * Prefers a buildable pairing, so the drawn watch is one the house actually makes.
- */
+/** The variant a product is shown as before any choice; prefers a buildable pairing. */
 export function defaultVariant(product: Product): ResolvedVariant {
   const variants = buildVariants(product);
   return variants.find((v) => v.available) ?? variants[0]!;
 }
 
-/**
- * Flatten a dial option plus the product's shared dial furniture into the single
- * object the renderer and the spec table both consume, which is what stops the
- * picture and the spec sheet drifting.
- */
+/** Dial option plus the product's shared dial furniture, for renderer and spec table. */
 export function resolveDialSpec(product: Product, dial: DialOption): DialSpec {
   return {
     option: dial,
@@ -188,8 +146,7 @@ export type StockState = "in-stock" | "low" | "made-to-order" | "unavailable";
 
 export function stockState(variant: ResolvedVariant): StockState {
   if (!variant.available) return "unavailable";
-  // null (made to order) and 0 (nothing on the shelf) are the same promise to a
-  // shopper, so they share a branch rather than testing the same answer twice.
+  // null (made to order) and 0 share a branch.
   if (variant.stock === null || variant.stock === 0) return "made-to-order";
   if (variant.stock <= 2) return "low";
   return "in-stock";

@@ -4,22 +4,8 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 /**
- * Cloudflare R2 storage for listing photographs.
- *
- * R2 speaks the S3 protocol, so the AWS S3 client talks to it directly with an
- * endpoint override and region "auto". Uploads are *presigned*: the browser asks
- * this module for a short-lived PUT URL, then sends the bytes straight to R2.
- * The image never passes through the Next server, which keeps a 6 MB photograph
- * out of a serverless request body and off the Node heap entirely.
- *
- * Everything is read from the environment at call time rather than at import, so
- * a checkout with no R2 credentials still builds and runs; the listing form
- * simply reports that uploads are unavailable instead of crashing the process on
- * the first import.
- *
- * Keys are content-addressed by a random id under `listings/`, never by the
- * uploader's filename: two sellers uploading `IMG_0421.JPG` must not collide,
- * and a filename a seller controls must never be allowed to shape a storage key.
+ * Cloudflare R2 over the S3 protocol: uploads are presigned PUTs straight from the
+ * browser, env is read at call time, keys are random ids under `listings/`, never filenames.
  */
 
 export const IMAGE_CONTENT_TYPES = [
@@ -40,8 +26,7 @@ export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export const MAX_IMAGES_PER_LISTING = 8;
 
-/** How long a presigned PUT stays valid. Long enough for a slow connection,
-    short enough that a leaked URL is not a standing invitation to write. */
+/** Presigned PUT lifetime: long enough for a slow upload, short enough that a leaked URL expires quickly. */
 const UPLOAD_URL_TTL_SECONDS = 60 * 5;
 
 interface StorageConfig {
@@ -113,11 +98,7 @@ export interface PresignedUpload {
   publicUrl: string;
 }
 
-/**
- * Returns a presigned PUT for one image, or null when R2 is not configured.
- * The `ContentType` is part of the signature, so the browser must send the same
- * header; a mismatch is rejected by R2 rather than stored under a wrong type.
- */
+/** Presigned PUT, or null when R2 is unconfigured. The `ContentType` is signed, so the browser must send the same header. */
 export async function presignImageUpload(
   contentType: ImageContentType,
 ): Promise<PresignedUpload | null> {
@@ -145,11 +126,7 @@ export function publicObjectUrl(key: string): string {
   return `${config.publicUrl}/${key}`;
 }
 
-/**
- * True when a URL points at this bucket's public base. Used to refuse a listing
- * that carries an image URL from somewhere else: the field is a seller's, and a
- * seller must not be able to point a listing at an arbitrary third-party host.
- */
+/** True when a URL points at this bucket, so a listing cannot reference an arbitrary third-party host. */
 export function isStorageUrl(url: string): boolean {
   const config = readConfig();
   if (!config) return false;

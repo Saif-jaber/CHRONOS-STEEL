@@ -3,14 +3,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { currentAccount } from "@/lib/auth/session";
 
-/**
- * Create a seller account.
- *
- * The role is fixed here rather than asked: someone who followed the "Become a
- * seller" link has already answered the question the combined signup opens with,
- * and a page that asks it again is a page that lets them land on the wrong
- * account. The account this form creates is a seller, full stop.
- */
+
 export default async function SellerSignupPage() {
   const account = await currentAccount();
   if (account) redirect(account.role === "seller" ? "/seller" : "/collection");

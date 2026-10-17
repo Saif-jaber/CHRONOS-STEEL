@@ -11,31 +11,6 @@ import { IconAccount, IconClose, IconMenu, IconSignOut } from "@/components/ui/I
 import { cx } from "@/lib/format";
 import { authHintValue, parseAuthHint } from "@/lib/auth/api";
 
-/**
- * Masthead.
- *
- * Fixed, full width, and transparent while it sits over the hero. Once the hero has
- * scrolled past, it shades into navy with a single hairline below. Nothing slides,
- * nothing resizes: a navigation bar that moves is a navigation bar you have to
- * re-find.
- *
- * The lockup is centred, which reads as a masthead rather than a toolbar. The
- * controls are optically balanced: the left rail is a single 24px glyph and the right
- * rail carries three, so the right group is held a little off the edge to keep the
- * composition centred.
- *
- * The rail knows whether a session exists, and which role it belongs to. It cannot
- * ask the server — a session read in a shared component would make the home page
- * dynamic and break the prerender the audit suite asserts — so it reads the plain
- * `cs-auth` hint cookie (`lib/auth/api.ts`) through `useSyncExternalStore`:
- * hydration matches the static shell, then React swaps in the client value before
- * the first paint, no request and no flash of the wrong glyph. Signed out, the
- * first glyph is the account link into the sign-in page; signed in, the same slot
- * becomes a sign-out control — a swap, not an addition. A customer keeps the three
- * glyphs (sign out, search, bag); a seller gets the seller navigation and drops the
- * customer-only search and bag, because a seller has a dashboard rather than a bag.
- */
-
 type MenuColumn = {
   heading: string;
   links: ReadonlyArray<{ label: string; href: string; auth?: boolean }>;
@@ -70,8 +45,7 @@ const CUSTOMER_MENU: MenuColumn[] = [
   },
 ];
 
-/* A seller never sees the shop's browse columns; the panel is their control room.
-   The storefront link needs the slug, which rides in the hint cookie. */
+// Sellers get the dashboard panel; the storefront slug rides in the hint cookie.
 function sellerMenu(storeSlug: string | null): MenuColumn[] {
   return [
     {
@@ -105,13 +79,7 @@ const cxSkip =
 const cxMenuLink =
   "font-display text-lg leading-tight text-ink transition-opacity dur-base ease-out hover:opacity-60";
 
-/* The hint is a plain cookie: there is no event to subscribe to, so the
-   subscription is a no-op and renders re-read it. The server snapshot is the
-   empty string, which is exactly the static shell's signed-out glyph —
-   hydration matches, then React swaps in the client snapshot before the first
-   paint, so a visitor never sees the wrong glyph. The snapshot is a primitive
-   (the raw cookie), and `parseAuthHint` derives the role from it, so the
-   snapshot identity is stable across renders. */
+// No event to subscribe to; the snapshot is the raw cookie, so identity is stable.
 const subscribeHint = () => () => {};
 const hintOnServer = () => "";
 
@@ -125,7 +93,7 @@ export function Header() {
   const isSeller = auth?.role === "seller";
   const menu = isSeller ? sellerMenu(auth?.storeSlug ?? null) : CUSTOMER_MENU;
 
-  /* Keep the masthead transparent for as long as the hero is behind it. */
+  // Keep the masthead transparent while the hero is behind it.
   useEffect(() => {
     const hero = document.querySelector("#main > section");
     if (!hero) return;
@@ -137,7 +105,7 @@ export function Header() {
     return () => observer.disconnect();
   }, []);
 
-  /* The menu takes the whole screen, so the page behind it must not scroll. */
+  // The menu is full-screen, so lock body scroll while it is open.
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
@@ -160,14 +128,7 @@ export function Header() {
 
   return (
     <>
-      {/* `margin: 0` cancels sr-only's `margin: -1px`, which puts this link's
-          rect at y = -1. On every navigation Next measures the topmost rect of
-          the route's fragment and needs it to be at least the scroll padding
-          (0 here); -1 fails that check, so the router calls scrollIntoView on
-          the whole fragment. React fans that out to every child — footer
-          first — and the page smooth-scrolls to the bottom. The skip link is
-          the only fragment child with a negative top, so zeroing its margin
-          keeps the check anchored at the top of the page. */}
+      {/* sr-only's -1px margin makes Next's scroll-to-fragment land on the footer. */}
       <a href="#main" className={cxSkip} style={{ margin: 0 }}>
         Skip to content
       </a>
@@ -184,7 +145,6 @@ export function Header() {
         )}
       >
         <div className="container grid h-nav grid-cols-3 items-center">
-          {/* Left rail: menu. */}
           <div className="flex items-center">
             <IconButton
               label={open ? "Close menu" : "Open menu"}
@@ -197,7 +157,6 @@ export function Header() {
             </IconButton>
           </div>
 
-          {/* Centre: the mark. Two links so the wordmark is a real link home. */}
           <div className="flex justify-center">
             <Link
               href="/"
@@ -209,10 +168,6 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Right rail. Signed out: account, search, bag. Signed-in customer:
-              sign out, search, bag. Signed-in seller: sign out only — the search
-              and bag are the customer's controls, and a seller's destination is
-              the dashboard. */}
           <div className="flex items-center justify-end gap-md">
             {signedIn ? (
               <IconButton
@@ -237,10 +192,7 @@ export function Header() {
         </div>
       </header>
 
-      {/* Panel. Full-bleed paper, three editorial columns, one hairline above the
-          closing row. Conditionally mounted rather than toggled with the `hidden`
-          attribute: a `display:flex` utility outranks the attribute's UA
-          `display:none`, so the panel would stay on screen. */}
+      {/* Conditionally mounted: a display utility outranks the hidden attribute. */}
       {open && (
         <div
           id="site-menu"
@@ -253,10 +205,7 @@ export function Header() {
                   <p className="eyebrow">{column.heading}</p>
                   <ul className="mt-md space-y-2xs">
                     {column.links.map((link) => {
-                      /* The auth entry is the one row that is a state change
-                         rather than a destination: signed in it becomes a
-                         button that signs out, because a GET link must never
-                         perform one. */
+                      // The auth row is a state change, so signed in it becomes a button.
                       const auth = "auth" in link && link.auth;
                       return (
                         <li key={link.label}>

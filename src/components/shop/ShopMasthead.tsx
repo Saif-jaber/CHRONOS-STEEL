@@ -5,19 +5,6 @@ import { countWord, formatPrice } from "@/lib/format";
 import { FilterLink } from "./FilterLink";
 import { hrefFor } from "./FilterRail";
 
-/**
- * The shop masthead.
- *
- * Navy, and not out of sentiment: the fixed masthead is transparent until the first
- * section leaves the viewport, and it draws its logo in paper white, so a shop page
- * opening on paper would show a white wordmark on an off-white ground. The band is the
- * same navy as the hero and the footer rather than a fourth surface.
- *
- * The collection row underneath is the brand-level browse: the named lines, with how
- * many references each holds. Those numbers come from the repository rather than a
- * hand-maintained list, because a browse menu that claims four Nocturne when the
- * catalogue holds two is the kind of quiet error nobody catches.
- */
 export function ShopMasthead({
   collections,
   state,
@@ -55,8 +42,7 @@ export function ShopMasthead({
           </p>
         </div>
 
-        {/* The named lines. A link, not a facet in the rail, because a line is the one
-            grouping the brand names rather than the shopper. */}
+        {/* Named lines browse, from repository data. */}
         <nav aria-label="Collections" className="mt-md border-t border-navy-rule pt-sm">
           <ul className="flex flex-wrap items-baseline gap-x-md gap-y-2xs">
             {collections.map((collection) => {

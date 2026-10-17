@@ -4,49 +4,16 @@ import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react
 import { IconCheck, IconEye, IconEyeOff } from "@/components/ui/Icon";
 import { cx } from "@/lib/format";
 
-/**
- * Form fields.
- *
- * The control is a bottom hairline, not a box. The rule carries the structure, the
- * label carries the meaning, and nothing is enclosed, which is what makes the site
- * read as printed matter rather than as a settings panel.
- *
- * Focus is a second line, not an outline. An earlier pass moved the focus ring up
- * to the row with `focus-within` so it would span the full width, and it was wrong:
- * clicking a field drew a box around the whole thing, and it arrived on *click*
- * rather than on keyboard focus, so a mouse user got a loud box they did not ask
- * for. The line carries the signal instead. The hairline turns beige-3 and a second
- * 1px rule grows from the left along the bottom edge.
- *
- * That second rule is a pseudo-element rather than a border-width change, because
- * growing the border would resize the row and shove the field below it down a pixel,
- * and nothing on this site is allowed to move.
- *
- * The line goes gold rather than to full ink because beige-3 is the accent the whole
- * site marks an interactive element with, the same colour the arrow CTA underlines
- * to on hover, so a focused field reads as the same gesture as a hovered link. It
- * is also `--color-focus`, the token the site-wide focus ring is built from, which
- * is measured on both grounds and so needs no `.on-navy` override.
- *
- * Errors carry a non-colour signal too: the rule turns `border-error` and the
- * message is text, so it survives greyscale. The red alone would not.
- */
-
-/** The row: hairline, focus line, and the invalid state in one place. */
 function rowClass(invalid: boolean, onDark: boolean): string {
   return cx(
     "relative flex items-center gap-xs border-b pb-2",
     "transition-colors dur-base ease-out",
-    /* The second rule. `content-['']` is required or the pseudo-element never
-       renders. It sits 1px below the border, so the pair reads as one 2px line
-       rather than as two lines a pixel apart. */
+    /* Second rule needs an explicit empty content value or the pseudo-element
+       never renders; it sits 1px below the border so the pair reads as one line. */
     "after:absolute after:inset-x-0 after:-bottom-px after:h-px after:content-['']",
     "after:origin-left after:transition-transform after:dur-base after:ease-out",
-    /* Only the resting rule differs by ground; the focus colour is shared.
-       When the field is invalid the second line is simply drawn at rest
-       (`after:scale-x-100`) so the fault reads as a solid 2px red rule, visible
-       without having to focus the field. The resting `scale-x-0` lives in the
-       valid branch alone, so the two scale utilities never disagree. */
+    /* Invalid fields draw the second line at rest as a solid 2px error rule, so
+       the resting scale lives only in the valid branch and the two never disagree. */
     invalid
       ? "border-error after:bg-error after:scale-x-100"
       : cx(
@@ -66,18 +33,6 @@ function controlClass(onDark: boolean): string {
   );
 }
 
-/**
- * One field: label, row, hint, error.
- *
- * The label is `.eyebrow` and the supporting copy is `text-muted`, both of which read
- * off the ink family and so invert under `.on-navy` on their own. There is
- * deliberately no `onDark` here: a light and a dark variant of a label is a label
- * that will be wrong the first time the ground changes again.
- *
- * The error is wired with `aria-describedby` and `aria-invalid` rather than colour,
- * so it is announced when focus lands on the field instead of only when it is looked
- * for.
- */
 export function Field({
   id,
   label,
@@ -153,14 +108,6 @@ export function TextField({
   );
 }
 
-/**
- * A password field with a visibility toggle.
- *
- * The toggle sits inside the row so the hairline runs under it and the control reads
- * as one field rather than an input with a button parked next to it. Revealing the
- * password is a real need, not a nicety: a person setting a new one cannot check the
- * last character from a field full of dots.
- */
 export function PasswordField({
   id,
   label,
@@ -219,11 +166,8 @@ export function PasswordField({
 }
 
 /**
- * A number field.
- *
- * Kept as a string at the state layer so an empty box stays empty rather than
- * becoming a zero the seller did not type, which is the one that ships as a
- * 0 mm case. `inputMode="decimal"` asks a phone for the number pad.
+ * Kept as a string so an empty box stays empty rather than becoming a zero
+ * the seller did not type. `inputMode="decimal"` asks a phone for the number pad.
  */
 export function NumberField({
   id,
@@ -273,11 +217,6 @@ export function NumberField({
   );
 }
 
-/**
- * A select. The native control, because a list of case materials or movements is
- * exactly what a select is for, and a custom menu would reimplement the keyboard
- * and the mobile picker for no gain.
- */
 export function SelectField({
   id,
   label,
@@ -320,7 +259,6 @@ export function SelectField({
   );
 }
 
-/** A multi-line field for the editorial story. */
 export function TextAreaField({
   id,
   label,
@@ -361,10 +299,6 @@ export function TextAreaField({
   );
 }
 
-/**
- * A colour field: the native swatch beside its hex, so the seller can see and
- * type the exact tone the drawing uses.
- */
 export function ColorField({
   id,
   label,
@@ -406,19 +340,6 @@ export function ColorField({
   );
 }
 
-/**
- * A tick box. Native input, restyled, because a checkbox built from divs is a
- * checkbox a screen reader cannot find.
- *
- * The tick is the non-colour signal: the box gains a border and a glyph when
- * checked, and keeps both when it is not, so the state is legible without colour.
- *
- * The checked state is beige-3 with a navy tick rather than ink with a paper tick,
- * because both of those are ink family tokens and `.on-navy` re-points `--color-ink`
- * to off-white. On a navy band the box painted itself off-white and so did the tick,
- * so accepting the terms rendered a white square with nothing in it. beige-3 and
- * navy are both outside the remapped family, so the two grounds behave identically.
- */
 export function Checkbox({
   id,
   checked,
@@ -436,14 +357,8 @@ export function Checkbox({
 }) {
   return (
     <div>
-      {/* `items-start` rather than `items-center`, because this label wraps to two or
-          three lines around the links in the terms text, and centring the box against
-          the whole block would drop it into the middle of the second line.
-
-          The nudge is arithmetic, not taste. At `text-sm` with `leading-relaxed` the
-          line box is 22.75px and Inter's ink sits low in it, so the optical centre of
-          the first line lands near 12.8px from the top. A 16px box has to start at
-          about 4.8px to match, which is `mt-3xs`. */}
+      {/* items-start: this label wraps, so a centred box would drop into the
+          second line. The 3px nudge optically centres the box on the first line. */}
       <label htmlFor={id} className="flex cursor-pointer items-start gap-xs">
         <span className="relative mt-3xs flex size-4 shrink-0 items-center justify-center">
           <input
@@ -477,8 +392,7 @@ export function Checkbox({
       </label>
 
       {error ? (
-        /* Inset by the box plus the gap, so the message starts under the words and not
-           under the tick box: 1rem of box and 0.75rem of `gap-xs`. */
+        /* Inset past the box plus gap, so the message aligns with the words. */
         <p id={`${id}-error`} className="mt-2xs pl-[1.75rem] text-xs text-error">
           {error}
         </p>
@@ -487,11 +401,6 @@ export function Checkbox({
   );
 }
 
-/**
- * The status line a form reports back with: a rule in the accent colour plus a
- * sentence. Used for the seam notice, and available for whatever your auth route
- * returns once it exists.
- */
 export function FormNote({
   tone = "info",
   children,

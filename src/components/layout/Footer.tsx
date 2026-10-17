@@ -2,25 +2,6 @@ import Link from "next/link";
 import { Logo, Monogram } from "@/components/brand/Logo";
 import { IconArrowRight } from "@/components/ui/Icon";
 
-/**
- * Footer.
- *
- * Navy, editorial, and split three ways: the mark and a line of intent on the left,
- * the link columns in the middle, and the journal signup on the right.
- *
- * "Time Worth Keeping" is the signup's promise and its heading. There is no discount
- * code, no count-down and no urgency language anywhere in this component, since the
- * tone is mostly a matter of what you decline to write.
- *
- * The ground is a smooth three-stop wash rather than flat navy, and carries no noise.
- * An earlier version put SVG turbulence here and it read as white fog: feTurbulence
- * averages to mid-grey, and on a block this size the lifted blacks are obvious against
- * the flat areas either side. Depth comes from one soft wash and the hairline system.
- *
- * The form is a real `<form>` with a real label. It posts nowhere yet; `action` is
- * the seam where the newsletter provider goes.
- */
-
 const COLUMNS = [
   {
     heading: "Collection",
@@ -67,7 +48,6 @@ const LEGAL = [
 export function Footer() {
   return (
     <footer className="on-navy relative overflow-hidden bg-navy text-paper">
-      {/* One soft wash from the top left, so the block has a light direction. */}
       <div
         aria-hidden="true"
         className="absolute inset-0"
@@ -78,7 +58,6 @@ export function Footer() {
       />
 
       <div className="container relative">
-        {/* Masthead row. */}
         <div className="flex flex-col gap-xl border-b border-navy-rule py-xl lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-[30rem]">
             <Logo lockup="stacked" onDark />
@@ -89,7 +68,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Journal signup. */}
           <div className="max-w-[27rem] lg:w-full">
             <h2 className="font-display text-xl font-normal leading-tight text-paper">
               Time Worth Keeping
@@ -124,7 +102,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Link columns, then the standing promises. */}
         <div className="grid gap-lg py-xl sm:grid-cols-2 lg:grid-cols-5">
           {COLUMNS.map((column) => (
             <nav key={column.heading} aria-label={column.heading}>
@@ -144,7 +121,6 @@ export function Footer() {
             </nav>
           ))}
 
-          {/* Stated as fact rather than as reassurance copy. */}
           <div>
             <h3 className="eyebrow text-silver">Orders</h3>
             <ul className="mt-md space-y-3xs text-sm text-navy-muted">
@@ -155,15 +131,12 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Monogram rule. A single centred mark between two hairlines: the editorial
-            full-stop at the end of the page, without a banner. */}
         <div className="flex items-center gap-md border-t border-navy-rule py-lg">
           <span aria-hidden="true" className="h-px flex-1 bg-navy-rule" />
           <Monogram decorative className="size-7 shrink-0" />
           <span aria-hidden="true" className="h-px flex-1 bg-navy-rule" />
         </div>
 
-        {/* Colophon. */}
         <div className="flex flex-col gap-3xs pb-lg sm:flex-row sm:items-center sm:justify-between">
           <p className="measure text-xs text-navy-muted">
             © {new Date().getFullYear()} Chronos &amp; Steel

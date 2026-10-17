@@ -25,18 +25,10 @@ import {
 } from "./geometry";
 
 /**
- * The watch drawing.
- *
- * Everything visible is derived from `product.caseSpec`, `product.movement` and the two
- * selected options; there is no per-product artwork, so a dial colour or bracelet type
- * added to the database appears here with no code change. Sizes are honest: the 36 mm
- * Sector is genuinely drawn smaller than the 44 mm Vantage on the same scale, which is
- * the one thing a photograph of a flat-lay can never do.
- *
- * Hand-built SVG, ~10 KB, no image request, no layout shift, and it renders identically
- * at a 96 px card thumbnail and a 720 px detail view. When real photography is ready,
- * replace the <svg> with an <Image> and keep the wrapper's aspect ratio; the gallery,
- * the variant cross-fade and the variant manager around it do not change.
+ * The watch drawing. Everything visible derives from `product.caseSpec`,
+ * `product.movement` and the selected options — there is no per-product artwork,
+ * and sizes are drawn honestly on a shared scale. Hand-built SVG, so it renders
+ * identically at card thumbnail and detail size.
  */
 
 export interface WatchRenderProps {
@@ -47,21 +39,16 @@ export interface WatchRenderProps {
   night?: boolean;
   /**
    * A short cross-fade key. Bump it when the variant changes and the drawing
-   * re-renders as a new layer that fades in over the old one, which is the only
-   * motion primitive this site spends on the thing it is actually selling.
+   * re-renders as a new layer that fades in over the old one.
    */
   transitionKey?: string;
   className?: string;
   /** Decorative instances are hidden from assistive tech; the PDP supplies a label. */
   labelledBy?: string;
   /**
-   * How much of the watch to draw.
-   *
-   * "card" is for the catalogue grid: case, dial, strap and hands, but none of
-   * the engraving - no minute track, no bezel knurling, no index furniture, no
-   * stitching. It is roughly a quarter of the bytes and, at 96 px, visually
-   * indistinguishable from "full". "full" is for the product page and the
-   * variant manager, where someone is actually reading the dial.
+   * How much of the watch to draw. "card" is for the catalogue grid (no minute
+   * track, bezel knurling, index furniture or stitching); "full" is for the
+   * product page and variant manager.
    */
   detail?: "card" | "full";
 }
@@ -83,8 +70,8 @@ export function WatchRender({
   const strapLook = strapAppearance(strap.type, strap.colorHex, strap.stitchColorHex);
   const widthPx = lugWidthPx(caseSpec.lugWidthMm);
 
-  // The dial sits inside the bezel, so it is smaller than the case by whatever the
-  // bezel eats; a dive bezel eats a great deal more than a smooth one.
+  // The dial sits inside the bezel, smaller than the case by whatever the bezel
+  // eats; a dive bezel eats more than a smooth one.
   const bezelInset = {
     smooth: 0.86,
     fluted: 0.88,
@@ -134,8 +121,7 @@ export function WatchRender({
           <stop offset="100%" stopColor={metal.mid} />
         </linearGradient>
 
-        {/* Dial finish overlay. Sunburst is off-centre so it reads as a rotating
-            sheen rather than a vignette; matte gets no overlay at all. */}
+        {/* Dial finish overlay. Off-centre so sunburst reads as a rotating sheen. */}
         {appearance.sheenStops && (
           <radialGradient
             id={`${uid}-dial`}
@@ -155,8 +141,7 @@ export function WatchRender({
           </radialGradient>
         )}
 
-        {/* Guilloché crosshatch. Two 45° line sets on a rotated grid; a real
-            engine-turned pattern, and free. */}
+        {/* Guilloché crosshatch: two 45° line sets on a rotated grid. */}
         {dial.option.finish === "guilloche" && (
           <pattern
             id={`${uid}-guilloche`}
@@ -199,8 +184,8 @@ export function WatchRender({
       <Lugs radius={radius} widthPx={widthPx} lugToLugMm={caseSpec.lugToLugMm} metal={metal} uid={uid} />
       <circle cx={CX} cy={CY} r={radius} fill={`url(#${uid}-case)`} />
 
-      {/* A single specular arc on the upper-left flank. One highlight, not a
-          gloss gradient: a lit metal edge, not a plastic button. */}
+      {/* A single specular arc on the upper-left flank: a lit metal edge, not a
+          gloss gradient. */}
       <path
         d={describeArc(CX, CY, radius * 0.965, 186, 246)}
         fill="none"
@@ -211,8 +196,8 @@ export function WatchRender({
       />
 
       {/* ---- Bezel treatments ----
-          Knurling, fluting and coin edges are engraving: below a pixel at card
-          size, so "card" draws the bezel as a plain ring. */}
+          Knurling, fluting and coin edges are below a pixel at card size, so
+          "card" draws the bezel as a plain ring. */}
       {caseSpec.bezel === "dive" && (
         <DiveBezel radius={radius} dialRadius={dialRadius} metal={metal} uid={uid} detail={detail} />
       )}
@@ -257,12 +242,8 @@ export function WatchRender({
         />
 
         {/* Chronograph: running seconds at 9, 30-minute at 3, 12-hour at 6.
-            That 3-6-9 arrangement is the convention, and the reason a
-            monopusher puts its totaliser somewhere else entirely.
-
-            A fully-ticked chrono is 102 separate <line> elements, so the ticks
-            are the first thing dropped on a card: the subdial rings and the
-            hands still read as a chronograph at 96 px. */}
+            On a card the subdial ticks are dropped; the rings and hands still
+            read as a chronograph. */}
         {hasChrono && (
           <>
             <Subdial deg={270} dialRadius={dialRadius} appearance={appearance} ticks={full ? 60 : 0} />
@@ -294,8 +275,8 @@ export function WatchRender({
         {hasDate && <DateWindow deg={90} dialRadius={dialRadius} appearance={appearance} metal={metal} />}
         {hasMoon && <MoonphaseAperture deg={180} dialRadius={dialRadius} appearance={appearance} />}
 
-        {/* Signature. Sits between 12 and centre, which is why the display time
-            is 10:08, so the hands frame it instead of crossing it. */}
+        {/* Signature sits between 12 and centre, which is why the display time
+            is 10:08 so the hands frame it. */}
         <text
           x={CX}
           y={CY - dialRadius * 0.3}
@@ -409,14 +390,13 @@ function DiveBezel({
 }) {
   const id = `${uid}-dive`;
   const r = (radius + dialRadius) / 2;
-  // The coin edge is a dashed circle rather than 120 individual teeth. `pathLength`
-  // normalises the circumference to the tooth count, so one element covers the
-  // whole knurl at any case diameter.
+  // The coin edge is a dashed circle rather than 120 teeth; `pathLength`
+  // normalises the circumference to the tooth count.
   const band = radius - dialRadius;
   const full = detail === "full";
 
-  // The elapsed-time numerals are the reason a dive bezel exists, so they survive
-  // to card size; only the knurl and the pip ring are dropped.
+  // The elapsed-time numerals are the reason a dive bezel exists, so they
+  // survive to card size; only the knurl and pip ring are dropped.
   const marks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((minute) => {
     const { x, y } = polar(r - band * 0.14, minute * 6);
     return (
@@ -437,8 +417,7 @@ function DiveBezel({
     );
   });
 
-  // The luminous pip at zero. A dive bezel without a zero pip is not a dive
-  // bezel, and this is the one element on the watch that is read in the dark.
+  // The luminous pip at zero: the one element on the watch read in the dark.
   const pip = polar(r, 0);
 
   return (
@@ -488,8 +467,8 @@ function FlutedBezel({
   return (
     <g>
       <BezelBase radius={radius} dialRadius={dialRadius} metal={metal} id={`${uid}-fluted`} />
-      {/* 34 flutes as one dashed circle. Alternating light/dark is what makes
-          fluting read as a cut surface rather than a texture. */}
+      {/* 34 flutes as one dashed circle; alternating light/dark makes fluting
+          read as a cut surface rather than a texture. */}
       {detail === "full" && (
         <>
           <circle
@@ -538,7 +517,7 @@ function CoinEdgeBezel({
     <g>
       <BezelBase radius={radius} dialRadius={dialRadius} metal={metal} id={`${uid}-coin`} />
       {/* Fine knurling, two rings: a tight 60-tooth ring and a coarser 30-tooth
-          ring, which is what gives a coin edge its shimmer as it turns. */}
+          ring, which gives a coin edge its shimmer as it turns. */}
       {detail === "full" && (
         <>
           <circle

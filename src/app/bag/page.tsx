@@ -6,20 +6,7 @@ import { ToTopButton } from "@/components/ui/ToTopButton";
 import { BagView } from "@/components/shop/BagView";
 import { currentAccount } from "@/lib/auth/session";
 
-/**
- * The bag.
- *
- * Guarded on the server like the account page: a bag belongs to an account, so
- * without a session this redirects to sign-in and asks to come back here
- * (`?next=/bag`). The lines themselves are read by the client view from the bag
- * mirror, which the masthead has usually already filled by the time this renders
- * — so the common arrival shows the bag at once, and a cold arrival fills it in
- * one request.
- *
- * The navy band is not decoration: the fixed header is transparent while it sits
- * over the page's first section, so that first section has to be navy or the mark
- * disappears into paper. Every full-page view in the shop opens this way.
- */
+
 
 export const metadata: Metadata = {
   title: "Your bag",

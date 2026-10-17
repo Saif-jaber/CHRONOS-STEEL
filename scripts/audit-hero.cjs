@@ -1,14 +1,4 @@
-/* Post-fix verification for the hero surface.
- *
- * Two things are asserted here that a build cannot catch on its own:
- *   1. the SVG grain data URIs are well-formed and reach the document, since a
- *      malformed percent-encoded URI fails silently and leaves a flat gradient;
- *   2. the measured contrast of the hero headline against the darkest plausible
- *      background actually clears WCAG, rather than merely looking plausible.
- *
- * The background used for the contrast figure is the scrim-blended navy the
- * headline actually sits on, taken as the darkest point plus a margin for the
- * grain layer lifting the blacks. */
+// Hero surface verification: grain URIs well-formed, noise banned, images on allowlisted paths, headline contrast clears WCAG.
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -28,10 +18,7 @@ const ok = (cond, label, extra = "") => {
 console.log("surface treatment:");
 const count = (needle) => html.split(needle).length - 1;
 
-/* Noise is banned outright, by decision. feTurbulence averages to mid-grey, so
- * it lifts the blacks: acceptable as film grain across a full-bleed frame,
- * unacceptable as white fog across the footer. Reverted to smooth CSS gradients
- * only. This assertion exists so it cannot quietly come back. */
+/* Noise is banned: feTurbulence lifts the blacks into fog. This assertion stops it coming back. */
 const NOISE = [
   ["feTurbulence grain", "feTurbulence"],
   ["svg data-uri background", "data:image/svg+xml"],
@@ -54,26 +41,7 @@ for (const [label, needle] of LAYERS) {
   ok(html.includes(needle), label);
 }
 
-/* Every storefront image is a named local slot with descriptive alt text.
- * Assets are supplied later, so this checks the manifest destinations rather
- * than requiring the files to exist during development.
- *
- * The exploded anatomy plate is deliberately absent. It is out of PHOTOS'
- * required slots because the anatomy section is now carried entirely by its six
- * numbered specifications, an illustration of the parts beside a written list of
- * the parts was saying the same thing twice. The path is still named in the
- * allowlist below, which is not a contradiction: `public/fig-1-anatomy.png` has
- * been deleted, and keeping the arm means restoring the file needs no edit here.
- *
- * The two Nocturne story images are real files that arrived and replaced the
- * original wrist and atelier slots, which pointed into a `public/images/editorial`
- * directory that was never created, so both frames had been rendering empty. The
- * anatomy part shots are the reverse case: they are listed here even though no
- * file exists at any of those paths yet, because the alt text is the
- * specification for what has to be supplied, each one naming the part, the angle,
- * the finish and the dimension, so the shot that satisfies it is unambiguous.
- * This guard is what stops that text quietly rotting, or a path being changed
- * without the alt text following it. */
+/* Storefront images must be named local slots with descriptive alt text; assets may not exist yet, so manifest destinations are checked. */
 const IMAGE_SLOTS = [
   [
     "Nocturne story image",
@@ -139,12 +107,7 @@ ok(
   externalImages.join(", "),
 );
 
-/* Assets are intentionally added after the code. Verify local manifest paths
- * without requiring every file to exist yet. The whitelist has to name every
- * folder a manifest entry may point into, so `/Six-parts/` is here for the
- * anatomy part shots and `/landing-watches/` for the two Nocturne story images.
- * Without either one this check fails on a path that is correct, which is the
- * cheaper failure than the reverse. */
+/* Whitelist every folder a local image path may point into; missing one fails a correct path, which is the cheaper failure. */
 const srcs = [...html.matchAll(/<img[^>]+src="(\/[^"]+)"/g)].map((m) => m[1]);
 ok(
   srcs.every(
@@ -183,8 +146,7 @@ function ratio(a, b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/* Darkest point the hero headline sits on: #0c1220 base pulled toward the
- * scrim's rgba(6,10,18,0.94), plus headroom for grain lifting the blacks. */
+/* Darkest plausible hero background, with headroom for grain lifting the blacks. */
 const HERO_BG = "#0a0f18";
 
 console.log(`contrast against ${HERO_BG} (darkest plausible hero background):`);

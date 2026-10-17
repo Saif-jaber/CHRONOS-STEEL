@@ -11,27 +11,6 @@ import {
 } from "@/lib/auth/validation";
 import type { UserRole } from "@/lib/types";
 
-/**
- * POST /api/auth/register.
- *
- * Same rule as login: `validateSignup` runs here as well as in the form. The body
- * is deliberately *not* taken on faith about its own shape — every field is
- * type-checked on the way in, so a missing key becomes an empty string and fails
- * validation with the message a person wrote, rather than becoming `undefined`
- * somewhere downstream.
- *
- * `confirmPassword` and `terms` are not sent, by design (the form documents this
- * too). The first is a check the browser already made against the second, so the
- * server re-derives it and still runs the identical validation function; the second
- * is the server's record to make — a POST to this endpoint *is* the acceptance, and
- * the account row it produces is the proof. What is not re-checked cannot be
- * bypassed here either, because `validateSignup` still stands between the body and
- * `createAccount` for every other field.
- *
- * A taken address comes back as a per-field error rather than a 500: `null` from
- * `createAccount` is an expected outcome with a message, not a fault.
- */
-
 export async function POST(request: Request): Promise<NextResponse> {
   const body = await readJson(request);
   if (!isObject(body)) {
@@ -77,9 +56,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  /* Signed in on arrival. Requiring a second sign-in after registering is a
-     courtesy the visitor did not ask for, and the session is no less trustworthy
-     for being the first one. */
   await startSession(account.id);
   return NextResponse.json({ account }, { status: 201 });
 }

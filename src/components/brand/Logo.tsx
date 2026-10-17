@@ -1,18 +1,5 @@
 ﻿import { cx } from "@/lib/format";
 
-/**
- * The wordmark. There is no emblem and there is never going to be one.
- *
- * "CHRONOS" set in the display serif, tracked wide; "& STEEL" beneath it in the
- * sans at roughly half the size, tracked wider still so the two lines share an
- * optical width. The thin rule between them is the only graphic element in the
- * entire identity.
- *
- * Two lockups, because the brief asks for both: `stacked` for the masthead and
- * the footer, `inline` for tight spaces. Both are the same two words at the same
- * two sizes — the mark is the typography, so it has to survive being set small.
- */
-
 export function Logo({
   lockup = "stacked",
   className,
@@ -61,17 +48,6 @@ export function Logo({
   );
 }
 
-/**
- * The favicon / mobile mark.
- *
- * "C&S" as a tight monogram. Rendered as an SVG so it inherits the document
- * background rather than shipping a raster asset, and so it stays crisp at 16px
- * where the full lockup would turn to mush.
- *
- * Labelled by default. Pass `decorative` where the wordmark already appears in
- * the same view, the footer rule, for instance, so assistive tech is not told
- * the brand name twice.
- */
 export function Monogram({
   className,
   decorative = false,

@@ -10,15 +10,7 @@ import {
   subscribeBag,
 } from "@/lib/cart/store";
 
-/**
- * The bag, in the masthead.
- *
- * A link to `/bag` that carries the live count. The count comes from the bag
- * mirror (`lib/cart/store.ts`), which is filled from the API once per page load
- * when a hint says an account is signed in — never from the static shell, whose
- * zero the audit suite asserts and which hydration must match. Signed out, it
- * reads zero and the link leads to the sign-in-gated bag page.
- */
+/** Live count from the bag mirror; the static shell's zero must match on hydration. */
 export function BagButton({ signedIn }: { signedIn: boolean }) {
   const bag = useSyncExternalStore(
     subscribeBag,

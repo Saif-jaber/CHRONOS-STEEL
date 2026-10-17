@@ -3,10 +3,7 @@
 import { useState } from "react";
 import { cx } from "@/lib/format";
 
-/**
- * A local image slot. The frame owns its aspect ratio, and a failed or missing
- * asset leaves the frame empty rather than showing a broken-image glyph.
- */
+/** A local image slot. The frame owns its aspect ratio; a failed or missing asset leaves it empty. */
 export function Photo({
   src,
   alt,
@@ -20,14 +17,10 @@ export function Photo({
   /** Omit to keep the reserved frame empty until its image is added. */
   src?: string;
   /**
-   * Empty string marks the image as decorative. Anything else is announced, so a
-   * photograph of a product must describe that product.
+   * Empty string marks the image as decorative; anything else is announced.
    */
   alt: string;
-  /**
-   * width / height, enforced by the frame. Omit for a full-bleed slot that should
-   * simply fill its parent.
-   */
+  /** width / height, enforced by the frame. Omit to fill the parent. */
   ratio?: number;
   fit?: "cover" | "contain";
   priority?: boolean;

@@ -25,20 +25,6 @@ import { IconClose } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { cx } from "@/lib/format";
 
-/**
- * Add a reference.
- *
- * The seller fills in one reference with one dial and one strap; the server turns
- * that into the catalogue's two-axis shape. The closed-set options below mirror
- * the unions in `lib/types.ts`; the server re-validates every one of them, so
- * these lists are a convenience, not the gate.
- *
- * Photographs are uploaded to R2 the moment they are chosen, not on submit, so
- * the slow part happens while the seller is still filling in the price. The form
- * then carries only the resulting URLs, which keeps the create request small and
- * the bytes out of the Next server entirely.
- */
-
 const MAX_IMAGES = 8;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -193,7 +179,7 @@ interface UploadedImage {
   name: string;
 }
 
-/** On-screen names, so the summary popup reads like the form, not like the wire. */
+/** On-screen names for the summary popup. */
 const FIELD_LABELS: Record<string, string> = {
   brand: "Brand or maker",
   model: "Model",
@@ -217,14 +203,7 @@ interface Issue {
   message: string;
 }
 
-/**
- * The client's courtesy check, run before the request.
- *
- * It mirrors the required fields in `lib/catalog/listing.ts` so a seller is told
- * what is missing in one popup instead of one round-trip per field. The server
- * re-runs every one of these and remains the authority; this only decides whether
- * to bother the network at all, and whether to raise the warning.
- */
+/** Courtesy check before the request; the server re-validates and is the authority. */
 function validateListing(values: FormValues, images: UploadedImage[]): Issue[] {
   const issues: Issue[] = [];
 

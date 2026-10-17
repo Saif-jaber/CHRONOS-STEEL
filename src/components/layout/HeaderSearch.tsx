@@ -5,19 +5,6 @@ import { IconButton } from "@/components/ui/Button";
 import { IconArrowRight, IconClose, IconSearch } from "@/components/ui/Icon";
 import { cx } from "@/lib/format";
 
-/**
- * Header search.
- *
- * A magnifier that opens a panel under the masthead with the one field the site
- * searches on: a GET form posting to `/search`. The panel is a plain form, so
- * submitting works before the bundle has loaded and the resulting URL is the
- * same one the collection page and the facet rail already read.
- *
- * The field is focused on open and Escape closes the panel, because a search
- * control that opens and then makes you reach for the mouse is a control that
- * has not opened anything. Clicking anywhere outside closes it too, so the
- * panel never strands a reader on top of the page.
- */
 export function HeaderSearch() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);

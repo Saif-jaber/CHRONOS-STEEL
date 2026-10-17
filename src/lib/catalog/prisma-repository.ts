@@ -16,27 +16,8 @@ import type {
 import { slugify, type NewListingInput } from "./listing";
 import type { CatalogRepository } from "./repository";
 
-/**
- * The Postgres implementation of the catalogue seam.
- *
- * Two rules hold it together:
- *
- * - Every read includes the option axes. The facet engine, the price ladder and
- *   the renderer all compute from the *complete* dial and strap sets, so a
- *   partial load would silently wrong the counts rather than fail loudly. The
- *   include lives in one constant rather than being repeated per query, because
- *   the fourth method that forgets it is the one that ships.
- * - `toProduct` is name-for-name. The schema flattened `caseSpec` and `movement`
- *   into columns of the same names precisely so this mapping has no decisions
- *   in it; the casts are the union types from `lib/types.ts` asserting
- *   themselves over a `String` column, which is the trade the schema comment
- *   already declared.
- *
- * `inventory` is deliberately not read: stock still lives on the product row and
- * is resolved at variant time by `lib/catalog/variants.ts`. The table exists for
- * the day per-variant stock is switched on, and the day that happens this is the
- * only file that changes.
- */
+/** Postgres implementation of CatalogRepository. Reads always use `productInclude`;
+ * `inventory` is unused — stock still lives on the product row. */
 
 const productInclude = {
   dials: { orderBy: { sortOrder: "asc" as const } },
@@ -44,9 +25,7 @@ const productInclude = {
   seller: { select: { storeSlug: true, storeName: true, id: true } },
 } satisfies object;
 
-/** A product row *as the queries above return it*: scalars plus both option
-    axes. The bare model type deliberately has no relations on it, which is why
-    every mapping function below takes this, not `Product` from the client. */
+/** A product row as the queries return it: scalars plus both option axes. */
 type ProductRow = Prisma.ProductGetPayload<{ include: { dials: true; straps: true; seller: { select: { storeSlug: true; storeName: true; id: true } } } }>;
 
 function toDial(row: ProductRow["dials"][number]): DialOption {
@@ -143,10 +122,7 @@ function toProduct(row: ProductRow): Product {
 export class PrismaCatalogRepository implements CatalogRepository {
   async listProducts(): Promise<Product[]> {
     const rows = await prisma.product.findMany({
-      // Only real seller listings reach the storefront. The seeded demo
-      // catalogue carries no seller, so `sellerId: { not: null }` hides every
-      // mock reference without deleting a row; the landing page still shows its
-      // editorial selection from the static `PRODUCTS` array.
+      // Only real seller listings reach the storefront; seeded demo rows have no sellerId.
       where: { published: true, sellerId: { not: null } },
       include: productInclude,
       orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
@@ -174,8 +150,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
   async listCollections(): Promise<Array<{ name: string; count: number }>> {
     const groups = await prisma.product.groupBy({
       by: ["collection"],
-      // Same rule as `listProducts`: the browse facets count real listings only,
-      // so a collection the seeded catalogue invented disappears from the rail.
+      // Real listings only, same rule as listProducts.
       where: { published: true, sellerId: { not: null } },
       _count: { _all: true },
     });
