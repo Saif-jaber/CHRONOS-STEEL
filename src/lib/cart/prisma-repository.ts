@@ -84,7 +84,7 @@ export class PrismaCartRepository implements CartRepository {
       );
       const variant =
         exact ?? findVariant(variants, { dialId: row.dialId, strapId: row.strapId });
-      const forSale = product.published !== false && (product.sellerId ?? null) !== null;
+      const forSale = product.published !== false;
       const available = forSale && exact?.available === true;
       const unitPriceInCents = variant.priceInCents;
 
@@ -121,7 +121,7 @@ export class PrismaCartRepository implements CartRepository {
   async addItem(accountId: string, input: AddItemInput): Promise<AddItemResult> {
     const [product] = await catalog.getProductsByIds([input.productId]);
     if (!product) return { ok: false, reason: "not-found" };
-    if (product.published === false || (product.sellerId ?? null) === null) {
+    if (product.published === false) {
       return { ok: false, reason: "not-for-sale" };
     }
 

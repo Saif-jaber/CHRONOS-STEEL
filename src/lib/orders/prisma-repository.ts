@@ -130,6 +130,18 @@ export class PrismaOrderRepository implements OrderRepository {
             include: orderInclude,
           });
           await tx.cartItem.deleteMany({ where: { accountId } });
+
+          // Draw down on-hand stock for physical lines. A null stock means
+          // made-to-order, so it is skipped. GREATEST keeps the count at zero
+          // rather than negative when an order outruns the shelf.
+          for (const item of items) {
+            await tx.$executeRaw`
+              UPDATE "Product"
+              SET "stock" = GREATEST("stock" - ${item.quantity}, 0)
+              WHERE "id" = ${item.productId} AND "stock" IS NOT NULL
+            `;
+          }
+
           return order;
         });
         return { ok: true, order: toOrder(row) };

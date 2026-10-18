@@ -8,6 +8,8 @@
     "start": "node node_modules/next/dist/bin/next start",
     "lint": "node node_modules/eslint/bin/eslint.js .",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "test": "node node_modules/vitest/vitest.mjs run",
+    "test:watch": "node node_modules/vitest/vitest.mjs --watch",
     "audit:geometry": "node scripts/audit-runner.cjs",
     "audit:encoding": "node scripts/check-encoding.cjs .",
     "audit:css": "node scripts/verify-utilities.cjs",
@@ -41,6 +43,7 @@
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
