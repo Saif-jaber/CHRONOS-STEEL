@@ -8,31 +8,30 @@ import { Reveal } from "@/components/ui/Reveal";
 
 const FEATURES = [
   {
-    // Stated as a range: only one reference reaches 72 hours.
-    Icon: IconPowerReserve,
-    label: "Up to 72 Hours",
-    detail: "Power reserve across the automatic range.",
-  },
-  {
     Icon: IconCrystal,
-    label: "Double-Domed Sapphire",
-    detail: "Two-piece crystals, coated on the underside.",
+    label: "Real Photographs",
+    detail: "Every listing requires at least one photograph of the watch.",
   },
   {
     Icon: IconBalance,
-    label: "Mechanical Movements",
-    detail: "Built, adjusted and timed before they leave.",
+    label: "Seller Specifications",
+    detail: "Case, movement and dimensions come from the seller.",
+  },
+  {
+    Icon: IconPowerReserve,
+    label: "Plain Pricing",
+    detail: "The price shown is the price of the listed configuration.",
   },
   {
     Icon: IconWarranty,
-    label: "Five-Year Warranty",
-    detail: "International and transferable.",
+    label: "Account Orders",
+    detail: "Checkout and order history stay against your account.",
   },
 ] as const;
 
 export function FeatureStrip() {
   return (
-    <section aria-label="House standards" className="bg-paper">
+    <section aria-label="Marketplace standards" className="bg-paper">
       <div className="container">
         <ul className="grid border-y border-rule sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map(({ Icon, label, detail }, index) => (

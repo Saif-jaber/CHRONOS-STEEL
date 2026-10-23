@@ -62,9 +62,8 @@ export function Footer() {
           <div className="max-w-[30rem]">
             <Logo lockup="stacked" onDark />
             <p className="prose-measure mt-lg text-sm leading-relaxed text-navy-muted">
-              Mechanical watches, specified to the millimetre. Built in small
-              series, warranted for five years, and serviced for as long as we
-              exist.
+              A marketplace for mechanical watches. Every reference is listed,
+              photographed and described by the seller offering it.
             </p>
           </div>
 
@@ -154,7 +153,7 @@ export function Footer() {
             ))}
           </ul>
           <p className="measure text-xs text-navy-muted">
-            A fictional house. Every reference, calibre and price is invented.
+            Listings are supplied by independent sellers.
           </p>
         </div>
       </div>

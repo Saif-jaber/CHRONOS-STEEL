@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Button, Cta } from "@/components/ui/Button";
 import { FormNote } from "@/components/ui/Field";
@@ -9,18 +8,17 @@ import { Photo } from "@/components/ui/Photo";
 import { formatPrice } from "@/lib/format";
 import type { CartLine } from "@/lib/types";
 import {
-  checkoutBag,
   emptyBag,
   getBagServerSnapshot,
   getBagSnapshot,
   refreshBag,
   removeFromBag,
   setBagQuantity,
+  startCheckout,
   subscribeBag,
 } from "@/lib/cart/store";
 
 export function BagView() {
-  const router = useRouter();
   const bag = useSyncExternalStore(
     subscribeBag,
     getBagSnapshot,
@@ -59,10 +57,10 @@ export function BagView() {
     if (!result.ok) setError(result.error);
   }
 
-  async function placeOrder() {
+  async function beginCheckout() {
     setError(null);
     setPlacing(true);
-    const result = await checkoutBag();
+    const result = await startCheckout();
     if (!result.ok) {
       setPlacing(false);
       setError(result.error);
@@ -70,7 +68,9 @@ export function BagView() {
       void refreshBag();
       return;
     }
-    router.push(`/orders/${result.orderId}`);
+    /* Full navigation to Stripe's hosted page; the bag survives the round trip
+       and is cleared by the webhook once the payment is confirmed. */
+    window.location.assign(result.url);
   }
 
   if (!cart) {
@@ -218,17 +218,18 @@ export function BagView() {
             </p>
           ) : (
             <p className="text-xs text-faint">
-              Delivery and any duties are settled after the order is placed.
+              Payment is taken on Stripe&apos;s secure page. Delivery and any
+              duties are settled after the order is placed.
             </p>
           )}
         </div>
 
         <Button
-          onClick={() => void placeOrder()}
+          onClick={() => void beginCheckout()}
           disabled={checkoutDisabled}
           className="w-full sm:w-auto"
         >
-          {placing ? "Placing…" : "Place order"}
+          {placing ? "Redirecting…" : "Checkout"}
         </Button>
       </div>
     </div>

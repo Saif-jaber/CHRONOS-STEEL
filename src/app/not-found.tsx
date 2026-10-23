@@ -1,13 +1,7 @@
 import { Logo } from "@/components/brand/Logo";
 import { Cta } from "@/components/ui/Button";
-import { PRODUCTS } from "@/lib/catalog/products";
-import { countWord } from "@/lib/format";
 
 export default function NotFound() {
-  const suggestions = [...PRODUCTS]
-    .sort((a, b) => b.caseSpec.diameterMm - a.caseSpec.diameterMm)
-    .slice(0, 3);
-
   return (
     <>
       <header className="border-b border-rule">
@@ -41,24 +35,9 @@ export default function NotFound() {
               Return to the front page
             </Cta>
             <Cta href="/collection" onDark>
-              Browse all {countWord(PRODUCTS.length)}
+              Browse the collection
             </Cta>
           </div>
-
-          <ul className="mt-2xl grid gap-md border-t border-navy-rule pt-md sm:grid-cols-3">
-            {suggestions.map((product) => (
-              <li key={product.id}>
-                <Cta href={`/watches/${product.slug}`} onDark className="normal-case">
-                  <span className="font-display text-md normal-case tracking-normal">
-                    {product.model}
-                  </span>
-                </Cta>
-                <p className="measure mt-2xs text-xs text-navy-muted">
-                  {product.reference} · {product.caseSpec.diameterMm.toFixed(1)} mm
-                </p>
-              </li>
-            ))}
-          </ul>
         </div>
       </main>
     </>

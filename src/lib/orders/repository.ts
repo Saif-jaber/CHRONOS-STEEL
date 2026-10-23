@@ -2,16 +2,19 @@ import "server-only";
 import { PrismaOrderRepository } from "./prisma-repository";
 import type { Order } from "@/lib/types";
 
-/** The order seam: receipt fields are snapshotted at placement, and the bag is emptied in the same transaction. */
-
-export type PlaceOrderResult =
+export type CreatePendingOrderResult =
   | { ok: true; order: Order }
   | { ok: false; reason: "empty" | "unavailable" };
 
+/** Orders are written when a Stripe Checkout Session is created, in the
+ *  `awaiting_payment` state. Nothing is charged and no stock is drawn down at
+ *  that point — the webhook flips the order to `paid` and does the stock work
+ *  once Stripe confirms the payment. */
 export interface OrderRepository {
-  /** Turns the signed-in account's bag into an order and empties the bag. */
-  placeOrder(accountId: string): Promise<PlaceOrderResult>;
-  /** null when the order does not exist or belongs to someone else. */
+  createPendingOrder(accountId: string): Promise<CreatePendingOrderResult>;
+  attachStripeSession(orderId: string, sessionId: string): Promise<void>;
+  markPaidBySessionId(sessionId: string): Promise<Order | null>;
+  markAbandonedBySessionId(sessionId: string): Promise<void>;
   getOrderForAccount(orderId: string, accountId: string): Promise<Order | null>;
   listOrdersForAccount(accountId: string): Promise<Order[]>;
 }

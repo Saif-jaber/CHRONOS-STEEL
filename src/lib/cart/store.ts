@@ -167,23 +167,24 @@ export async function emptyBag(): Promise<BagActionResult> {
 }
 
 export type CheckoutResult =
-  | { ok: true; orderId: string }
+  | { ok: true; url: string }
   | { ok: false; error: string };
 
-export async function checkoutBag(): Promise<CheckoutResult> {
+/** Ask the server to open a Stripe Checkout Session for the bag and return the
+ *  hosted page to redirect to. The bag is *not* emptied here — it is cleared by
+ *  the webhook once Stripe confirms the payment. */
+export async function startCheckout(): Promise<CheckoutResult> {
   try {
-    const response = await fetch("/api/orders", { method: "POST" });
+    const response = await fetch("/api/checkout", { method: "POST" });
     const data = await bodyAsJson(response);
     if (!response.ok) {
-      return { ok: false, error: errorFrom(data, "Your order could not be placed.") };
+      return { ok: false, error: errorFrom(data, "Checkout could not be started.") };
     }
-    const orderId = (data as { order?: { id?: unknown } } | null)?.order?.id;
-    if (typeof orderId !== "string") {
-      return { ok: false, error: "Your order could not be placed." };
+    const url = (data as { url?: unknown } | null)?.url;
+    if (typeof url !== "string") {
+      return { ok: false, error: "Checkout could not be started." };
     }
-    /* The server emptied the bag; mirror it so the badge clears immediately. */
-    set({ cart: null, status: "ready", error: null });
-    return { ok: true, orderId };
+    return { ok: true, url };
   } catch {
     return { ok: false, error: "The request could not be sent. Try again." };
   }

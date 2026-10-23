@@ -4,17 +4,11 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ToTopButton } from "@/components/ui/ToTopButton";
 import { Cta } from "@/components/ui/Button";
-import { WatchRender } from "@/components/watch/WatchRender";
 import { Gallery } from "@/components/watch/Gallery";
 import { AddToBag } from "@/components/watch/AddToBag";
 import { catalog } from "@/lib/catalog/repository";
 import { currentAccount } from "@/lib/auth/session";
-import {
-  STOCK_COPY,
-  defaultVariant,
-  resolveDialSpec,
-  stockState,
-} from "@/lib/catalog/variants";
+import { STOCK_COPY, defaultVariant, stockState } from "@/lib/catalog/variants";
 import {
   STOREFRONT_CURRENCY,
   formatMmWithUnit,
@@ -94,15 +88,8 @@ export default async function WatchPage({ params }: { params: Promise<Params> })
               {images.length > 0 ? (
                 <Gallery images={images} altBase={`${product.brand} ${product.model}`} />
               ) : (
-                <div className="bg-paper-2 px-sm py-md">
-                  <WatchRender
-                    product={product}
-                    dial={resolveDialSpec(product, variant.dial)}
-                    strap={variant.strap}
-                    detail="full"
-                    transitionKey={variant.key}
-                    className="mx-auto w-full max-w-[20rem]"
-                  />
+                <div className="flex aspect-square items-center justify-center bg-paper-2 text-sm text-faint">
+                  No photograph
                 </div>
               )}
             </div>

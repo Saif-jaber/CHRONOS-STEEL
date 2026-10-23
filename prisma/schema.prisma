@@ -108,16 +108,15 @@ model Product {
   tags             String[]
 
   /* Seller-uploaded photographs, stored in Cloudflare R2 and kept as public
-     URLs in display order. Empty for the seeded catalogue, whose cards render
-     the derived WatchRender drawing instead. */
+     URLs in display order. Every real listing requires at least one. */
   images           String[]  @default([])
 
   sellerId String?
   seller   Account? @relation(fields: [sellerId], references: [id], onDelete: SetNull)
 
   /* Drafts. False while a seller is still assembling the reference, true once
-     they publish it. The seeded catalogue is written published. Only published
-     rows are shown to customers; a seller always sees their own. */
+     they publish it. Only published seller listings are shown to customers; a
+     seller always sees their own. */
   published Boolean @default(false)
 
   dials      Dial[]
@@ -222,7 +221,10 @@ model CartItem {
 /* A placed order. Everything a receipt needs is snapshotted onto the order and
    its items at placement time — names, reference, SKU, unit price — so the
    record of what was bought does not change when the seller later edits or
-   unpublishes the reference. `number` is the human-facing order code. */
+   unpublishes the reference. `number` is the human-facing order code.
+   Payment runs through Stripe Checkout: the order is written as
+   `awaiting_payment` when the session is created, and the webhook flips it to
+   `paid` and draws the stock down. */
 model Order {
   id              String   @id @default(uuid())
   number          String   @unique
@@ -232,17 +234,26 @@ model Order {
   subtotalInCents Int
   totalInCents    Int
   placedAt        DateTime @default(now())
+  paidAt          DateTime?
+
+  /* The Stripe Checkout Session this order waits on, so the webhook can find it. */
+  stripeSessionId String?  @unique
 
   account Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
   items   OrderItem[]
 
   @@index([accountId])
+  @@index([status])
 }
 
 model OrderItem {
   id               String  @id @default(uuid())
   orderId          String
   productId        String?
+  /* The seller who owned the reference at the moment it was bought. Snapshotted
+     like the other columns so a seller's sales history survives the listing
+     being edited or deleted. */
+  sellerId         String?
   slug             String
   brand            String
   model            String
@@ -262,4 +273,20 @@ model OrderItem {
   product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
+  @@index([sellerId])
+}
+
+/* Lightweight seller-facing funnel events. Deliberately not foreign-keyed: an
+   event must outlive the listing or account it refers to, and a seller's
+   historical add-to-bag count should not change when a reference is deleted. */
+model SellerEvent {
+  id        String   @id @default(uuid())
+  type      String
+  sellerId  String
+  productId String?
+  accountId String?
+  createdAt DateTime @default(now())
+
+  @@index([sellerId, type, createdAt])
+  @@index([productId])
 }

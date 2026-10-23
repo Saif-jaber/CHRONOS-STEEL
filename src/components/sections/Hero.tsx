@@ -1,20 +1,7 @@
-import { PRODUCTS } from "@/lib/catalog/products";
-import { formatPowerReserve } from "@/lib/format";
+import { countWord } from "@/lib/format";
 import { Cta } from "@/components/ui/Button";
 
-export function Hero() {
-  // Guarded: a missing product should not take the page down.
-  const product = PRODUCTS.find((p) => p.slug === "meridian-38") ?? PRODUCTS[0]!;
-
-  const specs = [
-    { label: "Case", value: `${product.caseSpec.diameterMm.toFixed(1)} mm` },
-    { label: "Calibre", value: product.movement.caliber },
-    {
-      label: "Reserve",
-      value: formatPowerReserve(product.movement.powerReserveHours),
-    },
-  ];
-
+export function Hero({ total }: { total: number }) {
   return (
     <section className="on-navy relative isolate flex min-h-svh flex-col overflow-hidden bg-navy">
       <div
@@ -57,8 +44,7 @@ export function Hero() {
       <div className="container relative z-10 flex flex-1 flex-col justify-start pb-xl pt-[calc(var(--spacing-nav)+3rem)]">
         <div className="max-w-[54rem]">
           <p className="eyebrow text-base text-silver">
-            {product.reference} &middot; in production since{" "}
-            {product.yearIntroduced}
+            Chronos &amp; Steel &middot; Seller listings
           </p>
 
           {/* text-shadow against the gradient wash, not decoration. */}
@@ -67,8 +53,11 @@ export function Hero() {
           </h1>
 
           <p className="prose-measure mt-sm text-[1.125rem] leading-relaxed text-silver-2">
-            Twelve references. Every one specified to the millimetre, priced
-            plainly, and built to be worn rather than displayed.
+            {total === 1
+              ? "One real reference, photographed and listed by its seller."
+              : `${countWord(total)} real references, photographed and listed by their sellers.`}{" "}
+            Every watch on the collection page is an actual listing, not a
+            catalogue illustration.
           </p>
 
           <div className="mt-md flex flex-wrap items-center gap-md">
@@ -76,19 +65,6 @@ export function Hero() {
               Explore the collection
             </Cta>
           </div>
-
-          <dl className="mt-lg flex flex-wrap gap-x-md gap-y-xs border-t border-navy-rule pt-sm">
-            {specs.map((spec) => (
-              <div key={spec.label} className="min-w-[7rem]">
-                <dt className="eyebrow text-base text-navy-muted">
-                  {spec.label}
-                </dt>
-                <dd className="measure mt-3xs text-md text-paper">
-                  {spec.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </div>
 

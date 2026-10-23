@@ -151,8 +151,8 @@ export interface Product {
   editionSize: number | null;
   featured: boolean;
   tags: string[];
-  /** Seller-uploaded photographs (R2 public URLs). Empty or absent means the card
-      renders the derived WatchRender drawing instead. */
+  /** Seller-uploaded photographs (R2 public URLs). Every listing carries at
+      least one; there is no drawn or mock fallback. */
   images?: string[];
   /** Optional seller account this product belongs to. */
   sellerId?: string | null;
@@ -160,8 +160,7 @@ export interface Product {
   storeName?: string | null;
   /** Optional store slug. */
   storeSlug?: string | null;
-  /** False while a seller is still assembling the reference. Absent means the
-      seeded catalogue data, which is always published. */
+  /** False while a seller is still assembling the reference. */
   published?: boolean;
 }
 
@@ -217,7 +216,7 @@ export interface CartLine {
   brand: string;
   model: string;
   reference: string;
-  /** First photograph, or null when the card renders the drawing instead. */
+  /** First photograph of the listing. */
   imageUrl: string | null;
   selection: VariantSelection;
   dialName: string;
@@ -258,12 +257,15 @@ export interface OrderLine {
 export interface Order {
   id: string;
   number: string;
+  /** awaiting_payment until the Stripe webhook confirms it, then paid. */
   status: string;
   currency: Currency;
   subtotalInCents: number;
   totalInCents: number;
   /** ISO 8601. */
   placedAt: string;
+  /** ISO 8601. Set by the webhook when Stripe confirms the payment. */
+  paidAt: string | null;
   lines: OrderLine[];
 }
 

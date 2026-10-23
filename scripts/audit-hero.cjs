@@ -35,7 +35,6 @@ const LAYERS = [
   ["hero key-light wash", "radial-gradient(78% 62% at 72% 22%"],
   ["hero legibility scrim", "linear-gradient(to top, rgba(6,10,18,0.78)"],
   ["footer directional wash", "radial-gradient(58% 46% at 12% 0%"],
-  ["lifestyle band wash", "radial-gradient(64% 52% at 74% 16%"],
 ];
 for (const [label, needle] of LAYERS) {
   ok(html.includes(needle), label);
@@ -44,44 +43,34 @@ for (const [label, needle] of LAYERS) {
 /* Storefront images must be named local slots with descriptive alt text; assets may not exist yet, so manifest destinations are checked. */
 const IMAGE_SLOTS = [
   [
-    "Nocturne story image",
-    "/landing-watches/moonphase-watch.png",
-    "The Nocturne Moonphase watch, case and dial filling the frame",
-  ],
-  [
-    "Nocturne story image in blue",
-    "/landing-watches/moonphase-blue.png",
-    "The Nocturne in blue, the moon disc showing on the dial",
-  ],
-  [
     "part 01, sapphire crystal",
     "/Six-parts/part1.png",
-    "Technical diagram of the double-domed sapphire crystal on the Meridian 38",
+    "Technical diagram of a double-domed sapphire crystal seated in a watch bezel",
   ],
   [
     "part 02, hands",
     "/Six-parts/part2.png",
-    "Technical diagram of the faceted steel watch hands for the Meridian 38",
+    "Technical diagram of a pair of faceted steel watch hands",
   ],
   [
     "part 03, dial",
     "/Six-parts/part3.png",
-    "Technical diagram of the silver sunburst dial of the Meridian 38",
+    "Technical diagram of a watch dial with applied indices and luminous hour plots",
   ],
   [
     "part 04, movement",
     "/Six-parts/part4.png",
-    "Technical diagram of the Calibre CS-114 automatic movement of the Meridian 38",
+    "Technical diagram of an automatic watch movement, showing its bridges and balance wheel",
   ],
   [
     "part 05, case",
     "/Six-parts/part5.png",
-    "Technical diagram of the polished 316L steel case of the Meridian 38",
+    "Technical diagram of a polished steel watch case",
   ],
   [
     "part 06, strap",
     "/Six-parts/part6.png",
-    "Technical diagram of the black calfskin strap for the Meridian 38",
+    "Technical diagram of a leather watch strap with a quick-release spring bar",
   ],
 ];
 for (const [label, src, alt] of IMAGE_SLOTS) {
@@ -97,26 +86,41 @@ ok(
   "storefront home has no generated watch drawings",
 );
 
-/* Local images must never depend on an external media host. */
+/* Seller photographs live in the configured R2 bucket. Any other external host
+   is an unexpected dependency. */
+function envValue(key) {
+  if (process.env[key]) return process.env[key];
+  const envPath = path.join(".env");
+  if (!fs.existsSync(envPath)) return undefined;
+  const line = fs
+    .readFileSync(envPath, "utf8")
+    .split(/\r?\n/)
+    .find((entry) => entry.trim().startsWith(`${key}=`));
+  if (!line) return undefined;
+  return line
+    .slice(line.indexOf("=") + 1)
+    .trim()
+    .replace(/^["']|["']$/g, "");
+}
+
+const r2Base = envValue("R2_PUBLIC_URL");
+const allowedOrigins = r2Base ? [new URL(r2Base).origin] : [];
 const externalImages = [
   ...html.matchAll(/<img[^>]+src="(https?:\/\/[^"]+)"/g),
 ].map((m) => m[1]);
+const offOrigin = externalImages.filter(
+  (src) => !allowedOrigins.some((origin) => src.startsWith(origin)),
+);
 ok(
-  externalImages.length === 0,
+  offOrigin.length === 0,
   "no off-origin image requests",
-  externalImages.join(", "),
+  offOrigin.join(", "),
 );
 
 /* Whitelist every folder a local image path may point into; missing one fails a correct path, which is the cheaper failure. */
 const srcs = [...html.matchAll(/<img[^>]+src="(\/[^"]+)"/g)].map((m) => m[1]);
 ok(
-  srcs.every(
-    (src) =>
-      src.startsWith("/images/") ||
-      src.startsWith("/Six-parts/") ||
-      src.startsWith("/landing-watches/") ||
-      src === "/fig-1-anatomy.png",
-  ),
+  srcs.every((src) => src.startsWith("/Six-parts/")),
   "all image sources use documented public paths",
   srcs.join(", "),
 );

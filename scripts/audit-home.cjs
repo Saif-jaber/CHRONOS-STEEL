@@ -1,4 +1,4 @@
-// Confirms the prerendered home page contains the six brief sections in order and the intended font faces.
+// Confirms the prerendered home page contains the expected sections in order and the intended font faces.
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -11,12 +11,11 @@ const html = fs.readFileSync(file, "utf8");
 
 const SECTIONS = [
   ["Hero", "Time, Made"],
-  ["Feature strip", "House standards"],
+  ["Feature strip", "Marketplace standards"],
   // Anchored on the section's own prose; the old "ANATOMY" display word was removed.
   ["Anatomy", "A mechanical watch is a stack of tolerances"],
   ["Anatomy heading", "Six parts, and nothing hidden"],
-  ["Lifestyle story", "Built for the hours nobody sees"],
-  ["Collection", "Twelve references"],
+  ["Collection", "The collection"],
   ["Footer newsletter", "Time Worth Keeping"],
 ];
 

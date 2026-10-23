@@ -141,8 +141,8 @@ function EmptyState({
       <h2 className="text-xl">Nothing in the collection matches that</h2>
       <p className="prose-measure mt-2xs text-md leading-relaxed text-muted">
         {on.q
-          ? "No reference carries that word in its model, reference, calibre, dial or story. It may be worth a shorter word, or the calibre code."
-          : "Those requirements are in combination more demanding than the twelve references we make. One of them loosened will open the list again."}
+          ? "No listing carries that word in its model, reference, calibre, dial or story. It may be worth a shorter word, or the calibre code."
+          : "No current listing meets those requirements together. Loosening one of them will open the list again."}
       </p>
       <div className="mt-md flex flex-wrap items-center gap-md">
         {on.q ? <Cta href={withoutSearch}>Keep the filters, drop the search</Cta> : null}

@@ -1,102 +1,21 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PRODUCTS } from "../src/lib/catalog/products";
 
-// Seeds the catalogue (npm run db:seed). Idempotent upserts keyed on product id.
+// The catalogue is seller-listed only. Running this removes any legacy
+// house-catalogue rows (products with no seller) and their dials and straps.
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  for (const [index, product] of PRODUCTS.entries()) {
-    const fields = {
-      slug: product.slug,
-      brand: product.brand,
-      model: product.model,
-      reference: product.reference,
-      yearIntroduced: product.yearIntroduced,
-      collection: product.collection,
-      summary: product.summary,
-      story: product.story,
-      sortOrder: index,
-
-      diameterMm: product.caseSpec.diameterMm,
-      thicknessMm: product.caseSpec.thicknessMm,
-      lugToLugMm: product.caseSpec.lugToLugMm,
-      lugWidthMm: product.caseSpec.lugWidthMm,
-      material: product.caseSpec.material,
-      finish: product.caseSpec.finish,
-      bezel: product.caseSpec.bezel,
-      crystal: product.caseSpec.crystal,
-      waterResistanceM: product.caseSpec.waterResistanceM,
-
-      type: product.movement.type,
-      caliber: product.movement.caliber,
-      manufacturer: product.movement.manufacturer,
-      powerReserveHours: product.movement.powerReserveHours,
-      frequencyVph: product.movement.frequencyVph,
-      jewels: product.movement.jewels,
-      components: product.movement.components,
-      chronometerDeviationPercent: product.movement.chronometerDeviationPercent,
-      winding: product.movement.winding,
-
-      indexStyle: product.indexStyle,
-      lume: product.lume,
-      signature: product.signature,
-      sublabel: product.sublabel,
-      basePriceInCents: product.basePriceInCents,
-      currency: product.currency,
-      stock: product.stock,
-      reserved: product.reserved,
-      editionSize: product.editionSize,
-      featured: product.featured,
-      tags: product.tags,
-      published: true,
-    };
-
-    // `deleteMany` belongs to the update path only; both upsert arms share the scalars.
-    const dials = product.dials.map((dial, position) => ({
-      id: dial.id,
-      sortOrder: position,
-      name: dial.name,
-      colorName: dial.colorName,
-      colorHex: dial.colorHex,
-      finish: dial.finish,
-      priceDeltaInCents: dial.priceDeltaInCents,
-      complications: [...dial.complications],
-      complicationPlacements: dial.complicationPlacements,
-    }));
-
-    const straps = product.straps.map((strap, position) => ({
-      id: strap.id,
-      sortOrder: position,
-      type: strap.type,
-      name: strap.name,
-      material: strap.material,
-      colorHex: strap.colorHex,
-      colorName: strap.colorName,
-      priceDeltaInCents: strap.priceDeltaInCents,
-      widthMm: strap.widthMm,
-      stitchColorHex: strap.stitchColorHex ?? null,
-    }));
-
-    await prisma.product.upsert({
-      where: { id: product.id },
-      update: {
-        ...fields,
-        dials: { deleteMany: {}, create: dials },
-        straps: { deleteMany: {}, create: straps },
-      },
-      create: { id: product.id, ...fields, dials: { create: dials }, straps: { create: straps } },
-    });
-  }
+  const removed = await prisma.product.deleteMany({
+    where: { sellerId: null },
+  });
 
   const count = await prisma.product.count();
-  const dials = await prisma.dial.count();
-  const straps = await prisma.strap.count();
   console.log(
-    `Catalogue seeded: ${count} products, ${dials} dials, ${straps} straps (from ${PRODUCTS.length} in the seed file).`,
+    `Removed ${removed.count} legacy house-catalogue products. ${count} seller listings remain.`,
   );
 }
 

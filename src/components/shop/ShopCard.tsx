@@ -4,12 +4,10 @@ import {
   STOCK_COPY,
   availableStraps,
   defaultVariant,
-  resolveDialSpec,
   stockState,
 } from "@/lib/catalog/variants";
 import { STOREFRONT_CURRENCY, formatMm, formatPrice } from "@/lib/format";
 import { IconArrowRight } from "@/components/ui/Icon";
-import { WatchRender } from "@/components/watch/WatchRender";
 import { Photo } from "@/components/ui/Photo";
 
 export function ShopCard({
@@ -30,7 +28,6 @@ export function ShopCard({
         href={href}
         className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
       >
-        {/* The drawing is the fallback; if a seller photograph exists, it fills the square. */}
         <div className="relative bg-paper-2 px-xs py-xs sm:px-sm sm:py-sm">
           {product.images && product.images.length > 0 ? (
             <Photo
@@ -40,14 +37,9 @@ export function ShopCard({
               className="w-full"
             />
           ) : (
-            <WatchRender
-              product={product}
-              dial={resolveDialSpec(product, variant.dial)}
-              strap={variant.strap}
-              detail="card"
-              transitionKey={variant.key}
-              className="mx-auto w-full max-w-48"
-            />
+            <div className="flex aspect-square items-center justify-center text-xs text-faint">
+              No photograph
+            </div>
           )}
         </div>
 

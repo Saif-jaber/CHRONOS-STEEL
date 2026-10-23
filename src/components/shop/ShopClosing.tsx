@@ -1,11 +1,11 @@
 const PROMISES = [
   {
-    heading: "Made to order",
-    body: "Assembled to your configuration in Neuchâtel. Six to ten weeks, and you are told which week before the work starts, not after.",
+    heading: "Listed by its seller",
+    body: "Every reference is photographed and described by the person offering it. The measurements and condition notes come from the seller, not from a catalogue.",
   },
   {
-    heading: "Warranted five years",
-    body: "Every watch leaves with a five-year international warranty, registered against the reference rather than against the person who paid for it.",
+    heading: "Sold as described",
+    body: "The watch you buy is the one in the listing. Ask the seller about service history, box and papers before you commit.",
   },
   {
     heading: "Thirty days to decide",

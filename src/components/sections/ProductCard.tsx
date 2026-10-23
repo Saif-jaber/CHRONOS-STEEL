@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { defaultVariant } from "@/lib/catalog/variants";
 import { STOREFRONT_CURRENCY, formatMm, formatPrice } from "@/lib/format";
-import { productPhoto } from "@/lib/media";
 import { Photo } from "@/components/ui/Photo";
 
 export function ProductCard({
@@ -23,16 +22,21 @@ export function ProductCard({
         href={href}
         className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
       >
-        <Photo
-          src={productPhoto(product.slug)}
-          alt={`${product.model}, ${formatMm(product.caseSpec.diameterMm)} mm ${product.caseSpec.material.replace(/-/g, " ")} watch`}
-          ratio={1}
-          /* 2:3 cut-outs on transparent ground; `cover` would crop a third off. */
-          fit="contain"
-          priority={priority}
-          sizes="(min-width: 1024px) 40vw, (min-width: 640px) 50vw, 100vw"
-          className="bg-paper-2"
-        />
+        {product.images && product.images.length > 0 ? (
+          <Photo
+            src={product.images[0]}
+            alt={`${product.model}, ${formatMm(product.caseSpec.diameterMm)} mm ${product.caseSpec.material.replace(/-/g, " ")} watch`}
+            ratio={1}
+            fit="contain"
+            priority={priority}
+            sizes="(min-width: 1024px) 40vw, (min-width: 640px) 50vw, 100vw"
+            className="bg-paper-2"
+          />
+        ) : (
+          <div className="flex aspect-square items-center justify-center bg-paper-2 text-xs text-faint">
+            No photograph
+          </div>
+        )}
 
         {/* Name and price on one line; the reference sits under. */}
         <div className="mt-sm flex items-baseline justify-between gap-sm">

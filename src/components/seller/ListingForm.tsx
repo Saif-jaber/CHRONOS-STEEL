@@ -490,7 +490,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
         </div>
       </Section>
 
-      <Section title="Case and dial" note="These drive the drawing of the watch.">
+      <Section title="Case and dial" note="These describe the watch in the listing.">
         <NumberField
           id="diameterMm"
           label="Case diameter (mm)"

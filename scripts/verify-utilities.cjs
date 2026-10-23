@@ -28,7 +28,6 @@ const REQUIRED = [
   ".bg-paper",
   ".bg-paper-2",
   ".bg-navy",
-  ".bg-navy-2",
   ".text-ink",
   ".text-ink-2",
   ".text-muted",

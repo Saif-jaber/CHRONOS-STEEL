@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentAccount } from "@/lib/auth/session";
 import { isObject, readJson } from "@/lib/auth/api";
 import { cart } from "@/lib/cart/repository";
+import { recordAddToBag } from "@/lib/seller/events";
 
 function unauthorised(): NextResponse {
   return NextResponse.json({ error: "Sign in to use your bag." }, { status: 401 });
@@ -43,6 +44,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     }[result.reason];
     return NextResponse.json({ error: refusal.error }, { status: refusal.status });
   }
+
+  await recordAddToBag(body.productId, account.id);
 
   return NextResponse.json({ cart: result.cart }, { status: 201 });
 }

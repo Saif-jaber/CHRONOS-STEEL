@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ToTopButton } from "@/components/ui/ToTopButton";
+import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import { Cta } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
 import { currentAccount } from "@/lib/auth/session";
@@ -13,7 +14,7 @@ import { formatPrice } from "@/lib/format";
 
 
 export const metadata: Metadata = {
-  title: "Order confirmed",
+  title: "Your order",
   description: "Confirmation and summary of a placed Chronos & Steel order.",
 };
 
@@ -34,6 +35,14 @@ export default async function OrderPage({ params }: { params: Promise<Params> })
     year: "numeric",
   });
 
+  const paid = order.status === "paid";
+  const eyebrow = paid ? "Order confirmed" : "Awaiting payment";
+  const heading = paid ? "Thank you" : "Payment pending";
+
+  const summary = paid
+    ? `Order ${order.number} · paid ${placed}. A record is kept against your account, and the atelier will be in touch about delivery.`
+    : `Order ${order.number} · started ${placed}. Your bag is held while Stripe confirms the payment; this page updates itself once it is through.`;
+
   return (
     <>
       <Header />
@@ -48,13 +57,10 @@ export default async function OrderPage({ params }: { params: Promise<Params> })
             }}
           />
           <div className="container pt-[calc(var(--spacing-nav)+3rem)] pb-lg">
-            <p className="eyebrow text-silver">Order confirmed</p>
-            <h1 className="mt-2xs text-display text-paper">Thank you</h1>
-            <p className="measure mt-md text-sm text-navy-muted">
-              Order {order.number} &middot; placed {placed}. A record is kept
-              against your account, and the atelier will be in touch about
-              delivery.
-            </p>
+            <p className="eyebrow text-silver">{eyebrow}</p>
+            <h1 className="mt-2xs text-display text-paper">{heading}</h1>
+            <p className="measure mt-md text-sm text-navy-muted">{summary}</p>
+            {!paid ? <AutoRefresh seconds={4} /> : null}
           </div>
         </section>
 

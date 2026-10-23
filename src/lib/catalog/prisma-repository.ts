@@ -122,9 +122,9 @@ function toProduct(row: ProductRow): Product {
 export class PrismaCatalogRepository implements CatalogRepository {
   async listProducts(): Promise<Product[]> {
     const rows = await prisma.product.findMany({
-      // Published rows reach the storefront whether they are house references
-      // (no sellerId) or seller listings.
-      where: { published: true },
+      // Only published seller listings reach the storefront. There is no
+      // seeded house catalogue: every product is a real listing.
+      where: { published: true, sellerId: { not: null } },
       include: productInclude,
       orderBy: [{ sortOrder: "asc" }, { yearIntroduced: "asc" }],
     });
@@ -132,8 +132,8 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async getProductBySlug(slug: string): Promise<Product | null> {
-    const row = await prisma.product.findUnique({
-      where: { slug },
+    const row = await prisma.product.findFirst({
+      where: { slug, sellerId: { not: null } },
       include: productInclude,
     });
     return row ? toProduct(row) : null;
@@ -151,8 +151,8 @@ export class PrismaCatalogRepository implements CatalogRepository {
   async listCollections(): Promise<Array<{ name: string; count: number }>> {
     const groups = await prisma.product.groupBy({
       by: ["collection"],
-      // Same published rule as listProducts, so the facet counts match the grid.
-      where: { published: true },
+      // Same rule as listProducts, so the facet counts match the grid.
+      where: { published: true, sellerId: { not: null } },
       _count: { _all: true },
     });
     return groups
