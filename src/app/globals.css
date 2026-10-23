@@ -487,6 +487,32 @@
     grid-template-rows: 1fr;
   }
 
+  /* Skeleton loading.
+
+     A quiet sweep rather than a pulse: the paper-3 base recedes into the
+     paper-2 frame, so a loading card reads as an unprinted page rather than a
+     grey box. The variables are re-pointed inside .on-navy below so the same
+     element works on both bands. */
+  .skeleton {
+    --skeleton-base: var(--color-paper-3);
+    --skeleton-sheen: var(--color-paper-2);
+    background-color: var(--skeleton-base);
+    background-image: linear-gradient(
+      90deg,
+      var(--skeleton-base) 25%,
+      var(--skeleton-sheen) 50%,
+      var(--skeleton-base) 75%
+    );
+    background-repeat: no-repeat;
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1.9s linear infinite;
+  }
+
+  .on-navy .skeleton {
+    --skeleton-base: var(--color-navy-3);
+    --skeleton-sheen: var(--color-navy-2);
+  }
+
   /* Scroll reveal. Set by an IntersectionObserver so it fires on entry, not on
      mount; without JS the element is simply visible. */
   .reveal {
@@ -500,6 +526,15 @@
   .reveal[data-shown="true"] {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
   }
 }
 
@@ -522,5 +557,9 @@
   .cta-arrow,
   .cta:hover .cta-arrow {
     transform: none;
+  }
+  .skeleton {
+    animation: none;
+    background-image: none;
   }
 }

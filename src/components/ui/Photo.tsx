@@ -29,13 +29,21 @@ export function Photo({
   sizes?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const showImage = Boolean(src) && !failed;
+  const loaded = Boolean(src) && loadedSrc === src;
 
   return (
     <div
       className={cx("relative overflow-hidden", className)}
       style={ratio ? { aspectRatio: String(ratio) } : undefined}
     >
+      {showImage && !loaded ? (
+        <span
+          aria-hidden="true"
+          className="skeleton absolute inset-0"
+        />
+      ) : null}
       {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -45,7 +53,11 @@ export function Photo({
           loading={priority ? "eager" : "lazy"}
           decoding={priority ? "sync" : "async"}
           {...(priority ? { fetchPriority: "high" as const } : {})}
-          onError={() => setFailed(true)}
+          onLoad={() => setLoadedSrc(src ?? null)}
+          onError={() => {
+            setFailed(true);
+            setLoadedSrc(src ?? null);
+          }}
           className={cx(
             "absolute inset-0 size-full",
             fit === "contain" ? "object-contain" : "object-cover",

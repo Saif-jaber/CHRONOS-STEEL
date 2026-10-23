@@ -249,10 +249,27 @@ function validateListing(values: FormValues, images: UploadedImage[]): Issue[] {
   return issues;
 }
 
-export function ListingForm({ storageConfigured }: { storageConfigured: boolean }) {
+export function ListingForm({
+  storageConfigured,
+  mode = "create",
+  productId,
+  initialValues,
+  initialImages,
+  initialPublished = false,
+}: {
+  storageConfigured: boolean;
+  mode?: "create" | "edit";
+  productId?: string;
+  initialValues?: Partial<FormValues>;
+  initialImages?: UploadedImage[];
+  initialPublished?: boolean;
+}) {
   const router = useRouter();
-  const [values, setValues] = useState<FormValues>(EMPTY);
-  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [values, setValues] = useState<FormValues>(() => ({
+    ...EMPTY,
+    ...(initialValues ?? {}),
+  }));
+  const [images, setImages] = useState<UploadedImage[]>(initialImages ?? []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -376,15 +393,28 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
 
     let response: Response;
     try {
-      response = await fetch("/api/listings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          images: images.map((image) => image.url),
-          published: intent === "publish",
-        }),
-      });
+      if (mode === "edit" && productId) {
+        const published = intent === "publish" ? true : initialPublished;
+        response = await fetch(`/api/listings/${productId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...values,
+            images: images.map((image) => image.url),
+            published,
+          }),
+        });
+      } else {
+        response = await fetch("/api/listings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...values,
+            images: images.map((image) => image.url),
+            published: intent === "publish",
+          }),
+        });
+      }
     } catch {
       setSending(false);
       setPendingIntent(null);
@@ -835,7 +865,7 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
                   type="button"
                   onClick={() => removeImage(image.url)}
                   aria-label={`Remove ${image.name}`}
-                  className="hit absolute right-1 top-1 inline-flex size-6 items-center justify-center bg-navy/80 text-paper transition-opacity dur-base ease-out hover:opacity-80"
+                  className="hit absolute right-1 top-1 inline-flex size-6 items-center justify-center bg-navy/80 text-paper transition-colors dur-base ease-out hover:text-error"
                 >
                   <IconClose className="size-3.5" />
                 </button>
@@ -870,7 +900,13 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
       <div className="rule-t flex flex-col gap-md pt-md sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-md">
           <Button type="submit" disabled={sending || uploading} className={cx(sending && "opacity-70")}>
-            {sending && pendingIntent === "publish" ? "Publishing…" : "Publish reference"}
+            {sending && pendingIntent === "publish"
+              ? mode === "edit"
+                ? "Saving…"
+                : "Publishing…"
+              : mode === "edit"
+                ? "Save changes"
+                : "Publish reference"}
           </Button>
           <Button
             type="button"
@@ -879,7 +915,11 @@ export function ListingForm({ storageConfigured }: { storageConfigured: boolean 
             onClick={() => void submit("draft")}
             className={cx(sending && "opacity-70")}
           >
-            {sending && pendingIntent === "draft" ? "Saving…" : "Save as draft"}
+            {sending && pendingIntent === "draft"
+              ? "Saving…"
+              : mode === "edit"
+                ? "Save as draft"
+                : "Save as draft"}
           </Button>
           <ButtonLink href="/seller" variant="outline">
             Cancel

@@ -13,6 +13,12 @@ export interface CatalogRepository {
   getProductsByStoreSlug(storeSlug: string): Promise<Product[]>;
   /** Persists a seller listing and returns it in catalogue shape. */
   createListing(input: NewListingInput): Promise<Product>;
+  /** Updates one seller's own reference; null if not theirs. */
+  updateListing(
+    id: string,
+    sellerId: string,
+    input: NewListingInput,
+  ): Promise<Product | null>;
   /** Flips one seller's own reference from draft to published; null if not theirs. */
   publishListing(id: string, sellerId: string): Promise<Product | null>;
 }

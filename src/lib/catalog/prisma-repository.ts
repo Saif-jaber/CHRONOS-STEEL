@@ -193,6 +193,102 @@ export class PrismaCatalogRepository implements CatalogRepository {
     return toProduct(row);
   }
 
+  async updateListing(
+    id: string,
+    sellerId: string,
+    input: NewListingInput,
+  ): Promise<Product | null> {
+    const owned = await prisma.product.findFirst({
+      where: { id, sellerId },
+      select: { id: true, slug: true },
+    });
+    if (!owned) return null;
+
+    const existing = await prisma.product.findFirst({
+      where: { id },
+      include: { dials: true, straps: true },
+    });
+    const dialId = existing?.dials[0]?.id ?? "dial-1";
+    const strapId = existing?.straps[0]?.id ?? "strap-1";
+
+    await prisma.dial.update({
+      // @ts-ignore - composite key shape
+      where: { id: dialId },
+      data: {
+        name: input.dial.name,
+        colorName: input.dial.colorName,
+        colorHex: input.dial.colorHex,
+        finish: input.dial.finish,
+        priceDeltaInCents: input.dial.priceDeltaInCents,
+        complications: [],
+        complicationPlacements: {},
+      },
+    });
+    await prisma.strap.update({
+      // @ts-ignore - composite key shape
+      where: { id: strapId },
+      data: {
+        type: input.strap.type,
+        name: input.strap.name,
+        material: input.strap.material,
+        colorHex: input.strap.colorHex,
+        colorName: input.strap.colorName,
+        priceDeltaInCents: input.strap.priceDeltaInCents,
+        widthMm: input.strap.widthMm,
+        stitchColorHex: input.strap.stitchColorHex ?? null,
+      },
+    });
+
+    const row = await prisma.product.update({
+      where: { id },
+      data: {
+        brand: input.brand,
+        model: input.model,
+        reference: input.reference,
+        yearIntroduced: input.yearIntroduced,
+        collection: input.collection,
+        summary: input.summary,
+        story: input.story,
+
+        diameterMm: input.caseSpec.diameterMm,
+        thicknessMm: input.caseSpec.thicknessMm,
+        lugToLugMm: input.caseSpec.lugToLugMm,
+        lugWidthMm: input.caseSpec.lugWidthMm,
+        material: input.caseSpec.material,
+        finish: input.caseSpec.finish,
+        bezel: input.caseSpec.bezel,
+        crystal: input.caseSpec.crystal,
+        waterResistanceM: input.caseSpec.waterResistanceM,
+
+        type: input.movement.type,
+        caliber: input.movement.caliber,
+        manufacturer: input.movement.manufacturer,
+        powerReserveHours: input.movement.powerReserveHours,
+        frequencyVph: input.movement.frequencyVph,
+        jewels: input.movement.jewels,
+        components: input.movement.components,
+        chronometerDeviationPercent: input.movement.chronometerDeviationPercent,
+        winding: input.movement.winding,
+
+        indexStyle: input.indexStyle,
+        lume: input.lume,
+        signature: input.signature,
+        sublabel: input.sublabel,
+        basePriceInCents: input.basePriceInCents,
+        currency: input.currency,
+        stock: input.stock,
+        editionSize: input.editionSize,
+        featured: input.featured,
+        tags: input.tags,
+        images: input.images,
+        published: input.published,
+      },
+      include: productInclude,
+    });
+
+    return toProduct(row);
+  }
+
   async createListing(input: NewListingInput): Promise<Product> {
     const slug = await this.uniqueSlug(`${input.brand} ${input.model} ${input.reference}`);
     const order = await prisma.product.aggregate({ _max: { sortOrder: true } });

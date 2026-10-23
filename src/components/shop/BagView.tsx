@@ -5,6 +5,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { Button, Cta } from "@/components/ui/Button";
 import { FormNote } from "@/components/ui/Field";
 import { Photo } from "@/components/ui/Photo";
+import { LoadingRegion } from "@/components/ui/Skeleton";
+import { BagSkeleton } from "@/components/shop/BagSkeleton";
 import { formatPrice } from "@/lib/format";
 import type { CartLine } from "@/lib/types";
 import {
@@ -88,7 +90,9 @@ export function BagView() {
             </div>
           </>
         ) : (
-          <p className="text-sm text-muted">Loading your bag…</p>
+          <LoadingRegion label="Loading your bag">
+            <BagSkeleton />
+          </LoadingRegion>
         )}
       </div>
     );

@@ -160,19 +160,34 @@ export default async function SellerPage() {
                   {products.map((product) => (
                     <li key={product.id} className="flex flex-col gap-sm">
                       <ShopCard product={product} />
-                      {product.published === false ? (
-                        <div className="flex flex-wrap items-center gap-md border-t border-rule pt-sm">
-                          <span className="eyebrow text-error">Draft</span>
-                          <p className="measure text-xs text-faint">
-                            Not shown to customers until you publish it.
-                          </p>
-                          <PublishButton id={product.id} />
+                      <div className="flex flex-wrap items-center justify-between gap-sm border-t border-rule pt-sm">
+                        <div className="flex flex-wrap items-center gap-sm">
+                          {product.published === false ? (
+                            <>
+                              <span className="eyebrow text-error">Draft</span>
+                              <p className="measure text-xs text-faint">
+                                Not shown to customers until you publish it.
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-xs text-muted">
+                              Published &middot; visible in the collection
+                            </p>
+                          )}
                         </div>
-                      ) : (
-                        <p className="border-t border-rule pt-sm text-xs text-muted">
-                          Published &middot; visible in the collection
-                        </p>
-                      )}
+                        <div className="flex flex-wrap items-center gap-sm">
+                          <ButtonLink
+                            href={`/seller/listings/${product.id}/edit`}
+                            variant="outline"
+                            className="h-9 px-4"
+                          >
+                            Edit
+                          </ButtonLink>
+                          {product.published === false ? (
+                            <PublishButton id={product.id} />
+                          ) : null}
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
