@@ -10,7 +10,7 @@ const PROTECTED_PATHS = [
 
 const SESSION_COOKIE = "cs-session";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
