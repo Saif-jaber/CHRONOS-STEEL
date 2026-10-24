@@ -44,7 +44,7 @@ export function Hero({ total }: { total: number }) {
       <div className="container relative z-10 flex flex-1 flex-col justify-start pb-xl pt-[calc(var(--spacing-nav)+3rem)]">
         <div className="max-w-[54rem]">
           <p className="eyebrow text-base text-silver">
-            Chronos &amp; Steel &middot; Seller listings
+            Portfolio demo &middot; no real purchases
           </p>
 
           {/* text-shadow against the gradient wash, not decoration. */}

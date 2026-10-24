@@ -165,27 +165,3 @@ export async function emptyBag(): Promise<BagActionResult> {
     return { ok: false, error: "The request could not be sent. Try again." };
   }
 }
-
-export type CheckoutResult =
-  | { ok: true; url: string }
-  | { ok: false; error: string };
-
-/** Ask the server to open a Stripe Checkout Session for the bag and return the
- *  hosted page to redirect to. The bag is *not* emptied here — it is cleared by
- *  the webhook once Stripe confirms the payment. */
-export async function startCheckout(): Promise<CheckoutResult> {
-  try {
-    const response = await fetch("/api/checkout", { method: "POST" });
-    const data = await bodyAsJson(response);
-    if (!response.ok) {
-      return { ok: false, error: errorFrom(data, "Checkout could not be started.") };
-    }
-    const url = (data as { url?: unknown } | null)?.url;
-    if (typeof url !== "string") {
-      return { ok: false, error: "Checkout could not be started." };
-    }
-    return { ok: true, url };
-  } catch {
-    return { ok: false, error: "The request could not be sent. Try again." };
-  }
-}

@@ -2,7 +2,7 @@ import {
   IconBalance,
   IconCrystal,
   IconPowerReserve,
-  IconWarranty,
+  IconAccount,
 } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -23,9 +23,9 @@ const FEATURES = [
     detail: "The price shown is the price of the listed configuration.",
   },
   {
-    Icon: IconWarranty,
-    label: "Account Orders",
-    detail: "Checkout and order history stay against your account.",
+    Icon: IconAccount,
+    label: "Demo account",
+    detail: "Explore account and seller tools; purchases are disabled.",
   },
 ] as const;
 

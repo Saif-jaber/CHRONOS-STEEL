@@ -1,6 +1,6 @@
 # Chronos & Steel
 
-A marketplace for real mechanical-watch listings, built with Next.js, TypeScript, Prisma, and PostgreSQL. It pairs a cinematic landing page with a working catalogue: server-side filtering, accounts, a bag and checkout, and a seller dashboard with sales analytics and image uploads. Every product shown is a published seller listing with its own photographs; there is no seeded or illustrated catalogue.
+A portfolio demonstration of a mechanical-watch marketplace, built with Next.js, TypeScript, Prisma, and PostgreSQL. It pairs a cinematic landing page with a working catalogue: server-side filtering, accounts, a bag, and a seller dashboard with sales analytics and image uploads. Purchases and checkout are disabled; listings and prices are for demonstration only.
 
 ## Features
 
@@ -9,9 +9,9 @@ A marketplace for real mechanical-watch listings, built with Next.js, TypeScript
 - Collection page with server-side filtering, facet counts, sorting, and full-text search, all driven from the URL so results are linkable and shareable.
 - Per-watch page with a photograph gallery, the seller's specification sheet, pricing, stock state, and lead times.
 
-**Accounts and commerce**
+**Accounts and seller tools**
 - Email/password sign-up and sign-in for two roles: customer and seller. Sessions use a random httpOnly cookie, looked up server-side.
-- Per-account bag with add/remove, and checkout that turns the bag into a placed order with a confirmation page and order history.
+- Per-account bag with add/remove, plus a seller dashboard with sales analytics and order-history interfaces. Checkout and purchases are disabled in this portfolio demo.
 - Seller dashboard: 30-day revenue, paid orders, units, average order value, add-to-bag events, a daily revenue chart, per-reference sales, recent orders, and storefront health. Sellers can create listings, upload photographs, and move a listing from draft to published. A seller storefront page lists their published watches.
 
 **Platform**

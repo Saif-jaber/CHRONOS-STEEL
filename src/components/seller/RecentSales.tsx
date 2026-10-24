@@ -36,8 +36,8 @@ export function RecentSales({
         <div className="mt-sm border-t border-rule pt-md">
           <p className="text-sm text-ink">No paid sales yet</p>
           <p className="measure mt-2xs text-xs leading-relaxed text-faint">
-            When a customer completes checkout, the order and its references appear
-            here.
+            Checkout is disabled in this portfolio demo; this panel demonstrates
+            the seller order-history interface.
           </p>
         </div>
       ) : (

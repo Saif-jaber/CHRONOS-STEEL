@@ -16,7 +16,6 @@ import {
   refreshBag,
   removeFromBag,
   setBagQuantity,
-  startCheckout,
   subscribeBag,
 } from "@/lib/cart/store";
 
@@ -28,7 +27,6 @@ export function BagView() {
   );
 
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,22 +55,6 @@ export function BagView() {
     setError(null);
     const result = await emptyBag();
     if (!result.ok) setError(result.error);
-  }
-
-  async function beginCheckout() {
-    setError(null);
-    setPlacing(true);
-    const result = await startCheckout();
-    if (!result.ok) {
-      setPlacing(false);
-      setError(result.error);
-      /* The bag may have changed under us (item sold out); re-read it. */
-      void refreshBag();
-      return;
-    }
-    /* Full navigation to Stripe's hosted page; the bag survives the round trip
-       and is cleared by the webhook once the payment is confirmed. */
-    window.location.assign(result.url);
   }
 
   if (!cart) {
@@ -112,8 +94,6 @@ export function BagView() {
       </div>
     );
   }
-
-  const checkoutDisabled = placing || cart.hasUnavailable;
 
   return (
     <div>
@@ -216,25 +196,18 @@ export function BagView() {
           <p className="measure text-xl text-ink">
             {formatPrice(cart.subtotalInCents, cart.currency)}
           </p>
-          {cart.hasUnavailable ? (
-            <p className="text-xs text-error">
-              Pieces that can no longer be ordered are not counted.
-            </p>
-          ) : (
-            <p className="text-xs text-faint">
-              Payment is taken on Stripe&apos;s secure page. Delivery and any
-              duties are settled after the order is placed.
-            </p>
-          )}
+          <p className="text-xs text-faint">
+            Display only. This portfolio demo does not accept orders or
+            payments.
+          </p>
         </div>
 
-        <Button
-          onClick={() => void beginCheckout()}
-          disabled={checkoutDisabled}
-          className="w-full sm:w-auto"
+        <p
+          role="status"
+          className="border border-rule px-sm py-xs text-center text-xs uppercase tracking-nav text-muted"
         >
-          {placing ? "Redirecting…" : "Checkout"}
-        </Button>
+          Purchases disabled
+        </p>
       </div>
     </div>
   );

@@ -114,7 +114,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative w-full max-w-[40rem] max-h-[calc(100dvh-3rem)] overflow-y-auto border border-navy bg-paper p-lg outline-none"
+        className="relative max-h-[calc(100dvh-3rem)] w-full max-w-[40rem] overflow-y-auto border border-navy bg-paper p-sm outline-none sm:p-lg"
       >
         <div className="flex items-start justify-between gap-md">
           <h2 id={titleId} className="text-xl">
@@ -127,18 +127,28 @@ export function Modal({
 
         <div className="mt-md">{children}</div>
 
-        <div className="mt-lg flex justify-end gap-sm">
+        <div className="mt-lg flex flex-col-reverse gap-sm sm:flex-row sm:justify-end">
           {onConfirm ? (
             <>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="w-full sm:w-auto"
+              >
                 {cancelLabel}
               </Button>
-              <Button type="button" onClick={onConfirm} disabled={confirmDisabled}>
+              <Button
+                type="button"
+                onClick={onConfirm}
+                disabled={confirmDisabled}
+                className="w-full sm:w-auto"
+              >
                 {confirmLabel}
               </Button>
             </>
           ) : (
-            <Button type="button" onClick={onClose}>
+            <Button type="button" onClick={onClose} className="w-full sm:w-auto">
               {confirmLabel}
             </Button>
           )}

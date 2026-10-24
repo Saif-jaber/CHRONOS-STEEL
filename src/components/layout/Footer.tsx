@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Logo, Monogram } from "@/components/brand/Logo";
-import { IconArrowRight } from "@/components/ui/Icon";
 
 const COLUMNS = [
   {
@@ -9,16 +8,13 @@ const COLUMNS = [
       { label: "All watches", href: "/collection" },
       { label: "By case diameter", href: "/collection?group=case" },
       { label: "By movement", href: "/collection?group=movement" },
-      { label: "Gift vouchers", href: "/gift" },
     ],
   },
   {
-    heading: "Service",
+    heading: "Project",
     links: [
-      { label: "Book a service", href: "/service" },
-      { label: "Warranty", href: "/warranty" },
-      { label: "Sizing and fit", href: "/sizing" },
-      { label: "Delivery and returns", href: "/delivery" },
+      { label: "Privacy notice", href: "/privacy" },
+      { label: "Terms of use", href: "/terms" },
     ],
   },
   {
@@ -42,7 +38,6 @@ const COLUMNS = [
 const LEGAL = [
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
-  { label: "Cookies", href: "/cookies" },
 ] as const;
 
 export function Footer() {
@@ -62,42 +57,19 @@ export function Footer() {
           <div className="max-w-[30rem]">
             <Logo lockup="stacked" onDark />
             <p className="prose-measure mt-lg text-sm leading-relaxed text-navy-muted">
-              A marketplace for mechanical watches. Every reference is listed,
-              photographed and described by the seller offering it.
+              A portfolio demonstration of a mechanical-watch marketplace.
+              Listings and prices are for display only; purchases are disabled.
             </p>
           </div>
 
           <div className="max-w-[27rem] lg:w-full">
             <h2 className="font-display text-xl font-normal leading-tight text-paper">
-              Time Worth Keeping
+              Built as a portfolio project
             </h2>
             <p className="mt-2xs text-sm leading-relaxed text-navy-muted">
-              One letter a month on what we are building, and why. No offers.
+              This demo is not a real shop and does not accept orders or
+              payments.
             </p>
-
-            <form action="/api/journal" method="post" className="mt-md">
-              <label htmlFor="journal-email" className="eyebrow block text-silver">
-                Email address
-              </label>
-              <div className="mt-2xs flex items-center gap-xs border-b border-navy-rule pb-2 transition-colors dur-base ease-out focus-within:border-paper">
-                <input
-                  id="journal-email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  className="measure min-w-0 flex-1 bg-transparent py-xs text-sm text-paper placeholder:text-navy-muted focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="hit relative inline-flex size-6 shrink-0 items-center justify-center text-paper transition-opacity dur-base ease-out hover:opacity-60"
-                >
-                  <span className="sr-only">Join the journal</span>
-                  <IconArrowRight onDark />
-                </button>
-              </div>
-            </form>
           </div>
         </div>
 
@@ -121,12 +93,11 @@ export function Footer() {
           ))}
 
           <div>
-            <h3 className="eyebrow text-silver">Orders</h3>
-            <ul className="mt-md space-y-3xs text-sm text-navy-muted">
-              <li>Complimentary insured delivery</li>
-              <li>30-day return, worn or unworn</li>
-              <li>Five-year international warranty</li>
-            </ul>
+            <h3 className="eyebrow text-silver">Demo status</h3>
+            <p className="mt-md max-w-[16rem] text-sm leading-relaxed text-navy-muted">
+              No sales, order fulfilment, delivery, returns or warranty service
+              are offered.
+            </p>
           </div>
         </div>
 
@@ -153,7 +124,7 @@ export function Footer() {
             ))}
           </ul>
           <p className="measure text-xs text-navy-muted">
-            Listings are supplied by independent sellers.
+            Portfolio demo · not a real marketplace.
           </p>
         </div>
       </div>
